@@ -164,24 +164,7 @@ POST   /api/import-xml/         # Importar archivo XML
 GET    /api/dashboard-stats/    # Estadísticas del dashboard
 ```
 
-## Solución de Problemas
-
-### Error: "Cannot find module 'react'"
-Ejecuta `npm install` en el directorio frontend.
-
-### Error: "No module named 'django'"
-Asegúrate de activar el entorno virtual: `source venv/bin/activate`
-
-### Puerto ocupado
-Cambia los puertos en la configuración de Vite o Django.
-
-### Base de datos bloqueada
-```bash
-cd backend
-rm db.sqlite3
-python manage.py migrate
-```
 
 ## Licencia
 
-Proyecto académico para el curso TI3.
+Lincenciado bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
