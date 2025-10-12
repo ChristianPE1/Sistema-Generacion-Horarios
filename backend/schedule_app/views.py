@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count, Q
+from django.db.models import Avg, Max
 from .models import (
     Room, Instructor, Course, Class, ClassInstructor,
     ClassRoom, TimeSlot, Student, StudentClass,
@@ -13,6 +14,7 @@ from .serializers import (
     StudentClassSerializer, ScheduleSerializer, ScheduleListSerializer,
     TimeSlotSerializer, ClassInstructorSerializer, ClassRoomSerializer
 )
+from .schedule_generator import ScheduleGenerator
 
 
 class RoomViewSet(viewsets.ModelViewSet):
@@ -24,8 +26,8 @@ class RoomViewSet(viewsets.ModelViewSet):
     def statistics(self, request):
         """Obtener estadísticas de las aulas"""
         total = self.queryset.count()
-        avg_capacity = self.queryset.aggregate(avg=models.Avg('capacity'))['avg']
-        max_capacity = self.queryset.aggregate(max=models.Max('capacity'))['max']
+        avg_capacity = self.queryset.aggregate(avg=Avg('capacity'))['avg']
+        max_capacity = self.queryset.aggregate(max=Max('capacity'))['max']
         
         return Response({
             'total_rooms': total,
@@ -136,6 +138,79 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             return ScheduleListSerializer
         return ScheduleSerializer
     
+    @action(detail=False, methods=['post'])
+    def generate(self, request):
+        """Generar un nuevo horario usando algoritmo genético"""
+        try:
+            # Obtener parámetros del request
+            name = request.data.get('name', f'Horario Generado')
+            description = request.data.get('description', '')
+            
+            # Parámetros del algoritmo genético
+            population_size = int(request.data.get('population_size', 100))
+            generations = int(request.data.get('generations', 200))
+            mutation_rate = float(request.data.get('mutation_rate', 0.1))
+            crossover_rate = float(request.data.get('crossover_rate', 0.8))
+            elitism_size = int(request.data.get('elitism_size', 5))
+            tournament_size = int(request.data.get('tournament_size', 5))
+            
+            # Validar parámetros
+            if not (0 <= mutation_rate <= 1):
+                return Response(
+                    {'error': 'mutation_rate debe estar entre 0 y 1'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if not (0 <= crossover_rate <= 1):
+                return Response(
+                    {'error': 'crossover_rate debe estar entre 0 y 1'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Crear generador
+            generator = ScheduleGenerator(
+                population_size=population_size,
+                generations=generations,
+                mutation_rate=mutation_rate,
+                crossover_rate=crossover_rate,
+                elitism_size=elitism_size,
+                tournament_size=tournament_size
+            )
+            
+            # Cargar datos
+            generator.load_data()
+            
+            # Generar horario
+            schedule = generator.generate(name, description)
+            
+            # Obtener resumen
+            summary = generator.get_schedule_summary(schedule)
+            
+            # Serializar respuesta
+            serializer = ScheduleSerializer(schedule)
+            
+            return Response({
+                'schedule': serializer.data,
+                'summary': {
+                    'total_assignments': summary['total_assignments'],
+                    'unassigned_classes': summary['unassigned_classes'],
+                    'instructor_count': len(summary['instructor_schedules']),
+                    'room_count': len(summary['room_schedules'])
+                },
+                'message': 'Horario generado exitosamente'
+            }, status=status.HTTP_201_CREATED)
+            
+        except ValueError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error al generar horario: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
         """Activar un horario y desactivar los demás"""
@@ -144,6 +219,38 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         schedule.is_active = True
         schedule.save()
         return Response({'status': 'Horario activado'})
+    
+    @action(detail=True, methods=['get'])
+    def summary(self, request, pk=None):
+        """Obtener resumen detallado de un horario"""
+        schedule = self.get_object()
+        generator = ScheduleGenerator()
+        generator.load_data()
+        summary = generator.get_schedule_summary(schedule)
+        
+        return Response({
+            'schedule_id': schedule.id,
+            'schedule_name': schedule.name,
+            'fitness_score': schedule.fitness_score,
+            'total_assignments': summary['total_assignments'],
+            'unassigned_classes': summary['unassigned_classes'],
+            'instructor_schedules': [
+                {
+                    'instructor_id': item['instructor'].xml_id,
+                    'instructor_name': item['instructor'].name,
+                    'class_count': len(item['classes'])
+                }
+                for item in summary['instructor_schedules']
+            ],
+            'room_schedules': [
+                {
+                    'room_id': item['room'].xml_id,
+                    'room_capacity': item['room'].capacity,
+                    'class_count': len(item['classes'])
+                }
+                for item in summary['room_schedules']
+            ]
+        })
     
     @action(detail=True, methods=['get'])
     def calendar_view(self, request, pk=None):
