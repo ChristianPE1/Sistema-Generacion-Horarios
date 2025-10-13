@@ -95,6 +95,14 @@ class Command(BaseCommand):
             self.stdout.write(f'  - Instructores con clases: {len(summary["instructor_schedules"])}')
             self.stdout.write(f'  - Aulas utilizadas: {len(summary["room_schedules"])}')
             
+            # Mostrar reporte de instructores sintéticos
+            if summary.get('synthetic_count', 0) > 0:
+                self.stdout.write(self.style.WARNING(f'\n⚠️ ATENCIÓN: Instructores Sintéticos'))
+                self.stdout.write(self.style.WARNING(f'  - Total: {summary["synthetic_count"]} instructores sintéticos'))
+                self.stdout.write(self.style.WARNING(f'  - Estos representan cursos que AÚN necesitan profesores reales'))
+                self.stdout.write(f'\n  Para ver el reporte completo de instructores sintéticos:')
+                self.stdout.write(f'  python manage.py shell -c "from schedule_app.schedule_generator import ScheduleGenerator; g = ScheduleGenerator(); print(g.get_synthetic_instructors_report())"')
+            
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'\nError al generar horario: {e}'))
             import traceback

@@ -20,8 +20,24 @@ class Individual:
         self.fitness = 0.0
         
     def initialize_random(self):
-        """Inicialización inteligente con heurística de capacidad"""
+        """Inicialización inteligente con heurística de capacidad y evitación de conflictos"""
+        # Rastrear ocupación para evitar conflictos básicos
+        room_occupation = {}  # {(room_id, timeslot_id): set(class_ids)}
+        instructor_occupation = {}  # {(instructor_id, timeslot_id): set(class_ids)}
+        
+        # Obtener instructores por clase
+        from .models import ClassInstructor
+        class_instructors_map = {}
         for class_obj in self.classes:
+            instructors = ClassInstructor.objects.filter(
+                class_obj=class_obj
+            ).values_list('instructor_id', flat=True)
+            class_instructors_map[class_obj.id] = list(instructors)
+        
+        # Ordenar clases por límite (asignar primero las más grandes)
+        sorted_classes = sorted(self.classes, key=lambda c: c.class_limit, reverse=True)
+        
+        for class_obj in sorted_classes:
             # Filtrar aulas por capacidad (heurística)
             suitable_rooms = [r for r in self.rooms if r.capacity >= class_obj.class_limit]
             if not suitable_rooms:
@@ -29,17 +45,50 @@ class Individual:
             
             # Preferir aulas cercanas a la capacidad necesaria
             suitable_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
-            room = suitable_rooms[0] if len(suitable_rooms) <= 3 else random.choice(suitable_rooms[:5])
             
             # Asignar slot de tiempo aleatorio de los disponibles para la clase
             available_slots = self.time_slots.get(class_obj.id, [])
-            if available_slots:
-                time_slot = random.choice(available_slots)
-            else:
-                # Si no hay slots específicos, crear uno por defecto
-                time_slot = None
+            if not available_slots:
+                # Si no hay slots, asignar None
+                self.genes[class_obj.id] = (suitable_rooms[0].id if suitable_rooms else None, None)
+                continue
             
-            self.genes[class_obj.id] = (room.id if room else None, time_slot.id if time_slot else None)
+            # Intentar encontrar asignación sin conflictos (máximo 10 intentos)
+            assigned = False
+            for attempt in range(10):
+                room = suitable_rooms[min(attempt, len(suitable_rooms)-1)] if suitable_rooms else None
+                time_slot = random.choice(available_slots)
+                
+                if not room or not time_slot:
+                    continue
+                
+                # Verificar si hay conflicto de aula
+                room_key = (room.id, time_slot.id)
+                has_room_conflict = room_key in room_occupation
+                
+                # Verificar si hay conflicto de instructor
+                has_instructor_conflict = False
+                instructors = class_instructors_map.get(class_obj.id, [])
+                for instructor_id in instructors:
+                    inst_key = (instructor_id, time_slot.id)
+                    if inst_key in instructor_occupation:
+                        has_instructor_conflict = True
+                        break
+                
+                # Si no hay conflictos, asignar
+                if not has_room_conflict and not has_instructor_conflict:
+                    self.genes[class_obj.id] = (room.id, time_slot.id)
+                    room_occupation[room_key] = {class_obj.id}
+                    for instructor_id in instructors:
+                        instructor_occupation[(instructor_id, time_slot.id)] = {class_obj.id}
+                    assigned = True
+                    break
+            
+            # Si no se pudo asignar sin conflictos, asignar de todas formas
+            if not assigned:
+                room = suitable_rooms[0] if suitable_rooms else None
+                time_slot = random.choice(available_slots) if available_slots else None
+                self.genes[class_obj.id] = (room.id if room else None, time_slot.id if time_slot else None)
     
     def calculate_fitness(self, validator: 'ConstraintValidator'):
         self.fitness = validator.evaluate(self)
@@ -61,17 +110,17 @@ class GeneticAlgorithm:
     def __init__(self, 
                  population_size: int = 100,
                  generations: int = 200,
-                 mutation_rate: float = 0.2,
-                 crossover_rate: float = 0.85,
+                 mutation_rate: float = 0.15,
+                 crossover_rate: float = 0.80,
                  elitism_size: int = 10,
-                 tournament_size: int = 7):
+                 tournament_size: int = 5):
         """
         population_size: Tamaño de la población
         generations: Número de generaciones
-        mutation_rate: Probabilidad de mutación (0-1)
-        crossover_rate: Probabilidad de cruce (0-1)
+        mutation_rate: Probabilidad de mutación (0-1) - Reducida para estabilidad
+        crossover_rate: Probabilidad de cruce (0-1) - Reducida para estabilidad
         elitism_size: Número de mejores individuos que pasan directamente
-        tournament_size: Tamaño del torneo para selección
+        tournament_size: Tamaño del torneo para selección - Reducido para diversidad
         """
         self.population_size = population_size
         self.generations = generations

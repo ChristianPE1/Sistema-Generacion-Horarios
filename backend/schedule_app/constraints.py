@@ -26,12 +26,12 @@ class ConstraintValidator:
     """
     
     def __init__(self, 
-                 hard_constraint_weight: float = 10000.0,
-                 soft_constraint_weight: float = 10.0):
+                 hard_constraint_weight: float = 1000.0,
+                 soft_constraint_weight: float = 1.0):
         """
         Parámetros:
-        - hard_constraint_weight: Peso de las restricciones duras (aumentado a 10000)
-        - soft_constraint_weight: Peso de las restricciones blandas (aumentado a 10)
+        - hard_constraint_weight: Peso de las restricciones duras (reducido a 1000 para evitar fitness negativos)
+        - soft_constraint_weight: Peso de las restricciones blandas
         """
         self.hard_weight = hard_constraint_weight
         self.soft_weight = soft_constraint_weight
@@ -96,7 +96,14 @@ class ConstraintValidator:
     def evaluate(self, individual) -> float:
         """
         Evalúa un individuo y retorna su fitness.
-        Fitness = MAX_SCORE - (violaciones_duras * peso_duro + violaciones_blandas * peso_blando)
+        Fitness = BASE - (violaciones_duras * peso_duro + violaciones_blandas * peso_blando)
+        
+        Escala de fitness:
+        - 100,000 = Perfecto (sin violaciones)
+        - 95,000 - 99,999 = Excelente (solo violaciones blandas menores)
+        - 80,000 - 94,999 = Bueno (pocas violaciones duras)
+        - 50,000 - 79,999 = Aceptable (algunas violaciones)
+        - < 50,000 = Pobre (muchas violaciones)
         """
         hard_violations = self._evaluate_hard_constraints(individual)
         soft_violations = self._evaluate_soft_constraints(individual)
@@ -106,8 +113,9 @@ class ConstraintValidator:
                   soft_violations * self.soft_weight)
         
         # Fitness: a mayor fitness, mejor solución
-        # Valor base aumentado significativamente para dataset grande
-        fitness = 1000000.0 - penalty
+        # Base reducida a 100,000 para evitar fitness negativos
+        BASE_FITNESS = 100000.0
+        fitness = BASE_FITNESS - penalty
         
         return fitness
     
@@ -166,6 +174,11 @@ class ConstraintValidator:
         # Agrupar clases por instructor
         for class_id, (room_id, timeslot_id) in individual.genes.items():
             instructors = self.class_instructors.get(class_id, set())
+            
+            # Si no hay instructores, no hay conflicto posible
+            if not instructors:
+                continue
+            
             days, start, length = time_slots_map.get(class_id, (None, None, None))
             
             if days and start is not None and length:
@@ -220,6 +233,11 @@ class ConstraintValidator:
         # Agrupar clases por estudiante
         for class_id, (room_id, timeslot_id) in individual.genes.items():
             students = self.class_students.get(class_id, set())
+            
+            # Si no hay estudiantes, no hay conflicto posible
+            if not students:
+                continue
+            
             days, start, length = time_slots_map.get(class_id, (None, None, None))
             
             if days and start is not None and length:
