@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { importXML } from '../services/api';
-
-interface ImportStats {
-  rooms: number;
-  instructors: number;
-  courses: number;
-  classes: number;
-  students: number;
-  timeslots: number;
-}
+import type { ImportStats } from '../types';
 
 function ImportXML() {
   const [file, setFile] = useState<File | null>(null);
@@ -135,7 +127,7 @@ function ImportXML() {
                 <div className="text-sm">Estudiantes</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold">{stats.timeslots}</div>
+                <div className="text-2xl font-bold">{stats.time_slots}</div>
                 <div className="text-sm">Slots de Tiempo</div>
               </div>
             </div>
