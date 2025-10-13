@@ -128,25 +128,26 @@ curl http://localhost:8000/api/schedules/1/summary/
 curl http://localhost:8000/api/schedules/1/calendar_view/
 ```
 
-## 📈 Parámetros Recomendados
+## 📈 Parámetros Recomendados (MEJORADOS)
 
-| Escenario | Population | Generations | Mutation | Tiempo |
-|-----------|-----------|-------------|----------|--------|
-| Testing | 50 | 100 | 0.1 | ~1 min |
-| Producción | 100 | 200 | 0.1 | ~3 min |
-| Optimizado | 150 | 300 | 0.15 | ~7 min |
+| Escenario | Population | Generations | Mutation | Elitism | Tiempo |
+|-----------|-----------|-------------|----------|---------|--------|
+| Rápido | 50 | 100 | 0.20 | 10 | ~1 min |
+| Normal | 100 | 200 | 0.20 | 10 | ~3 min |
+| Optimizado | 150 | 300 | 0.25 | 15 | ~7 min |
+| Intensivo | 200 | 500 | 0.25 | 20 | ~15 min |
 
-## 🎯 Métricas de Calidad
+## 🎯 Métricas de Calidad (ACTUALIZADAS)
 
-### Fitness Score
-- **> 99,000**: ⭐⭐⭐ Excelente
-- **95,000-99,000**: ⭐⭐ Muy bueno
-- **90,000-95,000**: ⭐ Bueno
-- **< 90,000**: ⚠️ Mejorable
+### Fitness Score (Base: 1,000,000)
+- **> 990,000**: ⭐⭐⭐ Excelente (0 violaciones duras)
+- **950,000-990,000**: ⭐⭐ Muy bueno (pocas violaciones)
+- **900,000-950,000**: ⭐ Bueno (violaciones menores)
+- **< 900,000**: ⚠️ Mejorable (muchas violaciones)
 
 ### Restricciones
-- **Duras**: 0 violaciones (obligatorio)
-- **Blandas**: < 50 violaciones (recomendado)
+- **Duras**: 0 violaciones (obligatorio) - Peso: 10,000 c/u
+- **Blandas**: < 100 violaciones (recomendado) - Peso: 10 c/u
 
 ## 📊 Arquitectura del Algoritmo
 

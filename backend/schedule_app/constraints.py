@@ -26,12 +26,12 @@ class ConstraintValidator:
     """
     
     def __init__(self, 
-                 hard_constraint_weight: float = 1000.0,
-                 soft_constraint_weight: float = 1.0):
+                 hard_constraint_weight: float = 10000.0,
+                 soft_constraint_weight: float = 10.0):
         """
         Parámetros:
-        - hard_constraint_weight: Peso de las restricciones duras
-        - soft_constraint_weight: Peso de las restricciones blandas
+        - hard_constraint_weight: Peso de las restricciones duras (aumentado a 10000)
+        - soft_constraint_weight: Peso de las restricciones blandas (aumentado a 10)
         """
         self.hard_weight = hard_constraint_weight
         self.soft_weight = soft_constraint_weight
@@ -43,6 +43,7 @@ class ConstraintValidator:
         self.class_limits: Dict[int, int] = {}
         self.room_preferences: Dict[int, Dict[int, float]] = {}
         self.time_preferences: Dict[int, Dict[int, float]] = {}
+        self.timeslot_cache: Dict[int, Tuple] = {}  # Caché de timeslots
     
     def load_data(self, classes: List[Class], rooms: List[Room]):
         """Carga y cachea los datos necesarios para las validaciones"""
@@ -81,7 +82,11 @@ class ConstraintValidator:
             ).values_list('room_id', 'preference')
             self.room_preferences[class_obj.id] = dict(prefs)
         
-        # Cargar preferencias de horario
+        # Cargar preferencias de horario y cachear timeslots
+        all_timeslots = TimeSlot.objects.all()
+        for ts in all_timeslots:
+            self.timeslot_cache[ts.id] = (ts.days, ts.start_time, ts.length)
+        
         for class_obj in classes:
             time_slots = TimeSlot.objects.filter(
                 class_obj=class_obj
@@ -101,8 +106,8 @@ class ConstraintValidator:
                   soft_violations * self.soft_weight)
         
         # Fitness: a mayor fitness, mejor solución
-        # Usamos un valor base grande para tener fitness positivos
-        fitness = 100000.0 - penalty
+        # Valor base aumentado significativamente para dataset grande
+        fitness = 1000000.0 - penalty
         
         return fitness
     
@@ -143,17 +148,11 @@ class ConstraintValidator:
         return penalty
     
     def _get_timeslots_from_genes(self, individual) -> Dict[int, Tuple]:
-        """Obtiene los detalles de los timeslots desde los genes"""
-        from .models import TimeSlot as TimeSlotModel
-        
+        """Obtiene los detalles de los timeslots desde los genes usando caché"""
         timeslots_data = {}
         for class_id, (room_id, timeslot_id) in individual.genes.items():
-            if timeslot_id:
-                try:
-                    ts = TimeSlotModel.objects.get(id=timeslot_id)
-                    timeslots_data[class_id] = (ts.days, ts.start_time, ts.length)
-                except TimeSlotModel.DoesNotExist:
-                    timeslots_data[class_id] = (None, None, None)
+            if timeslot_id and timeslot_id in self.timeslot_cache:
+                timeslots_data[class_id] = self.timeslot_cache[timeslot_id]
             else:
                 timeslots_data[class_id] = (None, None, None)
         

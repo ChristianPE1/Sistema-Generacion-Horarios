@@ -1,8 +1,3 @@
-"""
-Algoritmo Genético para generación de horarios académicos.
-Este módulo implementa un algoritmo genético adaptado para resolver el problema
-de asignación de horarios universitarios.
-"""
 
 import random
 import numpy as np
@@ -25,10 +20,16 @@ class Individual:
         self.fitness = 0.0
         
     def initialize_random(self):
-        """Inicializa el cromosoma con asignaciones aleatorias"""
+        """Inicialización inteligente con heurística de capacidad"""
         for class_obj in self.classes:
-            # Asignar aula aleatoria
-            room = random.choice(self.rooms)
+            # Filtrar aulas por capacidad (heurística)
+            suitable_rooms = [r for r in self.rooms if r.capacity >= class_obj.class_limit]
+            if not suitable_rooms:
+                suitable_rooms = self.rooms  # Fallback a todas las aulas
+            
+            # Preferir aulas cercanas a la capacidad necesaria
+            suitable_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
+            room = suitable_rooms[0] if len(suitable_rooms) <= 3 else random.choice(suitable_rooms[:5])
             
             # Asignar slot de tiempo aleatorio de los disponibles para la clase
             available_slots = self.time_slots.get(class_obj.id, [])
@@ -41,10 +42,6 @@ class Individual:
             self.genes[class_obj.id] = (room.id if room else None, time_slot.id if time_slot else None)
     
     def calculate_fitness(self, validator: 'ConstraintValidator'):
-        """
-        Calcula el fitness del individuo.
-        Mayor fitness = mejor solución (menos conflictos)
-        """
         self.fitness = validator.evaluate(self)
         return self.fitness
     
@@ -64,18 +61,17 @@ class GeneticAlgorithm:
     def __init__(self, 
                  population_size: int = 100,
                  generations: int = 200,
-                 mutation_rate: float = 0.1,
-                 crossover_rate: float = 0.8,
-                 elitism_size: int = 5,
-                 tournament_size: int = 5):
+                 mutation_rate: float = 0.2,
+                 crossover_rate: float = 0.85,
+                 elitism_size: int = 10,
+                 tournament_size: int = 7):
         """
-        Parámetros:
-        - population_size: Tamaño de la población
-        - generations: Número de generaciones
-        - mutation_rate: Probabilidad de mutación (0-1)
-        - crossover_rate: Probabilidad de cruce (0-1)
-        - elitism_size: Número de mejores individuos que pasan directamente
-        - tournament_size: Tamaño del torneo para selección
+        population_size: Tamaño de la población
+        generations: Número de generaciones
+        mutation_rate: Probabilidad de mutación (0-1)
+        crossover_rate: Probabilidad de cruce (0-1)
+        elitism_size: Número de mejores individuos que pasan directamente
+        tournament_size: Tamaño del torneo para selección
         """
         self.population_size = population_size
         self.generations = generations
@@ -147,7 +143,7 @@ class GeneticAlgorithm:
     
     def mutate(self, individual: Individual):
         """
-        Operador de mutación: Modifica aleatoriamente algunos genes.
+        Operador de mutación inteligente con heurística.
         Puede cambiar el aula, el horario, o ambos.
         """
         for class_id in individual.genes:
@@ -156,15 +152,24 @@ class GeneticAlgorithm:
                 mutation_type = random.choice(['room', 'time', 'both'])
                 
                 current_room_id, current_time_id = individual.genes[class_id]
+                class_obj = next((c for c in individual.classes if c.id == class_id), None)
                 
-                if mutation_type in ['room', 'both']:
-                    # Mutar aula
-                    new_room = random.choice(individual.rooms)
+                if mutation_type in ['room', 'both'] and class_obj:
+                    # Mutación inteligente: priorizar aulas con capacidad adecuada
+                    suitable_rooms = [r for r in individual.rooms if r.capacity >= class_obj.class_limit]
+                    if not suitable_rooms:
+                        suitable_rooms = individual.rooms
+                    
+                    # 70% probabilidad de elegir aula óptima, 30% aleatoria (exploración)
+                    if random.random() < 0.7 and suitable_rooms:
+                        suitable_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
+                        new_room = suitable_rooms[0]
+                    else:
+                        new_room = random.choice(individual.rooms)
                     current_room_id = new_room.id
                 
                 if mutation_type in ['time', 'both']:
                     # Mutar tiempo
-                    class_obj = next((c for c in individual.classes if c.id == class_id), None)
                     if class_obj:
                         available_slots = individual.time_slots.get(class_id, [])
                         if available_slots:
@@ -208,8 +213,8 @@ class GeneticAlgorithm:
             self.population = new_population
             self.evaluate_population(validator)
             
-            # Log de progreso (cada 10 generaciones)
-            if (generation + 1) % 10 == 0:
+            # Log de progreso (cada 2 generaciones)
+            if (generation + 1) % 2 == 0:
                 print(f"Generación {generation + 1}/{self.generations} - "
                       f"Mejor Fitness: {self.best_fitness_history[-1]:.2f} - "
                       f"Fitness Promedio: {self.avg_fitness_history[-1]:.2f}")

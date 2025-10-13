@@ -1,6 +1,5 @@
 """
-Servicio de generación de horarios usando algoritmo genético.
-Orquesta todo el proceso de optimización.
+Metodo de generación de horarios usando algoritmo genético
 """
 
 from typing import Dict, List, Optional
@@ -16,7 +15,7 @@ from .constraints import ConstraintValidator
 
 class ScheduleGenerator:
     """
-    Servicio principal para generar horarios usando algoritmo genético.
+    Metodo principal para generar horarios usando algoritmo genético.
     """
     
     def __init__(self,
@@ -48,7 +47,6 @@ class ScheduleGenerator:
         self.time_slots_by_class: Dict[int, List[TimeSlot]] = {}
     
     def load_data(self):
-        """Carga los datos necesarios desde la base de datos"""
         # Cargar todas las clases
         self.classes = list(Class.objects.select_related('offering').all())
         
@@ -100,11 +98,8 @@ class ScheduleGenerator:
                 description: str = "") -> Schedule:
         """
         Genera un horario optimizado usando el algoritmo genético.
-        
-        Returns:
-            Schedule: El horario generado y guardado en la BD
         """
-        # Validar que hay datos
+
         if not self.classes or not self.rooms:
             raise ValueError("No hay clases o aulas disponibles para generar horarios")
         
@@ -138,8 +133,7 @@ class ScheduleGenerator:
         return schedule
     
     @transaction.atomic
-    def _save_schedule(self, solution: Individual, name: str, 
-                      description: str, stats: Dict) -> Schedule:
+    def _save_schedule(self, solution: Individual, name: str, description: str, stats: Dict) -> Schedule:
         """
         Guarda la solución en la base de datos como un Schedule.
         """
@@ -196,18 +190,17 @@ class ScheduleGenerator:
         conflicts_report = self.validator.get_conflicts_report(solution)
         
         schedule.description = f"""{description}
+            Estadísticas de Generación:
+            - Fitness Final: {stats['best_fitness']:.2f}
+            - Generaciones: {stats['generations']}
+            - Mejora: {stats['improvement']:.2f}
 
-Estadísticas de Generación:
-- Fitness Final: {stats['best_fitness']:.2f}
-- Generaciones: {stats['generations']}
-- Mejora: {stats['improvement']:.2f}
-
-Conflictos:
-- Instructores: {conflicts_report['hard_constraints']['instructor_conflicts']}
-- Aulas: {conflicts_report['hard_constraints']['room_conflicts']}
-- Estudiantes: {conflicts_report['hard_constraints']['student_conflicts']}
-- Capacidad: {conflicts_report['hard_constraints']['capacity_violations']}
-"""
+            Conflictos:
+            - Instructores: {conflicts_report['hard_constraints']['instructor_conflicts']}
+            - Aulas: {conflicts_report['hard_constraints']['room_conflicts']}
+            - Estudiantes: {conflicts_report['hard_constraints']['student_conflicts']}
+            - Capacidad: {conflicts_report['hard_constraints']['capacity_violations']}
+            """
         schedule.save()
         
         print(f"Horario guardado con ID: {schedule.id}")
@@ -216,9 +209,7 @@ Conflictos:
         return schedule
     
     def get_schedule_summary(self, schedule: Schedule) -> Dict:
-        """
-        Genera un resumen del horario generado.
-        """
+        """ Genera un resumen del horario generado """
         assignments = ScheduleAssignment.objects.filter(
             schedule=schedule
         ).select_related('class_obj', 'room', 'time_slot')
