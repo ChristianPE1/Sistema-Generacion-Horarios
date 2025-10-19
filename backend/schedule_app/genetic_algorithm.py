@@ -2,6 +2,9 @@
 import random
 import numpy as np
 from typing import List, Tuple, Dict, Set
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import multiprocessing
 from .models import Class, Room, TimeSlot, Instructor
 from .constraints import ConstraintValidator
 
@@ -53,10 +56,14 @@ class Individual:
                 self.genes[class_obj.id] = (suitable_rooms[0].id if suitable_rooms else None, None)
                 continue
             
-            # Intentar encontrar asignación sin conflictos (máximo 10 intentos)
+            # Intentar encontrar asignación sin conflictos (máximo 20 intentos - optimizado)
             assigned = False
-            for attempt in range(10):
-                room = suitable_rooms[min(attempt, len(suitable_rooms)-1)] if suitable_rooms else None
+            best_assignment = None
+            
+            # Estrategia 1: Buscar slot completamente libre (sin conflictos)
+            for attempt in range(20):  # Reducido de 50 a 20 para velocidad
+                # Rotar entre aulas para mayor diversidad
+                room = suitable_rooms[attempt % len(suitable_rooms)] if suitable_rooms else None
                 time_slot = random.choice(available_slots)
                 
                 if not room or not time_slot:
@@ -75,7 +82,7 @@ class Individual:
                         has_instructor_conflict = True
                         break
                 
-                # Si no hay conflictos, asignar
+                # Si no hay conflictos, asignar y registrar
                 if not has_room_conflict and not has_instructor_conflict:
                     self.genes[class_obj.id] = (room.id, time_slot.id)
                     room_occupation[room_key] = {class_obj.id}
@@ -83,12 +90,62 @@ class Individual:
                         instructor_occupation[(instructor_id, time_slot.id)] = {class_obj.id}
                     assigned = True
                     break
+                
+                # Guardar como backup (solo conflicto de aula, no de instructor)
+                if not has_instructor_conflict and best_assignment is None:
+                    best_assignment = (room, time_slot)
             
-            # Si no se pudo asignar sin conflictos, asignar de todas formas
+            # Estrategia 2: Si no se pudo evitar conflictos, usar backup o random
             if not assigned:
-                room = suitable_rooms[0] if suitable_rooms else None
-                time_slot = random.choice(available_slots) if available_slots else None
-                self.genes[class_obj.id] = (room.id if room else None, time_slot.id if time_slot else None)
+                if best_assignment:
+                    room, time_slot = best_assignment
+                else:
+                    # Buscar timeslot con MENOS conflictos
+                    min_conflicts = float('inf')
+                    best_room = suitable_rooms[0] if suitable_rooms else None
+                    best_slot = None
+                    
+                    for _ in range(10):  # Muestreo de slots (reducido de 20 a 10)
+                        test_room = random.choice(suitable_rooms) if suitable_rooms else None
+                        test_slot = random.choice(available_slots)
+                        
+                        if test_room and test_slot:
+                            conflicts = 0
+                            room_key = (test_room.id, test_slot.id)
+                            if room_key in room_occupation:
+                                conflicts += len(room_occupation[room_key])
+                            
+                            instructors = class_instructors_map.get(class_obj.id, [])
+                            for instructor_id in instructors:
+                                inst_key = (instructor_id, test_slot.id)
+                                if inst_key in instructor_occupation:
+                                    conflicts += 1
+                            
+                            if conflicts < min_conflicts:
+                                min_conflicts = conflicts
+                                best_room = test_room
+                                best_slot = test_slot
+                    
+                    room = best_room
+                    time_slot = best_slot
+                
+                # Asignar y REGISTRAR (esto es crítico)
+                if room and time_slot:
+                    self.genes[class_obj.id] = (room.id, time_slot.id)
+                    room_key = (room.id, time_slot.id)
+                    if room_key not in room_occupation:
+                        room_occupation[room_key] = set()
+                    room_occupation[room_key].add(class_obj.id)
+                    
+                    instructors = class_instructors_map.get(class_obj.id, [])
+                    for instructor_id in instructors:
+                        inst_key = (instructor_id, time_slot.id)
+                        if inst_key not in instructor_occupation:
+                            instructor_occupation[inst_key] = set()
+                        instructor_occupation[inst_key].add(class_obj.id)
+                else:
+                    # Último recurso
+                    self.genes[class_obj.id] = (suitable_rooms[0].id if suitable_rooms else None, None)
     
     def calculate_fitness(self, validator: 'ConstraintValidator'):
         self.fitness = validator.evaluate(self)
@@ -100,6 +157,26 @@ class Individual:
         new_individual.genes = self.genes.copy()
         new_individual.fitness = self.fitness
         return new_individual
+    
+    def repair(self, validator: 'ConstraintValidator'):
+        """
+        Operador de reparación inteligente SIMPLIFICADO.
+        Identifica y corrige solo las violaciones más críticas.
+        """
+        # Solo reparar violaciones de capacidad (rápido y efectivo)
+        for class_id, (room_id, timeslot_id) in self.genes.items():
+            if room_id and timeslot_id:
+                class_obj = next((c for c in self.classes if c.id == class_id), None)
+                if class_obj:
+                    room_capacity = validator.room_capacities.get(room_id, float('inf'))
+                    if room_capacity < class_obj.class_limit:
+                        # Buscar aula con capacidad adecuada
+                        suitable_rooms = [r for r in self.rooms 
+                                        if validator.room_capacities.get(r.id, 0) >= class_obj.class_limit]
+                        if suitable_rooms:
+                            # Elegir la más cercana en capacidad
+                            suitable_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
+                            self.genes[class_id] = (suitable_rooms[0].id, timeslot_id)
 
 
 class GeneticAlgorithm:
@@ -117,14 +194,15 @@ class GeneticAlgorithm:
         """
         population_size: Tamaño de la población
         generations: Número de generaciones
-        mutation_rate: Probabilidad de mutación (0-1) - Reducida para estabilidad
-        crossover_rate: Probabilidad de cruce (0-1) - Reducida para estabilidad
+        mutation_rate: Probabilidad de mutación (0-1)
+        crossover_rate: Probabilidad de cruce (0-1)
         elitism_size: Número de mejores individuos que pasan directamente
         tournament_size: Tamaño del torneo para selección - Reducido para diversidad
         """
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
+        self.initial_mutation_rate = mutation_rate  # Guardar tasa inicial
         self.crossover_rate = crossover_rate
         self.elitism_size = elitism_size
         self.tournament_size = tournament_size
@@ -133,6 +211,14 @@ class GeneticAlgorithm:
         self.best_individual: Individual = None
         self.best_fitness_history: List[float] = []
         self.avg_fitness_history: List[float] = []
+        
+        # Control de estancamiento (REDUCIDO para actuar más rápido)
+        self.stagnation_counter = 0
+        self.last_best_fitness = float('-inf')
+        self.stagnation_threshold = 30  # Reducido de 50 a 30 generaciones
+        
+        # Optimización: Caching y batch processing
+        self.use_batch_evaluation = True
     
     def initialize_population(self, classes: List[Class], rooms: List[Room], 
                             time_slots: Dict[int, List[TimeSlot]]):
@@ -144,7 +230,8 @@ class GeneticAlgorithm:
             self.population.append(individual)
     
     def evaluate_population(self, validator: 'ConstraintValidator'):
-        """Evalúa el fitness de toda la población"""
+        """Evalúa el fitness de toda la población (OPTIMIZADO)"""
+        # Evaluación secuencial optimizada (más rápido que threads por GIL)
         for individual in self.population:
             individual.calculate_fitness(validator)
         
@@ -194,9 +281,12 @@ class GeneticAlgorithm:
         """
         Operador de mutación inteligente con heurística.
         Puede cambiar el aula, el horario, o ambos.
+        Incluye búsqueda local después de la mutación.
         """
+        mutated = False
         for class_id in individual.genes:
             if random.random() < self.mutation_rate:
+                mutated = True
                 # Decidir qué mutar: aula, tiempo, o ambos
                 mutation_type = random.choice(['room', 'time', 'both'])
                 
@@ -226,14 +316,122 @@ class GeneticAlgorithm:
                             current_time_id = new_time.id
                 
                 individual.genes[class_id] = (current_room_id, current_time_id)
+        
+        # Búsqueda local desactivada temporalmente por lentitud
+        # if mutated and random.random() < 0.1:
+        #     self._local_search(individual)
+    
+    def _local_search(self, individual: Individual):
+        """
+        Búsqueda local SIMPLIFICADA: Solo prueba cambios de aula.
+        """
+        max_iterations = 3  # Reducido de 5 a 3
+        
+        for _ in range(max_iterations):
+            # Seleccionar clase aleatoria
+            class_ids = list(individual.genes.keys())
+            if not class_ids:
+                break
+            
+            class_id = random.choice(class_ids)
+            current_room_id, current_time_id = individual.genes[class_id]
+            
+            # Probar cambiar solo aula (más rápido)
+            class_obj = next((c for c in individual.classes if c.id == class_id), None)
+            if not class_obj:
+                continue
+            
+            # Probar aula aleatoria con capacidad adecuada
+            suitable_rooms = [r for r in individual.rooms if r.capacity >= class_obj.class_limit]
+            if suitable_rooms:
+                test_room = random.choice(suitable_rooms[:min(3, len(suitable_rooms))])  # Reducido de 5 a 3
+                individual.genes[class_id] = (test_room.id, current_time_id)
+    
+    def _apply_diversity_boost(self, validator: 'ConstraintValidator'):
+        """
+        Aplica múltiples estrategias para romper el estancamiento:
+        1. Aumentar tasa de mutación temporalmente
+        2. Inyectar nuevos individuos aleatorios
+        3. Aplicar mutación intensa a parte de la población
+        """
+        import sys
+        
+        print(f"\n⚡ BOOST DE DIVERSIDAD activado (estancamiento detectado)")
+        sys.stdout.flush()
+        
+        # Estrategia 1: Aumentar tasa de mutación temporalmente (50% más)
+        old_mutation_rate = self.mutation_rate
+        self.mutation_rate = min(0.5, self.mutation_rate * 1.5)
+        print(f"   • Mutación aumentada: {old_mutation_rate:.2f} → {self.mutation_rate:.2f}")
+        
+        # Estrategia 2: Reemplazar 20% de la población con individuos nuevos
+        num_to_replace = int(self.population_size * 0.2)
+        print(f"   • Inyectando {num_to_replace} individuos nuevos")
+        
+        # Mantener elite (mejores 10%)
+        elite_size = int(self.population_size * 0.1)
+        elite = self.population[:elite_size]
+        
+        # Generar nuevos individuos
+        new_individuals = []
+        for _ in range(num_to_replace):
+            individual = Individual(
+                [c for c in self.population[0].classes],
+                [r for r in self.population[0].rooms],
+                self.population[0].time_slots
+            )
+            individual.initialize_random()
+            new_individuals.append(individual)
+        
+        # Reconstruir población: elite + nuevos + resto
+        rest = self.population[elite_size:self.population_size - num_to_replace]
+        self.population = elite + new_individuals + rest
+        
+        # Estrategia 3: Aplicar mutación fuerte a 30% de la población
+        num_to_mutate = int(self.population_size * 0.3)
+        print(f"   • Mutación intensa aplicada a {num_to_mutate} individuos")
+        for i in range(num_to_mutate):
+            # Mutación múltiple (3-5 genes)
+            idx = elite_size + i  # No mutar elite
+            if idx < len(self.population):
+                for _ in range(random.randint(3, 5)):
+                    self.mutate(self.population[idx])
+        
+        # Estrategia 4: Reparar el mejor individuo (focalizado)
+        print(f"   • Reparando mejor individuo...")
+        if self.best_individual:
+            best_clone = self.best_individual.clone()
+            best_clone.repair(validator)
+            best_clone.calculate_fitness(validator)
+            
+            # Si mejoró, reemplazar al peor de la elite
+            if best_clone.fitness > self.best_individual.fitness:
+                self.population[self.elitism_size - 1] = best_clone
+                print(f"     ✓ Reparación exitosa: {self.best_individual.fitness:.0f} → {best_clone.fitness:.0f}")
+            else:
+                print(f"     ⚠️ Reparación sin mejora significativa")
+        
+        # Re-evaluar población
+        self.evaluate_population(validator)
+        
+        print(f"   ✓ Diversidad restaurada - Mejor fitness: {self.best_fitness_history[-1]:.0f}")
+        sys.stdout.flush()
     
     def evolve(self, validator: 'ConstraintValidator') -> Individual:
         """
         Ejecuta el proceso evolutivo completo.
         Retorna el mejor individuo encontrado.
         """
+        import sys
+        import time
+        start_time = time.time()
+        
         # Evaluar población inicial
+        print(f"\n⏳ Inicializando población de {self.population_size} individuos...")
+        sys.stdout.flush()
         self.evaluate_population(validator)
+        print(f"✓ Población inicial evaluada - Mejor fitness: {self.best_fitness_history[0]:.2f}")
+        sys.stdout.flush()
         
         for generation in range(self.generations):
             new_population = []
@@ -255,6 +453,12 @@ class GeneticAlgorithm:
                 self.mutate(child1)
                 self.mutate(child2)
                 
+                # Reparación desactivada temporalmente por lentitud
+                # if random.random() < 0.1:
+                #     child1.repair(validator)
+                # if random.random() < 0.1:
+                #     child2.repair(validator)
+                
                 new_population.append(child1)
                 if len(new_population) < self.population_size:
                     new_population.append(child2)
@@ -262,11 +466,61 @@ class GeneticAlgorithm:
             self.population = new_population
             self.evaluate_population(validator)
             
+            # **DETECCIÓN DE ESTANCAMIENTO**
+            current_best = self.best_fitness_history[-1]
+            improvement = current_best - self.last_best_fitness
+            
+            if improvement > 1.0:  # Mejora significativa (>1 punto)
+                self.stagnation_counter = 0
+                self.last_best_fitness = current_best
+            else:
+                self.stagnation_counter += 1
+            
+            # **ESTRATEGIAS ANTI-ESTANCAMIENTO**
+            if self.stagnation_counter >= self.stagnation_threshold:
+                self._apply_diversity_boost(validator)
+                self.stagnation_counter = 0  # Resetear contador
+            
+            # Reducir gradualmente mutación después de boost (decay suave)
+            if self.mutation_rate > self.initial_mutation_rate:
+                self.mutation_rate = max(self.initial_mutation_rate, 
+                                        self.mutation_rate * 0.98)  # Decay 2% por gen
+            
             # Log de progreso (cada 2 generaciones)
             if (generation + 1) % 2 == 0:
-                print(f"Generación {generation + 1}/{self.generations} - "
-                      f"Mejor Fitness: {self.best_fitness_history[-1]:.2f} - "
-                      f"Fitness Promedio: {self.avg_fitness_history[-1]:.2f}")
+                elapsed = time.time() - start_time
+                avg_time_per_gen = elapsed / (generation + 1)
+                remaining_time = avg_time_per_gen * (self.generations - generation - 1)
+                
+                # Mostrar indicador de estancamiento
+                stagnation_indicator = ""
+                if self.stagnation_counter > 30:
+                    stagnation_indicator = " ⚠️ESTANCADO"
+                elif self.stagnation_counter > 20:
+                    stagnation_indicator = " ⏸️"
+                
+                print(f"Gen {generation + 1}/{self.generations} | "
+                      f"Mejor: {self.best_fitness_history[-1]:.0f} | "
+                      f"Promedio: {self.avg_fitness_history[-1]:.0f} | "
+                      f"Tiempo: {elapsed:.0f}s | ETA: {remaining_time:.0f}s{stagnation_indicator}")
+                sys.stdout.flush()  # Forzar salida inmediata
+            
+            # Early stopping dinámico basado en BASE_FITNESS
+            # Calcular BASE_FITNESS actual (debe coincidir con constraints.py)
+            num_classes = len(self.population[0].genes) if self.population else 0
+            BASE_FITNESS = num_classes * 500.0
+            BASE_FITNESS = max(50000.0, min(300000.0, BASE_FITNESS))
+            target_fitness = BASE_FITNESS * 0.90  # 90% del BASE
+            
+            if self.best_fitness_history[-1] >= target_fitness:
+                print(f"\n🎯 ¡Fitness excelente alcanzado! ({self.best_fitness_history[-1]:.0f})")
+                print(f"   Deteniendo en generación {generation + 1}/{self.generations}")
+                sys.stdout.flush()
+                break
+        
+        total_time = time.time() - start_time
+        print(f"\n✓ Evolución completada en {total_time:.1f} segundos")
+        sys.stdout.flush()
         
         return self.best_individual
     
