@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { getSchedules } from '../services/api';
 import type { Schedule } from '../types';
+import TimetableView from './TimetableView';
 
 function Schedules() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
 
   useEffect(() => {
     loadSchedules();
@@ -30,6 +32,21 @@ function Schedules() {
       <div className="text-gray-600">Cargando horarios...</div>
     </div>
   );
+
+  // Si hay un horario seleccionado, mostrar la vista de horario
+  if (selectedScheduleId) {
+    return (
+      <div>
+        <button
+          onClick={() => setSelectedScheduleId(null)}
+          className="mb-4 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition flex items-center gap-2"
+        >
+          <span>←</span> Volver a lista de horarios
+        </button>
+        <TimetableView scheduleId={selectedScheduleId} />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -64,6 +81,7 @@ function Schedules() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asignaciones</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creado</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -71,7 +89,11 @@ function Schedules() {
                   <tr key={schedule.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{schedule.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{schedule.description || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{schedule.fitness_score.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="font-bold text-green-600">
+                        {schedule.fitness_score.toLocaleString()}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
                         {schedule.assignment_count || 0}
@@ -84,6 +106,14 @@ function Schedules() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {new Date(schedule.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => setSelectedScheduleId(schedule.id)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                      >
+                        Ver Horario
+                      </button>
                     </td>
                   </tr>
                 ))}

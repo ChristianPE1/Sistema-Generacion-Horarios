@@ -63,6 +63,7 @@ export const updateSchedule = (id: number, data: Partial<Schedule>) => api.put<S
 export const deleteSchedule = (id: number) => api.delete(`/schedules/${id}/`);
 export const activateSchedule = (id: number) => api.post(`/schedules/${id}/activate/`);
 export const getScheduleCalendarView = (id: number) => api.get<CalendarEvent[]>(`/schedules/${id}/calendar_view/`);
+export const getScheduleTimetable = (id: number) => api.get(`/schedules/${id}/timetable/`);
 
 // Import XML
 export const importXML = (formData: FormData) => {
