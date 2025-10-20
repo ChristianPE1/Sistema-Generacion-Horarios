@@ -91,13 +91,13 @@ class WorkloadAnalyzer:
     def _get_recommendation(self, class_count: int, xml_id: int) -> str:
         """Genera recomendación basada en carga"""
         if xml_id >= 900000:
-            return f"⚠️ URGENTE: Asignar {class_count} profesores reales para estas clases"
+            return f"[WARNING] URGENTE: Asignar {class_count} profesores reales para estas clases"
         
         if class_count >= self.OVERLOAD:
             needed = (class_count - self.OPTIMAL_LOAD) // self.OPTIMAL_LOAD + 1
             return f"🚨 Sobrecargado: Contratar {needed} ayudante(s) o redistribuir {class_count - self.OPTIMAL_LOAD} clases"
         elif class_count >= self.HIGH_LOAD:
-            return f"⚠️ Carga alta: Considerar ayudante o reducir {class_count - self.OPTIMAL_LOAD} clases"
+            return f"[WARNING] Carga alta: Considerar ayudante o reducir {class_count - self.OPTIMAL_LOAD} clases"
         else:
             remaining = self.OPTIMAL_LOAD - class_count
             return f"✅ Óptimo: Puede tomar {remaining} clases más"
@@ -336,8 +336,8 @@ class RoomUtilizationAnalyzer:
         if status == 'unused':
             return f"💡 Aula sin uso - Considerar para nuevas clases o mantenimiento"
         elif status == 'underused':
-            return f"ℹ️ Poco usada ({usage} clases) - Potencial para más clases"
+            return f"[INFO] Poco usada ({usage} clases) - Potencial para más clases"
         elif status == 'well_used':
             return f"✅ Bien utilizada ({usage} clases) - Balance óptimo"
         else:
-            return f"⚠️ Sobre-utilizada ({usage} clases) - Considerar distribuir carga"
+            return f"[WARNING] Sobre-utilizada ({usage} clases) - Considerar distribuir carga"

@@ -22,11 +22,11 @@ class Command(BaseCommand):
         report = generator.get_synthetic_instructors_report()
         
         if report['total_synthetic'] == 0:
-            self.stdout.write(self.style.SUCCESS('✓ No hay instructores sintéticos en el sistema'))
+            self.stdout.write(self.style.SUCCESS('[OK] No hay instructores sintéticos en el sistema'))
             self.stdout.write('  Todos los cursos tienen profesores reales asignados.')
             return
         
-        self.stdout.write(self.style.WARNING(f'⚠️  Total de instructores sintéticos: {report["total_synthetic"]}'))
+        self.stdout.write(self.style.WARNING(f'[WARNING]  Total de instructores sintéticos: {report["total_synthetic"]}'))
         self.stdout.write('')
         self.stdout.write('Estos instructores representan cursos que AÚN necesitan')
         self.stdout.write('profesores reales asignados. Use esta información para:')
@@ -45,7 +45,7 @@ class Command(BaseCommand):
         
         self.stdout.write('')
         self.stdout.write('-'*60)
-        self.stdout.write(self.style.WARNING(f'\n⚠️  ACCIÓN REQUERIDA:'))
+        self.stdout.write(self.style.WARNING(f'\n[WARNING]  ACCIÓN REQUERIDA:'))
         self.stdout.write(f'   Asigne {report["total_synthetic"]} profesores reales a estos cursos')
         self.stdout.write('')
         self.stdout.write('Para eliminar instructores sintéticos después de asignar reales:')

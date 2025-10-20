@@ -407,14 +407,14 @@ class GeneticAlgorithm:
             # Si mejoró, reemplazar al peor de la elite
             if best_clone.fitness > self.best_individual.fitness:
                 self.population[self.elitism_size - 1] = best_clone
-                print(f"     ✓ Reparación exitosa: {self.best_individual.fitness:.0f} → {best_clone.fitness:.0f}")
+                print(f"     [OK] Reparación exitosa: {self.best_individual.fitness:.0f} → {best_clone.fitness:.0f}")
             else:
-                print(f"     ⚠️ Reparación sin mejora significativa")
+                print(f"     [WARNING] Reparación sin mejora significativa")
         
         # Re-evaluar población
         self.evaluate_population(validator)
         
-        print(f"   ✓ Diversidad restaurada - Mejor fitness: {self.best_fitness_history[-1]:.0f}")
+        print(f"   [OK] Diversidad restaurada - Mejor fitness: {self.best_fitness_history[-1]:.0f}")
         sys.stdout.flush()
     
     def evolve(self, validator: 'ConstraintValidator') -> Individual:
@@ -427,10 +427,10 @@ class GeneticAlgorithm:
         start_time = time.time()
         
         # Evaluar población inicial
-        print(f"\n⏳ Inicializando población de {self.population_size} individuos...")
+        print(f"\n[WAIT] Inicializando población de {self.population_size} individuos...")
         sys.stdout.flush()
         self.evaluate_population(validator)
-        print(f"✓ Población inicial evaluada - Mejor fitness: {self.best_fitness_history[0]:.2f}")
+        print(f"[OK] Población inicial evaluada - Mejor fitness: {self.best_fitness_history[0]:.2f}")
         sys.stdout.flush()
         
         for generation in range(self.generations):
@@ -495,7 +495,7 @@ class GeneticAlgorithm:
                 # Mostrar indicador de estancamiento
                 stagnation_indicator = ""
                 if self.stagnation_counter > 30:
-                    stagnation_indicator = " ⚠️ESTANCADO"
+                    stagnation_indicator = " [WARNING]ESTANCADO"
                 elif self.stagnation_counter > 20:
                     stagnation_indicator = " ⏸️"
                 
@@ -513,13 +513,13 @@ class GeneticAlgorithm:
             target_fitness = BASE_FITNESS * 0.90  # 90% del BASE
             
             if self.best_fitness_history[-1] >= target_fitness:
-                print(f"\n🎯 ¡Fitness excelente alcanzado! ({self.best_fitness_history[-1]:.0f})")
+                print(f"\n[GOAL] ¡Fitness excelente alcanzado! ({self.best_fitness_history[-1]:.0f})")
                 print(f"   Deteniendo en generación {generation + 1}/{self.generations}")
                 sys.stdout.flush()
                 break
         
         total_time = time.time() - start_time
-        print(f"\n✓ Evolución completada en {total_time:.1f} segundos")
+        print(f"\n[OK] Evolución completada en {total_time:.1f} segundos")
         sys.stdout.flush()
         
         return self.best_individual

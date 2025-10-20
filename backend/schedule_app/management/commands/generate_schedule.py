@@ -81,7 +81,7 @@ class Command(BaseCommand):
                            f"crossover_rate={options['crossover_rate']}"
             )
             
-            self.stdout.write(self.style.SUCCESS(f'\n✓ Horario generado exitosamente!'))
+            self.stdout.write(self.style.SUCCESS(f'\n[OK] Horario generado exitosamente!'))
             self.stdout.write(f'  ID: {schedule.id}')
             self.stdout.write(f'  Nombre: {schedule.name}')
             self.stdout.write(f'  Fitness: {schedule.fitness_score:.2f}')
@@ -97,7 +97,7 @@ class Command(BaseCommand):
             
             # Mostrar reporte de instructores sintéticos
             if summary.get('synthetic_count', 0) > 0:
-                self.stdout.write(self.style.WARNING(f'\n⚠️ ATENCIÓN: Instructores Sintéticos'))
+                self.stdout.write(self.style.WARNING(f'\n[WARNING] ATENCIÓN: Instructores Sintéticos'))
                 self.stdout.write(self.style.WARNING(f'  - Total: {summary["synthetic_count"]} instructores sintéticos'))
                 self.stdout.write(self.style.WARNING(f'  - Estos representan cursos que AÚN necesitan profesores reales'))
                 self.stdout.write(f'\n  Para ver el reporte completo de instructores sintéticos:')

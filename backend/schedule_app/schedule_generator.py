@@ -57,7 +57,7 @@ class ScheduleGenerator:
         
         # Cargar todas las clases
         all_classes = list(Class.objects.select_related('offering').all())
-        print(f"📊 Clases totales en DB: {len(all_classes)}")
+        print(f"[INFO] Clases totales en DB: {len(all_classes)}")
         
         # FILTRO 1: Solo clases con timeslots válidos
         classes_with_timeslots = []
@@ -68,11 +68,11 @@ class ScheduleGenerator:
                 classes_with_timeslots.append(class_obj)
         
         self.classes = classes_with_timeslots
-        print(f"✓ Clases con timeslots válidos: {len(self.classes)}")
+        print(f"[OK] Clases con timeslots válidos: {len(self.classes)}")
         
         if len(all_classes) > len(self.classes):
             removed = len(all_classes) - len(self.classes)
-            print(f"⚠️ {removed} clases ignoradas (sin timeslots disponibles)")
+            print(f"[WARNING] {removed} clases ignoradas (sin timeslots disponibles)")
         
         # FILTRO 2: Verificar y crear instructores si es necesario
         from .models import ClassInstructor
@@ -87,18 +87,18 @@ class ScheduleGenerator:
         ]
         
         if classes_without_instructor:
-            print(f"⚠️ {len(classes_without_instructor)} clases SIN instructor")
+            print(f"[WARNING] {len(classes_without_instructor)} clases SIN instructor")
             print(f"   Asignando instructores reales del XML...")
             
             # Obtener todos los instructores disponibles en la base de datos
             all_instructors = list(Instructor.objects.exclude(xml_id=999999))
             
             if not all_instructors:
-                print(f"❌ ERROR: No hay instructores en la base de datos")
+                print(f"[ERROR] ERROR: No hay instructores en la base de datos")
                 print(f"   Por favor, ejecute: python manage.py import_xml")
                 sys.exit(1)
             
-            print(f"✓ Instructores disponibles: {len(all_instructors)}")
+            print(f"[OK] Instructores disponibles: {len(all_instructors)}")
             
             # Asignar instructores de forma round-robin a las clases sin instructor
             for idx, class_obj in enumerate(classes_without_instructor):
@@ -108,12 +108,12 @@ class ScheduleGenerator:
                     instructor=instructor
                 )
             
-            print(f"✓ Asignados {len(classes_without_instructor)} instructores a clases sin instructor")
+            print(f"[OK] Asignados {len(classes_without_instructor)} instructores a clases sin instructor")
         
-            print(f"   ✓ Instructor compartido asignado a {len(classes_without_instructor)} clases")
-            print(f"   ℹ️ Esto ELIMINA conflictos de instructor, simplificando el problema")
+            print(f"   [OK] Instructor compartido asignado a {len(classes_without_instructor)} clases")
+            print(f"   [INFO] Esto ELIMINA conflictos de instructor, simplificando el problema")
         
-        print(f"✓ Clases con instructor: {len(self.classes)}")
+        print(f"[OK] Clases con instructor: {len(self.classes)}")
         
         # FILTRO 3: Aulas con capacidad suficiente para al menos una clase
         all_rooms = list(Room.objects.all())
@@ -125,23 +125,23 @@ class ScheduleGenerator:
         ]
         
         self.rooms = useful_rooms
-        print(f"✓ Aulas útiles: {len(self.rooms)} (capacidad >= {min_class_limit})")
+        print(f"[OK] Aulas útiles: {len(self.rooms)} (capacidad >= {min_class_limit})")
         
         if len(all_rooms) > len(self.rooms):
             removed = len(all_rooms) - len(self.rooms)
-            print(f"⚠️ {removed} aulas ignoradas (capacidad insuficiente)")
+            print(f"[WARNING] {removed} aulas ignoradas (capacidad insuficiente)")
         
         # Validar que hay datos suficientes
         if not self.classes:
-            raise ValueError("❌ No hay clases válidas para programar (con instructor real y timeslots)")
+            raise ValueError("[ERROR] No hay clases válidas para programar (con instructor real y timeslots)")
         
         if not self.rooms:
-            raise ValueError("❌ No hay aulas disponibles con capacidad suficiente")
+            raise ValueError("[ERROR] No hay aulas disponibles con capacidad suficiente")
         
         # Cargar datos en el validador
         self.validator.load_data(self.classes, self.rooms)
         
-        print(f"\n🎯 DATASET OPTIMIZADO:")
+        print(f"\n[GOAL] DATASET OPTIMIZADO:")
         print(f"   • Clases a programar: {len(self.classes)}")
         print(f"   • Aulas disponibles: {len(self.rooms)}")
         print(f"   • Ratio clases/aulas: {len(self.classes)/len(self.rooms):.1f}")
@@ -173,7 +173,7 @@ class ScheduleGenerator:
         if not classes_without_instructor:
             return 0
         
-        print(f"\n⚠️ Se encontraron {len(classes_without_instructor)} clases sin instructor asignado")
+        print(f"\n[WARNING] Se encontraron {len(classes_without_instructor)} clases sin instructor asignado")
         print("Creando instructores sintéticos...")
         
         # Agrupar por curso (offering)
@@ -215,8 +215,8 @@ class ScheduleGenerator:
                     instructor=instructor
                 )
         
-        print(f"✓ {synthetic_count} instructores sintéticos creados")
-        print(f"✓ {len(classes_without_instructor)} clases ahora tienen instructor asignado\n")
+        print(f"[OK] {synthetic_count} instructores sintéticos creados")
+        print(f"[OK] {len(classes_without_instructor)} clases ahora tienen instructor asignado\n")
         
         return synthetic_count
     
