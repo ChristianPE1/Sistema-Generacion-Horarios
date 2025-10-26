@@ -12,6 +12,13 @@ from .models import (
 from .genetic_algorithm import GeneticAlgorithm, Individual
 from .constraints import ConstraintValidator
 
+# Importar heuristics si está disponible
+try:
+    from .heuristics import ScheduleHeuristics
+    HEURISTICS_AVAILABLE = True
+except ImportError:
+    HEURISTICS_AVAILABLE = False
+
 
 class ScheduleGenerator:
     """
@@ -38,9 +45,15 @@ class ScheduleGenerator:
         )
         
         self.validator = ConstraintValidator(
-            hard_constraint_weight=100.0,  # Reducido de 1000 a 100 para permitir convergencia
+            hard_constraint_weight=100.0,  # Peso optimizado: permite convergencia más rápida
             soft_constraint_weight=1.0
         )
+        
+        # Inicializar heuristics si está disponible
+        if HEURISTICS_AVAILABLE:
+            self.heuristics = ScheduleHeuristics()
+        else:
+            self.heuristics = None
         
         self.classes: List[Class] = []
         self.rooms: List[Room] = []
@@ -246,33 +259,78 @@ class ScheduleGenerator:
         return default_slots
     
     def generate(self, schedule_name: str = None, 
-                description: str = "") -> Schedule:
+                description: str = "", 
+                use_heuristics: bool = True) -> Schedule:
         """
         Genera un horario optimizado usando el algoritmo genético.
+        
+        Args:
+            schedule_name: Nombre del horario
+            description: Descripción del horario
+            use_heuristics: Si usar heurísticas para mejorar convergencia (recomendado para >300 clases)
         """
 
         if not self.classes or not self.rooms:
             raise ValueError("No hay clases o aulas disponibles para generar horarios")
         
-        print("Iniciando generación de horario...")
+        print("[INFO] Iniciando generación de horario...")
+        num_classes = len(self.classes)
+        print(f"[INFO] Clases: {num_classes}, Aulas: {len(self.rooms)}")
         
-        # Inicializar población
-        self.ga.initialize_population(
-            self.classes,
-            self.rooms,
-            self.time_slots_by_class
-        )
+        # Decidir automáticamente si usar heurísticas
+        if num_classes > 300 and HEURISTICS_AVAILABLE:
+            use_heuristics = True
+            print(f"[INFO] Dataset grande detectado ({num_classes} clases) - Heurísticas ACTIVADAS")
+        elif use_heuristics and HEURISTICS_AVAILABLE:
+            print(f"[INFO] Heurísticas ACTIVADAS (mejorarán convergencia)")
+        elif use_heuristics and not HEURISTICS_AVAILABLE:
+            print(f"[WARNING] Heurísticas solicitadas pero no disponibles")
+            use_heuristics = False
+        else:
+            print(f"[INFO] Heurísticas DESACTIVADAS (población random)")
+        
+        # Inicializar población (con o sin heurísticas)
+        if use_heuristics and HEURISTICS_AVAILABLE and self.heuristics:
+            # Usar población híbrida (30% greedy, 30% greedy+mutación, 40% random)
+            print("[INFO] Generando población híbrida con heurísticas...")
+            try:
+                population = self.heuristics.initialize_hybrid_population(
+                    classes=self.classes,
+                    rooms=self.rooms,
+                    time_slots_by_class=self.time_slots_by_class,
+                    size=self.ga.population_size
+                )
+                self.ga.population = population
+                print("[OK] Población híbrida creada exitosamente")
+            except Exception as e:
+                import traceback
+                print(f"[WARNING] Error al usar heurísticas: {e}")
+                traceback.print_exc()
+                print("[INFO] Usando población random como fallback")
+                self.ga.initialize_population(
+                    self.classes,
+                    self.rooms,
+                    self.time_slots_by_class
+                )
+        else:
+            # Población random tradicional
+            self.ga.initialize_population(
+                self.classes,
+                self.rooms,
+                self.time_slots_by_class
+            )
         
         # Ejecutar algoritmo genético
+        print("[INFO] Ejecutando evolución...")
         best_solution = self.ga.evolve(self.validator)
         
         # Obtener estadísticas
         stats = self.ga.get_statistics()
         
         import sys
-        print(f"\nGeneración completada!")
-        print(f"Mejor fitness: {stats['best_fitness']:.2f}")
-        print(f"Mejora total: {stats['improvement']:.2f}")
+        print(f"\n[OK] Generación completada!")
+        print(f"[OK] Mejor fitness: {stats['best_fitness']:.2f}")
+        print(f"[OK] Mejora total: {stats['improvement']:.2f}")
         sys.stdout.flush()
         
         # Guardar solución en la base de datos

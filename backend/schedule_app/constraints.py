@@ -5,7 +5,8 @@ Define y evalúa restricciones duras (hard) y blandas (soft).
 
 from typing import List, Dict, Set, Tuple
 from collections import defaultdict
-from .models import Class, Room, TimeSlot, Instructor, ClassInstructor
+from .models import Class, Room, TimeSlot, Instructor, ClassInstructor, GroupConstraint, GroupConstraintClass
+import math
 
 
 class ConstraintValidator:
@@ -40,10 +41,12 @@ class ConstraintValidator:
         self.class_instructors: Dict[int, Set[int]] = {}
         self.class_students: Dict[int, Set[int]] = {}
         self.room_capacities: Dict[int, int] = {}
+        self.room_locations: Dict[int, Tuple[float, float]] = {}
         self.class_limits: Dict[int, int] = {}
         self.room_preferences: Dict[int, Dict[int, float]] = {}
         self.time_preferences: Dict[int, Dict[int, float]] = {}
         self.timeslot_cache: Dict[int, Tuple] = {}  # Caché de timeslots
+        self.group_constraints: List[Dict] = []  # Restricciones de grupo (BTB, etc.)
     
     def load_data(self, classes: List[Class], rooms: List[Room]):
         """Carga y cachea los datos necesarios para las validaciones"""
@@ -70,6 +73,17 @@ class ConstraintValidator:
         # Cargar capacidades de aulas
         for room in rooms:
             self.room_capacities[room.id] = room.capacity
+            
+            # Parsear location (formato: "x,y")
+            if room.location:
+                try:
+                    coords = room.location.split(',')
+                    x, y = float(coords[0]), float(coords[1])
+                    self.room_locations[room.id] = (x, y)
+                except:
+                    self.room_locations[room.id] = (0.0, 0.0)
+            else:
+                self.room_locations[room.id] = (0.0, 0.0)
         
         # Cargar límites de clase
         for class_obj in classes:
@@ -92,6 +106,20 @@ class ConstraintValidator:
                 class_obj=class_obj
             ).values_list('id', 'preference')
             self.time_preferences[class_obj.id] = dict(time_slots)
+        
+        # Cargar group constraints
+        all_constraints = GroupConstraint.objects.all()
+        for constraint in all_constraints:
+            class_ids = GroupConstraintClass.objects.filter(
+                constraint=constraint
+            ).values_list('class_obj_id', flat=True)
+            
+            self.group_constraints.append({
+                'id': constraint.id,
+                'type': constraint.constraint_type,
+                'preference': constraint.preference,
+                'classes': list(class_ids)
+            })
     
     def evaluate(self, individual) -> float:
         """
@@ -132,17 +160,19 @@ class ConstraintValidator:
         """
         Evalúa restricciones duras y retorna el número de violaciones.
         
-        OPTIMIZACIÓN: Solo evaluar restricciones CRÍTICAS para permitir convergencia.
-        Conflictos de estudiantes se manejan después manualmente.
+        RESTRICCIONES HABILITADAS:
+        - Conflictos de instructor (HABILITADO - crítico para calidad)
+        - Conflictos de aula (HABILITADO - crítico)
+        - Violaciones de capacidad (HABILITADO - crítico)
+        - Conflictos de estudiantes (DESHABILITADO - post-procesamiento manual)
         """
         violations = 0
         
         # Obtener asignaciones agrupadas
         time_slots_map = self._get_timeslots_from_genes(individual)
         
-        # 1. Conflictos de instructor - SKIP si hay instructor compartido
-        # (con instructor compartido, no hay conflictos de instructor)
-        # violations += self._check_instructor_conflicts(individual, time_slots_map)
+        # 1. Conflictos de instructor (REACTIVADO - peso 100)
+        violations += self._check_instructor_conflicts(individual, time_slots_map)
         
         # 2. Conflictos de aula (CRÍTICO - misma aula, mismo horario)
         violations += self._check_room_conflicts(individual, time_slots_map)
@@ -168,6 +198,9 @@ class ConstraintValidator:
         
         # 3. Gaps en horarios de instructores
         penalty += self._check_instructor_gaps(individual)
+        
+        # 4. Restricciones de grupo (BTB, DIFF_TIME, SAME_TIME)
+        penalty += self._check_group_constraints(individual)
         
         return penalty
     
@@ -355,6 +388,188 @@ class ConstraintValidator:
                         penalty += (gap - 12) * 0.1
         
         return penalty
+    
+    def _check_group_constraints(self, individual) -> float:
+        """
+        Evalúa restricciones de grupo (BTB, DIFF_TIME, SAME_TIME).
+        Retorna penalización acumulada según el tipo y preferencia.
+        """
+        penalty = 0.0
+        time_slots_map = self._get_timeslots_from_genes(individual)
+        
+        for constraint in self.group_constraints:
+            constraint_type = constraint['type']
+            preference = constraint['preference']
+            class_ids = constraint['classes']
+            
+            # Filtrar clases que están en el individuo
+            valid_classes = [cid for cid in class_ids if cid in individual.genes]
+            
+            if len(valid_classes) < 2:
+                continue  # Necesitamos al menos 2 clases para evaluar
+            
+            if constraint_type == 'BTB':
+                penalty += self._evaluate_btb_constraint(valid_classes, individual, time_slots_map, preference)
+            elif constraint_type == 'DIFF_TIME':
+                penalty += self._evaluate_diff_time_constraint(valid_classes, individual, time_slots_map, preference)
+            elif constraint_type == 'SAME_TIME':
+                penalty += self._evaluate_same_time_constraint(valid_classes, individual, time_slots_map, preference)
+        
+        return penalty
+    
+    def _evaluate_btb_constraint(self, class_ids: List[int], individual, time_slots_map: Dict, preference: str) -> float:
+        """
+        Evalúa restricción Back-To-Back (BTB).
+        Penaliza clases consecutivas en edificios lejanos.
+        """
+        penalty = 0.0
+        
+        # Comparar cada par de clases
+        for i in range(len(class_ids)):
+            for j in range(i + 1, len(class_ids)):
+                class1_id = class_ids[i]
+                class2_id = class_ids[j]
+                
+                room1_id, timeslot1_id = individual.genes.get(class1_id, (None, None))
+                room2_id, timeslot2_id = individual.genes.get(class2_id, (None, None))
+                
+                if not (room1_id and room2_id and timeslot1_id and timeslot2_id):
+                    continue
+                
+                days1, start1, length1 = time_slots_map.get(class1_id, (None, None, None))
+                days2, start2, length2 = time_slots_map.get(class2_id, (None, None, None))
+                
+                if not (days1 and start1 is not None and days2 and start2 is not None):
+                    continue
+                
+                # Verificar si son consecutivas (BTB)
+                end1 = start1 + length1
+                end2 = start2 + length2
+                
+                # Verificar si comparten días
+                share_day = any(days1[k] == '1' and days2[k] == '1' for k in range(min(len(days1), len(days2))))
+                
+                if share_day:
+                    # Son consecutivas si end1 == start2 o end2 == start1
+                    is_back_to_back = (end1 == start2) or (end2 == start1)
+                    
+                    if is_back_to_back:
+                        # Calcular distancia entre aulas
+                        distance = self._calculate_distance(room1_id, room2_id)
+                        
+                        # Penalización según preferencia y distancia
+                        if preference == 'PROHIBITED':
+                            if distance > 200:  # >200 metros
+                                penalty += 100.0  # Penalización alta
+                            elif distance > 50:
+                                penalty += 20.0
+                            else:
+                                penalty += 2.0
+                        elif preference == 'STRONGLY_DISCOURAGED':
+                            if distance > 200:
+                                penalty += 50.0
+                            elif distance > 50:
+                                penalty += 10.0
+                            else:
+                                penalty += 1.0
+                        elif preference == 'DISCOURAGED':
+                            if distance > 200:
+                                penalty += 20.0
+                            elif distance > 50:
+                                penalty += 5.0
+                            else:
+                                penalty += 0.5
+        
+        return penalty
+    
+    def _evaluate_diff_time_constraint(self, class_ids: List[int], individual, time_slots_map: Dict, preference: str) -> float:
+        """
+        Evalúa restricción DIFF_TIME.
+        Penaliza clases que se solapan (deberían estar en horarios diferentes).
+        """
+        penalty = 0.0
+        
+        for i in range(len(class_ids)):
+            for j in range(i + 1, len(class_ids)):
+                class1_id = class_ids[i]
+                class2_id = class_ids[j]
+                
+                days1, start1, length1 = time_slots_map.get(class1_id, (None, None, None))
+                days2, start2, length2 = time_slots_map.get(class2_id, (None, None, None))
+                
+                if not (days1 and start1 is not None and days2 and start2 is not None):
+                    continue
+                
+                # Verificar solapamiento
+                share_day = any(days1[k] == '1' and days2[k] == '1' for k in range(min(len(days1), len(days2))))
+                
+                if share_day:
+                    end1 = start1 + length1
+                    end2 = start2 + length2
+                    overlaps = not (end1 <= start2 or end2 <= start1)
+                    
+                    if overlaps:
+                        # Penalizar según preferencia
+                        if preference == 'REQUIRED':
+                            penalty += 50.0
+                        elif preference == 'STRONGLY_PREFERRED':
+                            penalty += 20.0
+                        elif preference == 'PREFERRED':
+                            penalty += 10.0
+        
+        return penalty
+    
+    def _evaluate_same_time_constraint(self, class_ids: List[int], individual, time_slots_map: Dict, preference: str) -> float:
+        """
+        Evalúa restricción SAME_TIME.
+        Penaliza clases que NO se solapan (deberían estar al mismo tiempo).
+        """
+        penalty = 0.0
+        
+        for i in range(len(class_ids)):
+            for j in range(i + 1, len(class_ids)):
+                class1_id = class_ids[i]
+                class2_id = class_ids[j]
+                
+                days1, start1, length1 = time_slots_map.get(class1_id, (None, None, None))
+                days2, start2, length2 = time_slots_map.get(class2_id, (None, None, None))
+                
+                if not (days1 and start1 is not None and days2 and start2 is not None):
+                    continue
+                
+                # Verificar si NO se solapan
+                share_day = any(days1[k] == '1' and days2[k] == '1' for k in range(min(len(days1), len(days2))))
+                
+                if share_day:
+                    end1 = start1 + length1
+                    end2 = start2 + length2
+                    overlaps = not (end1 <= start2 or end2 <= start1)
+                    
+                    if not overlaps:
+                        # Penalizar si NO se solapan (deberían estar al mismo tiempo)
+                        if preference == 'REQUIRED':
+                            penalty += 50.0
+                        elif preference == 'STRONGLY_PREFERRED':
+                            penalty += 20.0
+                        elif preference == 'PREFERRED':
+                            penalty += 10.0
+        
+        return penalty
+    
+    def _calculate_distance(self, room1_id: int, room2_id: int) -> float:
+        """
+        Calcula distancia euclidiana entre dos aulas.
+        Retorna distancia en metros.
+        """
+        loc1 = self.room_locations.get(room1_id, (0.0, 0.0))
+        loc2 = self.room_locations.get(room2_id, (0.0, 0.0))
+        
+        x1, y1 = loc1
+        x2, y2 = loc2
+        
+        distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2) * 10  # * 10 para convertir a metros
+        
+        return distance
     
     def _times_overlap(self, time1: Dict, time2: Dict) -> bool:
         """

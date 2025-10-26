@@ -5,7 +5,8 @@ from django.db import transaction
 from django.db.models import Count, Avg
 from .models import (
     Room, Instructor, Course, Class, ClassInstructor,
-    ClassRoom, TimeSlot, Student, StudentClass
+    ClassRoom, TimeSlot, Student, StudentClass,
+    GroupConstraint, GroupConstraintClass
 )
 
 
@@ -35,7 +36,8 @@ def import_xml_view(request):
             'classes': 0,
             'time_slots': 0,
             'students': 0,
-            'enrollments': 0
+            'enrollments': 0,
+            'group_constraints': 0
         }
         
         # Limpiar datos existentes si se solicita
@@ -112,6 +114,7 @@ def import_xml_view(request):
                         'class_limit': int(class_elem.get('classLimit', 0)),
                         'committed': class_elem.get('committed', 'false').lower() == 'true',
                         'scheduler': int(class_elem.get('scheduler')) if class_elem.get('scheduler') else None,
+                        'department': int(class_elem.get('department')) if class_elem.get('department') else None,
                         'dates': class_elem.get('dates', '')
                     }
                 )
@@ -148,6 +151,7 @@ def import_xml_view(request):
                             days=time_elem.get('days', '0000000'),
                             start_time=int(time_elem.get('start', 0)),
                             length=int(time_elem.get('length', 0)),
+                            break_time=int(time_elem.get('breakTime', 10)),
                             preference=float(time_elem.get('pref', 0))
                         )
                         stats['time_slots'] += 1
@@ -177,15 +181,57 @@ def import_xml_view(request):
                 if created:
                     stats['students'] += 1
                 
+                # Obtener weights de offerings
+                offering_weights = {}
+                for offering_elem in student_elem.findall('offering'):
+                    offering_id = int(offering_elem.get('id'))
+                    weight = float(offering_elem.get('weight', 1.0))
+                    offering_weights[offering_id] = weight
+                
                 # Importar enrollments
                 for class_elem in student_elem.findall('class'):
                     class_id = int(class_elem.get('id'))
                     if class_id in class_map:
+                        class_obj = class_map[class_id]
+                        offering = class_obj.offering
+                        weight = offering_weights.get(offering.xml_id, 1.0) if offering else 1.0
+                        
                         StudentClass.objects.get_or_create(
                             student=student,
-                            class_obj=class_map[class_id]
+                            class_obj=class_obj,
+                            defaults={
+                                'offering': offering,
+                                'weight': weight
+                            }
                         )
                         stats['enrollments'] += 1
+        
+        # 7. Importar Group Constraints
+        group_constraints_elem = root.find('groupConstraints')
+        if group_constraints_elem is not None:
+            for constraint_elem in group_constraints_elem.findall('constraint'):
+                constraint_id = int(constraint_elem.get('id'))
+                constraint, created = GroupConstraint.objects.get_or_create(
+                    xml_id=constraint_id,
+                    defaults={
+                        'constraint_type': constraint_elem.get('type', ''),
+                        'preference': constraint_elem.get('pref', 'R'),
+                        'course_limit': int(constraint_elem.get('courseLimit')) if constraint_elem.get('courseLimit') else None,
+                        'delta': int(constraint_elem.get('delta')) if constraint_elem.get('delta') else None
+                    }
+                )
+                
+                if created:
+                    stats['group_constraints'] += 1
+                    
+                    # Asociar clases con la restricción
+                    for class_elem in constraint_elem.findall('class'):
+                        class_id = int(class_elem.get('id'))
+                        if class_id in class_map:
+                            GroupConstraintClass.objects.get_or_create(
+                                constraint=constraint,
+                                class_obj=class_map[class_id]
+                            )
         
         return JsonResponse({
             'success': True,

@@ -56,6 +56,7 @@ class Class(models.Model):
     class_limit = models.IntegerField()
     committed = models.BooleanField(default=False)
     scheduler = models.IntegerField(null=True)
+    department = models.IntegerField(null=True, blank=True)
     dates = models.TextField(blank=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     
@@ -99,6 +100,7 @@ class TimeSlot(models.Model):
     days = models.CharField(max_length=7)  # Formato: "1010000" (L,M,W,J,V,S,D)
     start_time = models.IntegerField()  # Minutos desde medianoche / 5
     length = models.IntegerField()  # Duración en slots de 5 minutos
+    break_time = models.IntegerField(default=10)  # Tiempo de descanso en minutos
     preference = models.FloatField(default=0.0)
     
     class Meta:
@@ -145,6 +147,8 @@ class StudentClass(models.Model):
     """Relación entre estudiantes y clases"""
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrolled_classes')
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='enrolled_students')
+    offering = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True, related_name='student_demands')
+    weight = models.FloatField(default=1.0)
     
     class Meta:
         db_table = 'student_classes'
@@ -184,3 +188,32 @@ class ScheduleAssignment(models.Model):
         unique_together = ('schedule', 'class_obj')
         verbose_name = 'Asignación de Horario'
         verbose_name_plural = 'Asignaciones de Horarios'
+
+
+class GroupConstraint(models.Model):
+    """Restricciones de grupo (BTB, DIFF_TIME, etc.)"""
+    xml_id = models.IntegerField(unique=True)
+    constraint_type = models.CharField(max_length=50)
+    preference = models.CharField(max_length=10)
+    course_limit = models.IntegerField(null=True, blank=True)
+    delta = models.IntegerField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'group_constraints'
+        verbose_name = 'Restricción de Grupo'
+        verbose_name_plural = 'Restricciones de Grupo'
+    
+    def __str__(self):
+        return f"GroupConstraint {self.xml_id} ({self.constraint_type})"
+
+
+class GroupConstraintClass(models.Model):
+    """Relación entre restricciones de grupo y clases"""
+    constraint = models.ForeignKey(GroupConstraint, on_delete=models.CASCADE, related_name='classes')
+    class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='group_constraints')
+    
+    class Meta:
+        db_table = 'group_constraint_classes'
+        unique_together = ('constraint', 'class_obj')
+        verbose_name = 'Clase en Restricción de Grupo'
+        verbose_name_plural = 'Clases en Restricciones de Grupo'

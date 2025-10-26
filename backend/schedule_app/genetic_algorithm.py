@@ -28,14 +28,21 @@ class Individual:
         room_occupation = {}  # {(room_id, timeslot_id): set(class_ids)}
         instructor_occupation = {}  # {(instructor_id, timeslot_id): set(class_ids)}
         
-        # Obtener instructores por clase
+        # Obtener instructores por clase (OPTIMIZADO: una sola query)
         from .models import ClassInstructor
         class_instructors_map = {}
-        for class_obj in self.classes:
-            instructors = ClassInstructor.objects.filter(
-                class_obj=class_obj
-            ).values_list('instructor_id', flat=True)
-            class_instructors_map[class_obj.id] = list(instructors)
+        
+        # Cargar todos los instructores de una vez
+        class_ids = [c.id for c in self.classes]
+        all_class_instructors = ClassInstructor.objects.filter(
+            class_obj_id__in=class_ids
+        ).values_list('class_obj_id', 'instructor_id')
+        
+        # Organizar en mapa
+        for class_id, instructor_id in all_class_instructors:
+            if class_id not in class_instructors_map:
+                class_instructors_map[class_id] = []
+            class_instructors_map[class_id].append(instructor_id)
         
         # Ordenar clases por límite (asignar primero las más grandes)
         sorted_classes = sorted(self.classes, key=lambda c: c.class_limit, reverse=True)
@@ -160,11 +167,13 @@ class Individual:
     
     def repair(self, validator: 'ConstraintValidator'):
         """
-        Operador de reparación inteligente SIMPLIFICADO.
-        Identifica y corrige solo las violaciones más críticas.
+        Operador de reparación inteligente MEJORADO.
+        Corrige violaciones de capacidad Y conflictos de aula.
         """
-        # Solo reparar violaciones de capacidad (rápido y efectivo)
-        for class_id, (room_id, timeslot_id) in self.genes.items():
+        from collections import defaultdict
+        
+        # 1. Reparar violaciones de capacidad
+        for class_id, (room_id, timeslot_id) in list(self.genes.items()):
             if room_id and timeslot_id:
                 class_obj = next((c for c in self.classes if c.id == class_id), None)
                 if class_obj:
@@ -177,6 +186,49 @@ class Individual:
                             # Elegir la más cercana en capacidad
                             suitable_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
                             self.genes[class_id] = (suitable_rooms[0].id, timeslot_id)
+        
+        # 2. Detectar y resolver conflictos de aula
+        room_schedule = defaultdict(list)  # {(room_id, timeslot_id): [class_ids]}
+        
+        for class_id, (room_id, timeslot_id) in self.genes.items():
+            if room_id and timeslot_id:
+                room_schedule[(room_id, timeslot_id)].append(class_id)
+        
+        # Encontrar conflictos (más de 1 clase en misma aula/tiempo)
+        conflicts = [(key, classes) for key, classes in room_schedule.items() if len(classes) > 1]
+        
+        # Resolver conflictos: reasignar clases conflictivas a otras aulas
+        for (room_id, timeslot_id), conflicting_classes in conflicts:
+            # Mantener la primera clase, reasignar las demás
+            for class_id in conflicting_classes[1:]:
+                class_obj = next((c for c in self.classes if c.id == class_id), None)
+                if not class_obj:
+                    continue
+                
+                # Buscar aula alternativa con capacidad adecuada
+                available_rooms = [r for r in self.rooms 
+                                 if validator.room_capacities.get(r.id, 0) >= class_obj.class_limit
+                                 and (r.id, timeslot_id) not in room_schedule]
+                
+                if available_rooms:
+                    # Elegir aula con capacidad más cercana
+                    available_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
+                    new_room = available_rooms[0]
+                    self.genes[class_id] = (new_room.id, timeslot_id)
+                    room_schedule[(new_room.id, timeslot_id)].append(class_id)
+                else:
+                    # Si no hay aulas disponibles, intentar cambiar el timeslot
+                    available_slots = self.time_slots.get(class_id, [])
+                    if available_slots and len(available_slots) > 1:
+                        # Buscar timeslot alternativo
+                        for alt_slot in available_slots:
+                            if alt_slot.id != timeslot_id:
+                                suitable_rooms = [r for r in self.rooms 
+                                                if validator.room_capacities.get(r.id, 0) >= class_obj.class_limit]
+                                if suitable_rooms:
+                                    suitable_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
+                                    self.genes[class_id] = (suitable_rooms[0].id, alt_slot.id)
+                                    break
 
 
 class GeneticAlgorithm:
@@ -187,7 +239,7 @@ class GeneticAlgorithm:
     def __init__(self, 
                  population_size: int = 100,
                  generations: int = 200,
-                 mutation_rate: float = 0.15,
+                 mutation_rate: float = 0.20,  # Aumentado de 0.15 a 0.20 para mayor exploración
                  crossover_rate: float = 0.80,
                  elitism_size: int = 10,
                  tournament_size: int = 5):
@@ -355,8 +407,8 @@ class GeneticAlgorithm:
         3. Aplicar mutación intensa a parte de la población
         """
         import sys
-        
-        print(f"\n⚡ BOOST DE DIVERSIDAD activado (estancamiento detectado)")
+
+        print(f"\nBOOST (estancamiento detectado)")
         sys.stdout.flush()
         
         # Estrategia 1: Aumentar tasa de mutación temporalmente (50% más)
@@ -397,7 +449,7 @@ class GeneticAlgorithm:
                 for _ in range(random.randint(3, 5)):
                     self.mutate(self.population[idx])
         
-        # Estrategia 4: Reparar el mejor individuo (focalizado)
+        # Estrategia 4: Reparar el mejor individuo
         print(f"   • Reparando mejor individuo...")
         if self.best_individual:
             best_clone = self.best_individual.clone()
@@ -436,7 +488,7 @@ class GeneticAlgorithm:
         for generation in range(self.generations):
             new_population = []
             
-            # Elitismo: mantener los mejores individuos
+            # mantener los mejores individuos
             elite = self.population[:self.elitism_size]
             new_population.extend([ind.clone() for ind in elite])
             
@@ -453,11 +505,11 @@ class GeneticAlgorithm:
                 self.mutate(child1)
                 self.mutate(child2)
                 
-                # Reparación desactivada temporalmente por lentitud
-                # if random.random() < 0.1:
-                #     child1.repair(validator)
-                # if random.random() < 0.1:
-                #     child2.repair(validator)
+                # Reparación habilitada (10% de probabilidad)
+                if random.random() < 0.1:
+                    child1.repair(validator)
+                if random.random() < 0.1:
+                    child2.repair(validator)
                 
                 new_population.append(child1)
                 if len(new_population) < self.population_size:
@@ -505,8 +557,8 @@ class GeneticAlgorithm:
                       f"Tiempo: {elapsed:.0f}s | ETA: {remaining_time:.0f}s{stagnation_indicator}")
                 sys.stdout.flush()  # Forzar salida inmediata
             
-            # Early stopping dinámico basado en BASE_FITNESS
-            # Calcular BASE_FITNESS actual (debe coincidir con constraints.py)
+            # Early stopping basado en BASE_FITNESS
+            # Calcular BASE_FITNESS actual
             num_classes = len(self.population[0].genes) if self.population else 0
             BASE_FITNESS = num_classes * 500.0
             BASE_FITNESS = max(50000.0, min(300000.0, BASE_FITNESS))
