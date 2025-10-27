@@ -6,16 +6,24 @@ import api from '../services/api'
 
 interface Room {
   id: number
-  room_id: string
+  xml_id: string
   building?: string
   capacity: number
 }
 
+interface Schedule {
+  id: number
+  name: string
+  description: string
+  fitness_score: number
+  created_at: string
+}
+
 interface ClassAssignment {
   id: number
-  class_id: number
+  class_id: number  // xml_id de la clase
   class_name: string
-  room_id: number
+  room_id: string  // xml_id del aula
   instructor_name: string
   days: string // "0110000" formato binario
   start_time: number // minutos desde medianoche
@@ -28,7 +36,9 @@ interface ScheduleViewerProps {
   scheduleId?: number
 }
 
-const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
+const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialScheduleId }) => {
+  const [schedules, setSchedules] = useState<Schedule[]>([])
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(initialScheduleId || null)
   const [rooms, setRooms] = useState<Room[]>([])
   const [currentRoomIndex, setCurrentRoomIndex] = useState(0)
   const [assignments, setAssignments] = useState<ClassAssignment[]>([])
@@ -37,19 +47,41 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
   const [conflictCount, setConflictCount] = useState(0)
 
   useEffect(() => {
+    loadSchedules()
     loadRooms()
   }, [])
 
   useEffect(() => {
-    if (rooms.length > 0) {
+    if (rooms.length > 0 && selectedScheduleId) {
       loadAssignments(rooms[currentRoomIndex].id)
     }
-  }, [currentRoomIndex, rooms])
+  }, [currentRoomIndex, rooms, selectedScheduleId])
+
+  const loadSchedules = async () => {
+    try {
+      const response = await api.get('/schedules/')
+      // La API retorna datos paginados con "results"
+      const schedulesData = response.data.results || response.data
+      console.log('Schedules cargados:', schedulesData.length)
+      setSchedules(schedulesData)
+      // Si no hay schedule seleccionado, tomar el más reciente
+      if (!selectedScheduleId && schedulesData.length > 0) {
+        setSelectedScheduleId(schedulesData[0].id)
+        console.log('Schedule seleccionado:', schedulesData[0].id, schedulesData[0].name)
+      }
+    } catch (error) {
+      console.error('Error cargando schedules:', error)
+    }
+  }
 
   const loadRooms = async () => {
     try {
-      const response = await api.get('/rooms/')
-      setRooms(response.data)
+      // Cargar todas las aulas (sin paginación)
+      const response = await api.get('/rooms/?page_size=1000')
+      // La API retorna datos paginados con "results"
+      const roomsData = response.data.results || response.data
+      console.log('Aulas cargadas:', roomsData.length)
+      setRooms(roomsData)
       setLoading(false)
     } catch (error) {
       console.error('Error cargando aulas:', error)
@@ -58,19 +90,21 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
   }
 
   const loadAssignments = async (roomId: number) => {
+    if (!selectedScheduleId) return
+    
     try {
       setLoading(true)
-      const endpoint = scheduleId
-        ? `/schedules/${scheduleId}/room/${roomId}/assignments/`
-        : `/rooms/${roomId}/assignments/`
-
+      const endpoint = `/schedules/${selectedScheduleId}/room/${roomId}/assignments/`
+      console.log('Cargando asignaciones desde:', endpoint)
       const response = await api.get(endpoint)
       const assignmentsData = response.data
 
+      console.log('Asignaciones recibidas:', assignmentsData.length)
       setAssignments(assignmentsData)
 
       // Convertir asignaciones a eventos de FullCalendar
       const calendarEvents = convertToCalendarEvents(assignmentsData)
+      console.log('Eventos del calendario:', calendarEvents.length)
       setEvents(calendarEvents)
 
       // Contar conflictos
@@ -105,14 +139,16 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
 
           events.push({
             id: `${assignment.id}-${index}`,
-            title: `${assignment.class_name}\n${assignment.instructor_name}`,
+            title: `Clase ${assignment.class_id}`,
             daysOfWeek,
             startTime: `${startHour.toString().padStart(2, '0')}:${startMin.toString().padStart(2, '0')}`,
             endTime: `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`,
             backgroundColor: assignment.has_conflict ? '#ef4444' : '#3b82f6',
             borderColor: assignment.has_conflict ? '#dc2626' : '#2563eb',
+            textColor: '#ffffff',
             extendedProps: {
-              classId: assignment.class_id,
+              classXmlId: assignment.class_id,
+              courseName: assignment.class_name,
               instructor: assignment.instructor_name,
               students: assignment.student_count,
               conflict: assignment.has_conflict
@@ -140,10 +176,11 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
   const handleEventClick = (info: any) => {
     const props = info.event.extendedProps
     alert(
-      `Clase: ${info.event.title}\n` +
+      `Clase XML ID: ${props.classXmlId}\n` +
+      `Curso: ${props.courseName}\n` +
       `Instructor: ${props.instructor}\n` +
       `Estudiantes: ${props.students}\n` +
-      `Conflicto: ${props.conflict ? 'SÍ ⚠️' : 'No'}`
+      `Conflicto: ${props.conflict ? 'SÍ' : 'No'}`
     )
   }
 
@@ -155,10 +192,67 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
     )
   }
 
+  if (schedules.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-600">No hay horarios disponibles</div>
+      </div>
+    )
+  }
+
+  if (rooms.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-600">No hay aulas disponibles</div>
+      </div>
+    )
+  }
+
+  if (!selectedScheduleId) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-600">Seleccione un horario</div>
+      </div>
+    )
+  }
+
   const currentRoom = rooms[currentRoomIndex]
+  const currentSchedule = schedules.find(s => s.id === selectedScheduleId)
+
+  if (!currentRoom) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-600">No se encontró el aula actual</div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      {/* Selector de Schedule */}
+      <div className="mb-6 bg-white rounded-lg shadow p-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Seleccionar Horario
+        </label>
+        <select
+          value={selectedScheduleId || ''}
+          onChange={(e) => setSelectedScheduleId(Number(e.target.value))}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          {schedules.map((schedule) => (
+            <option key={schedule.id} value={schedule.id}>
+              {schedule.name} (Fitness: {schedule.fitness_score?.toFixed(0) || 'N/A'})
+            </option>
+          ))}
+        </select>
+        {currentSchedule && (
+          <div className="mt-2 text-sm text-gray-600">
+            {currentSchedule.description && <p>{currentSchedule.description}</p>}
+            <p>Creado: {new Date(currentSchedule.created_at).toLocaleString('es-ES')}</p>
+          </div>
+        )}
+      </div>
+
       {/* Header con navegación */}
       <div className="mb-6 bg-white rounded-lg shadow p-4">
         <div className="flex justify-between items-center mb-4">
@@ -193,7 +287,7 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
           <div className="bg-blue-50 p-3 rounded">
             <div className="text-sm text-gray-600">Aula</div>
             <div className="text-xl font-bold text-blue-600">
-              {currentRoom?.room_id || 'N/A'}
+              {currentRoom?.xml_id || 'N/A'}
             </div>
           </div>
           <div className="bg-green-50 p-3 rounded">
@@ -230,9 +324,10 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
           initialView="timeGridWeek"
           headerToolbar={{
             left: '',
-            center: 'Horario Semanal del Aula',
+            center: 'title',
             right: ''
           }}
+          titleFormat={{ year: 'numeric', month: 'long', day: 'numeric' }}
           slotMinTime="07:00:00"
           slotMaxTime="22:00:00"
           allDaySlot={false}
@@ -244,21 +339,28 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId }) => {
             minute: '2-digit',
             hour12: false
           }}
+          slotLabelFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }}
           locale="es"
-          weekends={false}
+          weekends={true}
           slotDuration="00:30:00"
           slotLabelInterval="01:00"
           dayHeaderFormat={{ weekday: 'long' }}
           initialDate="2007-01-01"
           validRange={{
             start: '2007-01-01',
-            end: '2007-01-07'
+            end: '2007-01-08'
           }}
+          firstDay={1}
           eventContent={(arg) => {
+            const props = arg.event.extendedProps
             return (
-              <div className="p-1 overflow-hidden text-xs">
-                <div className="font-semibold truncate">{arg.event.title.split('\n')[0]}</div>
-                <div className="truncate">{arg.event.extendedProps.instructor}</div>
+              <div className="p-1 overflow-hidden text-xs w-full h-full">
+                <div className="font-semibold truncate">{arg.event.title}</div>
+                <div className="truncate text-[10px]">{props.instructor}</div>
               </div>
             )
           }}

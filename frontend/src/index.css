@@ -26,8 +26,9 @@
 .fc-col-header-cell {
   background-color: #f3f4f6;
   font-weight: 600;
-  padding: 8px 4px;
+  padding: 12px 4px;
   text-align: center;
+  font-size: 0.95rem;
 }
 
 .fc-timegrid-slot {
@@ -36,13 +37,16 @@
 
 .fc-timegrid-slot-label {
   font-size: 0.875rem;
+  font-weight: 500;
   vertical-align: middle;
   border-bottom: 0;
+  color: #374151;
 }
 
 .fc-timegrid-axis {
   text-align: right;
-  padding-right: 4px;
+  padding-right: 8px;
+  width: 60px;
 }
 
 .fc-event {
@@ -50,11 +54,14 @@
   border-radius: 4px;
   padding: 2px 4px;
   margin-bottom: 1px;
-  border: 1px solid;
+  border: 2px solid;
+  font-weight: 500;
 }
 
 .fc-event:hover {
-  opacity: 0.9;
+  opacity: 0.85;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
 }
 
 .fc-event-main {
@@ -62,15 +69,15 @@
 }
 
 .fc-event-title {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .fc-timegrid-event {
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .fc-timegrid-event .fc-event-main {
-  padding: 1px 2px;
+  padding: 2px 4px;
 }
 
 .fc-direction-ltr .fc-timegrid-col-events {
@@ -81,14 +88,17 @@
 .fc-header-toolbar {
   margin-bottom: 1.5em !important;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 8px;
 }
 
 .fc-toolbar-title {
   font-size: 1.5rem !important;
-  font-weight: 600 !important;
-  color: #374151 !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
   margin: 0 1em;
 }
 
@@ -109,4 +119,24 @@
   background-color: #d1d5db;
   border-color: #d1d5db;
   opacity: 0.65;
+}
+
+/* Mejorar visualización de días de la semana */
+.fc-day-today {
+  background-color: #fef3c7 !important;
+}
+
+/* Estilos para eventos en conflicto */
+.fc-event[style*="background-color: rgb(220, 38, 38)"] {
+  font-weight: 700;
+  border-width: 3px;
+}
+
+/* Mejorar las líneas del grid */
+.fc-timegrid-slot-lane {
+  border-top: 1px solid #f3f4f6;
+}
+
+.fc-timegrid-slot-lane:nth-child(2n) {
+  background-color: #fafafa;
 }

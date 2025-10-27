@@ -54,22 +54,37 @@ class RoomViewSet(viewsets.ModelViewSet):
             'time_slot'
         ).prefetch_related('class_obj__instructors__instructor')
         
-        # Detectar conflictos (misma aula, mismo tiempo)
-        time_conflicts = {}
-        for assignment in assignments:
-            ts = assignment.time_slot
-            key = f"{ts.days}_{ts.start_time}_{ts.length}"
-            if key in time_conflicts:
-                time_conflicts[key].append(assignment.id)
-            else:
-                time_conflicts[key] = [assignment.id]
+        # Detectar conflictos de solapamiento temporal (igual que SQL)
+        # Dos clases en conflicto si: comparten al menos UN día Y horarios se solapan
+        conflict_ids = set()
+        assignments_list = list(assignments)
+        
+        def share_days(days1: str, days2: str) -> bool:
+            """Verificar si dos cadenas de días comparten al menos un día activo"""
+            for i in range(min(len(days1), len(days2))):
+                if days1[i] == '1' and days2[i] == '1':
+                    return True
+            return False
+        
+        for i, a1 in enumerate(assignments_list):
+            for a2 in assignments_list[i+1:]:
+                ts1 = a1.time_slot
+                ts2 = a2.time_slot
+                
+                # Verificar si comparten AL MENOS UN día
+                if share_days(ts1.days, ts2.days):
+                    # Verificar solapamiento temporal:
+                    # ts1 empieza antes de que ts2 termine Y ts2 empieza antes de que ts1 termine
+                    if (ts1.start_time < ts2.start_time + ts2.length and 
+                        ts2.start_time < ts1.start_time + ts1.length):
+                        conflict_ids.add(a1.id)
+                        conflict_ids.add(a2.id)
         
         # Preparar datos para respuesta
         result = []
-        for assignment in assignments:
+        for assignment in assignments_list:
             ts = assignment.time_slot
-            key = f"{ts.days}_{ts.start_time}_{ts.length}"
-            has_conflict = len(time_conflicts[key]) > 1
+            has_conflict = assignment.id in conflict_ids
             
             # Obtener instructores
             instructors = [
@@ -78,15 +93,19 @@ class RoomViewSet(viewsets.ModelViewSet):
             ]
             instructor_name = ', '.join(instructors) if instructors else 'Sin instructor'
             
+            # Convertir start_time (slots de 5min) a minutos desde medianoche
+            start_minutes = ts.start_time * 5
+            length_minutes = ts.length * 5
+            
             result.append({
                 'id': assignment.id,
                 'class_id': assignment.class_obj.xml_id,
                 'class_name': assignment.class_obj.offering.name if assignment.class_obj.offering else f'Clase {assignment.class_obj.xml_id}',
-                'room_id': room.id,
+                'room_id': room.xml_id,
                 'instructor_name': instructor_name,
                 'days': ts.days,
-                'start_time': ts.start_time,
-                'length': ts.length,
+                'start_time': start_minutes,  # minutos desde medianoche
+                'length': length_minutes,      # duración en minutos
                 'student_count': assignment.class_obj.class_limit,
                 'has_conflict': has_conflict
             })
@@ -385,21 +404,34 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             'time_slot'
         ).prefetch_related('class_obj__instructors__instructor')
         
-        # Detectar conflictos
-        time_conflicts = {}
-        for assignment in assignments:
-            ts = assignment.time_slot
-            key = f"{ts.days}_{ts.start_time}_{ts.length}"
-            if key in time_conflicts:
-                time_conflicts[key].append(assignment.id)
-            else:
-                time_conflicts[key] = [assignment.id]
+        # Detectar conflictos de solapamiento temporal (igual que SQL)
+        conflict_ids = set()
+        assignments_list = list(assignments)
+        
+        def share_days(days1: str, days2: str) -> bool:
+            """Verificar si dos cadenas de días comparten al menos un día activo"""
+            for i in range(min(len(days1), len(days2))):
+                if days1[i] == '1' and days2[i] == '1':
+                    return True
+            return False
+        
+        for i, a1 in enumerate(assignments_list):
+            for a2 in assignments_list[i+1:]:
+                ts1 = a1.time_slot
+                ts2 = a2.time_slot
+                
+                # Verificar si comparten AL MENOS UN día
+                if share_days(ts1.days, ts2.days):
+                    # Verificar solapamiento temporal
+                    if (ts1.start_time < ts2.start_time + ts2.length and 
+                        ts2.start_time < ts1.start_time + ts1.length):
+                        conflict_ids.add(a1.id)
+                        conflict_ids.add(a2.id)
         
         result = []
-        for assignment in assignments:
+        for assignment in assignments_list:
             ts = assignment.time_slot
-            key = f"{ts.days}_{ts.start_time}_{ts.length}"
-            has_conflict = len(time_conflicts[key]) > 1
+            has_conflict = assignment.id in conflict_ids
             
             instructors = [
                 ci.instructor.name or f"Instructor {ci.instructor.xml_id}"
@@ -407,15 +439,19 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             ]
             instructor_name = ', '.join(instructors) if instructors else 'Sin instructor'
             
+            # Convertir start_time (slots de 5min) a minutos desde medianoche
+            start_minutes = ts.start_time * 5
+            length_minutes = ts.length * 5
+            
             result.append({
                 'id': assignment.id,
                 'class_id': assignment.class_obj.xml_id,
                 'class_name': assignment.class_obj.offering.name if assignment.class_obj.offering else f'Clase {assignment.class_obj.xml_id}',
-                'room_id': room.id,
+                'room_id': room.xml_id,
                 'instructor_name': instructor_name,
                 'days': ts.days,
-                'start_time': ts.start_time,
-                'length': ts.length,
+                'start_time': start_minutes,  # minutos desde medianoche
+                'length': length_minutes,      # duración en minutos
                 'student_count': assignment.class_obj.class_limit,
                 'has_conflict': has_conflict
             })
