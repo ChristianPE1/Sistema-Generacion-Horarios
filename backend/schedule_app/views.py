@@ -22,6 +22,77 @@ class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
     
+    @action(detail=True, methods=['get'])
+    def assignments(self, request, pk=None):
+        """Obtener asignaciones de una aula específica para FullCalendar"""
+        room = self.get_object()
+        
+        # Obtener el último horario activo o el especificado
+        schedule_id = request.query_params.get('schedule_id')
+        if schedule_id:
+            try:
+                schedule = Schedule.objects.get(id=schedule_id)
+            except Schedule.DoesNotExist:
+                return Response(
+                    {'error': 'Horario no encontrado'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        else:
+            schedule = Schedule.objects.filter(is_active=True).first()
+            if not schedule:
+                schedule = Schedule.objects.order_by('-created_at').first()
+        
+        if not schedule:
+            return Response([])
+        
+        # Obtener todas las asignaciones de esta aula en este horario
+        assignments = ScheduleAssignment.objects.filter(
+            schedule=schedule,
+            room=room
+        ).select_related(
+            'class_obj__offering',
+            'time_slot'
+        ).prefetch_related('class_obj__instructors__instructor')
+        
+        # Detectar conflictos (misma aula, mismo tiempo)
+        time_conflicts = {}
+        for assignment in assignments:
+            ts = assignment.time_slot
+            key = f"{ts.days}_{ts.start_time}_{ts.length}"
+            if key in time_conflicts:
+                time_conflicts[key].append(assignment.id)
+            else:
+                time_conflicts[key] = [assignment.id]
+        
+        # Preparar datos para respuesta
+        result = []
+        for assignment in assignments:
+            ts = assignment.time_slot
+            key = f"{ts.days}_{ts.start_time}_{ts.length}"
+            has_conflict = len(time_conflicts[key]) > 1
+            
+            # Obtener instructores
+            instructors = [
+                ci.instructor.name or f"Instructor {ci.instructor.xml_id}"
+                for ci in assignment.class_obj.instructors.all()
+            ]
+            instructor_name = ', '.join(instructors) if instructors else 'Sin instructor'
+            
+            result.append({
+                'id': assignment.id,
+                'class_id': assignment.class_obj.xml_id,
+                'class_name': assignment.class_obj.offering.name if assignment.class_obj.offering else f'Clase {assignment.class_obj.xml_id}',
+                'room_id': room.id,
+                'instructor_name': instructor_name,
+                'days': ts.days,
+                'start_time': ts.start_time,
+                'length': ts.length,
+                'student_count': assignment.class_obj.class_limit,
+                'has_conflict': has_conflict
+            })
+        
+        return Response(result)
+    
     @action(detail=False, methods=['get'])
     def statistics(self, request):
         """Obtener estadísticas de las aulas"""
@@ -291,6 +362,65 @@ class ScheduleViewSet(viewsets.ModelViewSet):
                     })
         
         return Response(events)
+    
+    @action(detail=True, methods=['get'], url_path='room/(?P<room_id>[^/.]+)/assignments')
+    def room_assignments(self, request, pk=None, room_id=None):
+        """Obtener asignaciones de una aula específica en un horario"""
+        schedule = self.get_object()
+        
+        try:
+            room = Room.objects.get(id=room_id)
+        except Room.DoesNotExist:
+            return Response(
+                {'error': 'Aula no encontrada'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Obtener asignaciones de esta aula en este horario
+        assignments = ScheduleAssignment.objects.filter(
+            schedule=schedule,
+            room=room
+        ).select_related(
+            'class_obj__offering',
+            'time_slot'
+        ).prefetch_related('class_obj__instructors__instructor')
+        
+        # Detectar conflictos
+        time_conflicts = {}
+        for assignment in assignments:
+            ts = assignment.time_slot
+            key = f"{ts.days}_{ts.start_time}_{ts.length}"
+            if key in time_conflicts:
+                time_conflicts[key].append(assignment.id)
+            else:
+                time_conflicts[key] = [assignment.id]
+        
+        result = []
+        for assignment in assignments:
+            ts = assignment.time_slot
+            key = f"{ts.days}_{ts.start_time}_{ts.length}"
+            has_conflict = len(time_conflicts[key]) > 1
+            
+            instructors = [
+                ci.instructor.name or f"Instructor {ci.instructor.xml_id}"
+                for ci in assignment.class_obj.instructors.all()
+            ]
+            instructor_name = ', '.join(instructors) if instructors else 'Sin instructor'
+            
+            result.append({
+                'id': assignment.id,
+                'class_id': assignment.class_obj.xml_id,
+                'class_name': assignment.class_obj.offering.name if assignment.class_obj.offering else f'Clase {assignment.class_obj.xml_id}',
+                'room_id': room.id,
+                'instructor_name': instructor_name,
+                'days': ts.days,
+                'start_time': ts.start_time,
+                'length': ts.length,
+                'student_count': assignment.class_obj.class_limit,
+                'has_conflict': has_conflict
+            })
+        
+        return Response(result)
 
 
 class TimeSlotViewSet(viewsets.ReadOnlyModelViewSet):

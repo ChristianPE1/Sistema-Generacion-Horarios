@@ -7,6 +7,7 @@ import Classes from './components/Classes';
 import Students from './components/Students';
 import Schedules from './components/Schedules';
 import ImportXML from './components/ImportXML';
+import ScheduleViewer from './components/ScheduleViewer';
 
 function Navbar() {
   const location = useLocation();
@@ -44,6 +45,9 @@ function Navbar() {
             <Link to="/schedules" className={`px-4 py-2 rounded transition ${isActive('/schedules')}`}>
               Horarios
             </Link>
+            <Link to="/schedule-viewer" className={`px-4 py-2 rounded transition ${isActive('/schedule-viewer')}`}>
+              Ver Horarios
+            </Link>
             <Link to="/import" className={`px-4 py-2 rounded transition ${isActive('/import')}`}>
               Importar XML
             </Link>
@@ -68,6 +72,7 @@ function App() {
             <Route path="/classes" element={<Classes />} />
             <Route path="/students" element={<Students />} />
             <Route path="/schedules" element={<Schedules />} />
+            <Route path="/schedule-viewer" element={<ScheduleViewer />} />
             <Route path="/import" element={<ImportXML />} />
           </Routes>
         </div>
