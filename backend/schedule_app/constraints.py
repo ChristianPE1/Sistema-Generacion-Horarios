@@ -187,19 +187,18 @@ class ConstraintValidator:
         return violations
     
     def _evaluate_soft_constraints(self, individual) -> float:
-        """Evalúa restricciones blandas y retorna una penalización acumulada"""
+        """
+        Evalúa restricciones blandas y retorna una penalización acumulada.
+        
+        NOTA: Preferencias de aula y horario ELIMINADAS según optimización.
+        Solo se evalúan constraints estructurales (gaps, group constraints).
+        """
         penalty = 0.0
         
-        # 1. Preferencias de aula no cumplidas
-        penalty += self._check_room_preferences(individual)
-        
-        # 2. Preferencias de horario no cumplidas
-        penalty += self._check_time_preferences(individual)
-        
-        # 3. Gaps en horarios de instructores
+        # 1. Gaps en horarios de instructores
         penalty += self._check_instructor_gaps(individual)
         
-        # 4. Restricciones de grupo (BTB, DIFF_TIME, SAME_TIME)
+        # 2. Restricciones de grupo (BTB, DIFF_TIME, SAME_TIME)
         penalty += self._check_group_constraints(individual)
         
         return penalty
@@ -330,33 +329,9 @@ class ConstraintValidator:
         
         return violations
     
-    def _check_room_preferences(self, individual) -> float:
-        """Calcula penalización por preferencias de aula no cumplidas"""
-        penalty = 0.0
-        
-        for class_id, (room_id, timeslot_id) in individual.genes.items():
-            if room_id:
-                preferences = self.room_preferences.get(class_id, {})
-                # Si no hay preferencia definida, penalización neutral
-                preference = preferences.get(room_id, 0.0)
-                # Preferencias negativas aumentan la penalización
-                if preference < 0:
-                    penalty += abs(preference)
-        
-        return penalty
-    
-    def _check_time_preferences(self, individual) -> float:
-        """Calcula penalización por preferencias de horario no cumplidas"""
-        penalty = 0.0
-        
-        for class_id, (room_id, timeslot_id) in individual.genes.items():
-            if timeslot_id:
-                preferences = self.time_preferences.get(class_id, {})
-                preference = preferences.get(timeslot_id, 0.0)
-                if preference < 0:
-                    penalty += abs(preference)
-        
-        return penalty
+    # ELIMINADO: _check_room_preferences() - No se evalúan preferencias de aula
+    # ELIMINADO: _check_time_preferences() - No se evalúan preferencias de horario
+    # Razón: Optimización para enfocarse solo en constraints estructurales
     
     def _check_instructor_gaps(self, individual) -> float:
         """Calcula penalización por gaps en horarios de instructores"""
@@ -607,9 +582,8 @@ class ConstraintValidator:
                 'capacity_violations': self._check_capacity_violations(individual)
             },
             'soft_constraints': {
-                'room_preference_penalty': self._check_room_preferences(individual),
-                'time_preference_penalty': self._check_time_preferences(individual),
-                'instructor_gaps_penalty': self._check_instructor_gaps(individual)
+                'instructor_gaps_penalty': self._check_instructor_gaps(individual),
+                'group_constraints_penalty': self._check_group_constraints(individual)
             },
             'total_fitness': individual.fitness
         }
