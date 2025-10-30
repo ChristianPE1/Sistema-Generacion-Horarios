@@ -87,7 +87,7 @@ class ScheduleGenerator:
             removed = len(all_classes) - len(self.classes)
             print(f"[WARNING] {removed} clases ignoradas (sin timeslots disponibles)")
         
-        # FILTRO 2: Verificar y crear instructores si es necesario
+        # FILTRO 2: Verificar instructores (NUEVO ENFOQUE: NO asignar durante generación)
         from .models import ClassInstructor
         
         # Contar clases sin instructor
@@ -100,33 +100,11 @@ class ScheduleGenerator:
         ]
         
         if classes_without_instructor:
-            print(f"[WARNING] {len(classes_without_instructor)} clases SIN instructor")
-            print(f"   Asignando instructores reales del XML...")
-            
-            # Obtener todos los instructores disponibles en la base de datos
-            all_instructors = list(Instructor.objects.exclude(xml_id=999999))
-            
-            if not all_instructors:
-                print(f"[ERROR] ERROR: No hay instructores en la base de datos")
-                print(f"   Por favor, ejecute: python manage.py import_xml")
-                sys.exit(1)
-            
-            print(f"[OK] Instructores disponibles: {len(all_instructors)}")
-            
-            # Asignar instructores de forma round-robin a las clases sin instructor
-            for idx, class_obj in enumerate(classes_without_instructor):
-                instructor = all_instructors[idx % len(all_instructors)]
-                ClassInstructor.objects.get_or_create(
-                    class_obj=class_obj,
-                    instructor=instructor
-                )
-            
-            print(f"[OK] Asignados {len(classes_without_instructor)} instructores a clases sin instructor")
-        
-            print(f"   [OK] Instructor compartido asignado a {len(classes_without_instructor)} clases")
-            print(f"   [INFO] Esto ELIMINA conflictos de instructor, simplificando el problema")
-        
-        print(f"[OK] Clases con instructor: {len(self.classes)}")
+            print(f"[INFO] {len(classes_without_instructor)} clases sin instructor")
+            print(f"[INFO] Los instructores se asignarán DESPUÉS de generar el horario")
+            print(f"[INFO] Conflictos de instructor NO se evalúan durante generación")
+        else:
+            print(f"[OK] Todas las clases tienen instructor del XML")
         
         # FILTRO 3: Aulas con capacidad suficiente para al menos una clase
         all_rooms = list(Room.objects.all())
@@ -340,6 +318,27 @@ class ScheduleGenerator:
             description,
             stats
         )
+        
+        # NUEVA FASE: Asignar instructores después de generar el horario
+        print(f"\n[INFO] Iniciando asignación de instructores...")
+        try:
+            from .instructor_assigner import assign_instructors_to_schedule
+            instructor_stats = assign_instructors_to_schedule(schedule)
+            
+            # Actualizar descripción con stats de instructores
+            schedule.description += f"""
+            
+            Asignación de Instructores:
+            - Clases con instructor: {instructor_stats['assigned']}
+            - Clases sin instructor: {instructor_stats['unassigned']}
+            - Porcentaje asignado: {instructor_stats['assigned']/instructor_stats['total']*100:.1f}%
+            """
+            schedule.save()
+            
+            print(f"[OK] Asignación de instructores completada")
+        except Exception as e:
+            print(f"[WARNING] Error al asignar instructores: {e}")
+            print(f"[INFO] Puedes asignarlos manualmente después")
         
         return schedule
     

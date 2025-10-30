@@ -161,24 +161,28 @@ class ConstraintValidator:
         Evalúa restricciones duras y retorna el número de violaciones.
         
         RESTRICCIONES HABILITADAS:
-        - Conflictos de instructor (HABILITADO - crítico para calidad)
         - Conflictos de aula (HABILITADO - crítico)
         - Violaciones de capacidad (HABILITADO - crítico)
+        
+        RESTRICCIONES DESHABILITADAS:
+        - Conflictos de instructor (DESHABILITADO - se asignan después)
         - Conflictos de estudiantes (DESHABILITADO - post-procesamiento manual)
+        
+        NOTA: Los instructores se asignan DESPUÉS de generar el horario,
+        por lo tanto sus conflictos no se evalúan durante la generación.
         """
         violations = 0
         
         # Obtener asignaciones agrupadas
         time_slots_map = self._get_timeslots_from_genes(individual)
         
-        # 1. Conflictos de instructor (REACTIVADO - peso 100)
-        violations += self._check_instructor_conflicts(individual, time_slots_map)
+        # 1. Conflictos de instructor - DESHABILITADO (se asignan post-generación)
+        # violations += self._check_instructor_conflicts(individual, time_slots_map)
         
         # 2. Conflictos de aula (CRÍTICO - misma aula, mismo horario)
         violations += self._check_room_conflicts(individual, time_slots_map)
         
-        # 3. Conflictos de estudiantes - TEMPORALMENTE IGNORADO
-        # (se resolverá manualmente después de generar horario base)
+        # 3. Conflictos de estudiantes - DESHABILITADO (post-procesamiento manual)
         # violations += self._check_student_conflicts(individual, time_slots_map)
         
         # 4. Violaciones de capacidad (CRÍTICO - aula muy pequeña)

@@ -113,26 +113,52 @@ Donde:
 
 ---
 
-## Cambios Propuestos
+## Cambios Implementados ✅
 
-Según tu solicitud, se eliminarán las siguientes evaluaciones:
-
-### A Eliminar:
+### Eliminado:
 1. ❌ **SC1: Preferencias de Aula** (`_check_room_preferences()`)
 2. ❌ **SC2: Preferencias de Horario** (`_check_time_preferences()`)
+3. ❌ **HC1: Conflictos de Instructor** (movido a Fase 2)
 
-### A Mantener:
-1. ✅ **HC1: Conflictos de Instructor** (crítico)
-2. ✅ **HC2: Conflictos de Aula** (crítico)
-3. ✅ **HC4: Violaciones de Capacidad** (crítico)
-4. ✅ **SC3: Gaps de Instructor** (optimización)
-5. ✅ **SC4: Restricciones de Grupo** (BTB, DIFF_TIME, SAME_TIME)
+### Activo Durante Generación:
+1. ✅ **HC2: Conflictos de Aula** (crítico)
+2. ✅ **HC4: Violaciones de Capacidad** (crítico)
+3. ✅ **SC3: Gaps de Instructor** (deshabilitado por ahora, sin instructores asignados)
+4. ✅ **SC4: Restricciones de Grupo** (BTB, DIFF_TIME, SAME_TIME)
 
-### Nueva Lógica:
-- **Fase 1 (Algoritmo Genético)**: Asignar clases a aulas/horarios usando SOLO hard constraints + SC3 + SC4
-- **Fase 2 (Post-procesamiento)**: Asignar instructores usando sus preferencias de horario
-  - Permitir clases sin instructor si no hay disponibilidad
-  - No afecta validez del horario
+### Nueva Arquitectura de 2 Fases:
+
+#### **Fase 1: Generación de Horario Base**
+- **Objetivo**: Asignar clases a aulas y horarios
+- **Constraints evaluados**:
+  - ✅ Conflictos de aula (HC2)
+  - ✅ Violaciones de capacidad (HC4)
+  - ✅ Restricciones de grupo (SC4)
+- **NO considera**:
+  - ❌ Instructores (no hay asignaciones todavía)
+  - ❌ Preferencias de aula/horario
+- **Resultado**: Horario con clases ubicadas en aulas/horarios válidos
+
+#### **Fase 2: Asignación de Instructores**
+- **Objetivo**: Asignar instructores a las clases ya programadas
+- **Estrategia**:
+  1. Analizar disponibilidad de cada instructor
+  2. Considerar preferencias de horario del instructor
+  3. Evitar conflictos (instructor en 2 lugares al mismo tiempo)
+  4. Distribuir carga equitativamente
+  5. **Permitir clases sin instructor** si no hay disponibilidad
+- **Módulo**: `instructor_assigner.py`
+- **Uso**:
+  ```python
+  from schedule_app.instructor_assigner import assign_instructors_to_schedule
+  stats = assign_instructors_to_schedule(schedule)
+  ```
+
+### Ventajas de Este Enfoque:
+1. **Convergencia más rápida**: Menos constraints durante la generación
+2. **Mayor flexibilidad**: Instructores se adaptan al horario, no al revés
+3. **Realista**: Es normal tener clases sin instructor asignado inicialmente
+4. **Separación de responsabilidades**: Horario base vs asignación de recursos humanos
 
 ---
 
