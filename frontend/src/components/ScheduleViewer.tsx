@@ -45,6 +45,7 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [conflictCount, setConflictCount] = useState(0)
+  const [pageInput, setPageInput] = useState('')
 
   useEffect(() => {
     loadSchedules()
@@ -185,6 +186,22 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
     }
   }
 
+  const handleGoToPage = () => {
+    const pageNum = parseInt(pageInput, 10)
+    if (isNaN(pageNum) || pageNum < 1 || pageNum > rooms.length) {
+      alert(`Por favor ingrese un número válido entre 1 y ${rooms.length}`)
+      return
+    }
+    setCurrentRoomIndex(pageNum - 1) // Convertir a índice base 0
+    setPageInput('') // Limpiar el input
+  }
+
+  const handlePageInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleGoToPage()
+    }
+  }
+
   const handleEventClick = (info: any) => {
     const props = info.event.extendedProps
     alert(
@@ -276,7 +293,7 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
               Vista {currentRoomIndex + 1} de {rooms.length}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <button
               onClick={handlePrevRoom}
               disabled={currentRoomIndex === 0}
@@ -284,6 +301,27 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
             >
               ← Anterior
             </button>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Ir a página:</span>
+              <input
+                type="number"
+                value={pageInput}
+                onChange={(e) => setPageInput(e.target.value)}
+                onKeyPress={handlePageInputKeyPress}
+                placeholder={(currentRoomIndex + 1).toString()}
+                min="1"
+                max={rooms.length}
+                className="w-16 px-2 py-1 border border-gray-300 rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button
+                onClick={handleGoToPage}
+                className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+              >
+                Ir
+              </button>
+            </div>
+
             <button
               onClick={handleNextRoom}
               disabled={currentRoomIndex === rooms.length - 1}
