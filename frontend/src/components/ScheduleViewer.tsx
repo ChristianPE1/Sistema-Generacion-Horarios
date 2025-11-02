@@ -122,13 +122,25 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
     const events: any[] = []
 
     assignments.forEach(assignment => {
-      // Decodificar días de la semana (formato binario "0110000")
+      // Decodificar días de la semana (formato binario "1000000")
+      // IMPORTANTE: Nuestro formato es: posición 0=Lunes, 1=Martes, ..., 6=Domingo
+      // FullCalendar usa: 0=Domingo, 1=Lunes, 2=Martes, ..., 6=Sábado
       const days = assignment.days
+
+      // Mapeo de nuestro formato a FullCalendar:
+      // Posición 0 (bit 0) = Lunes → FullCalendar día 1
+      // Posición 1 (bit 1) = Martes → FullCalendar día 2
+      // Posición 2 (bit 2) = Miércoles → FullCalendar día 3
+      // Posición 3 (bit 3) = Jueves → FullCalendar día 4
+      // Posición 4 (bit 4) = Viernes → FullCalendar día 5
+      // Posición 5 (bit 5) = Sábado → FullCalendar día 6
+      // Posición 6 (bit 6) = Domingo → FullCalendar día 0
+      const dayMapping = [1, 2, 3, 4, 5, 6, 0] // [Lun, Mar, Mie, Jue, Vie, Sab, Dom]
 
       days.split('').forEach((bit, index) => {
         if (bit === '1') {
-          // Crear evento para cada día
-          const daysOfWeek = [index] // 0=Domingo, 1=Lunes, etc.
+          // Crear evento para cada día (con mapeo correcto)
+          const daysOfWeek = [dayMapping[index]]
 
           // Convertir start_time (minutos) a hora "HH:mm"
           const startHour = Math.floor(assignment.start_time / 60)
