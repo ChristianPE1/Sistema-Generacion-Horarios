@@ -45,8 +45,8 @@ class ScheduleGenerator:
         )
         
         self.validator = ConstraintValidator(
-            hard_constraint_weight=100.0,  # Peso optimizado: permite convergencia más rápida
-            soft_constraint_weight=1.0
+            hard_constraint_weight=100000.0,  # CRÍTICO: 100k por conflicto (hace imposible tener fitness positivo con conflictos)
+            soft_constraint_weight=1.0  # Solo BTB activo, peso 1.0 es razonable
         )
         
         # Inicializar heuristics si está disponible
@@ -255,17 +255,14 @@ class ScheduleGenerator:
         num_classes = len(self.classes)
         print(f"[INFO] Clases: {num_classes}, Aulas: {len(self.rooms)}")
         
-        # Decidir automáticamente si usar heurísticas
-        if num_classes > 300 and HEURISTICS_AVAILABLE:
-            use_heuristics = True
-            print(f"[INFO] Dataset grande detectado ({num_classes} clases) - Heurísticas ACTIVADAS")
-        elif use_heuristics and HEURISTICS_AVAILABLE:
+        # Respetar el parámetro del usuario
+        if use_heuristics and HEURISTICS_AVAILABLE:
             print(f"[INFO] Heurísticas ACTIVADAS (mejorarán convergencia)")
         elif use_heuristics and not HEURISTICS_AVAILABLE:
             print(f"[WARNING] Heurísticas solicitadas pero no disponibles")
             use_heuristics = False
         else:
-            print(f"[INFO] Heurísticas DESACTIVADAS (población random)")
+            print(f"[INFO] Heurísticas DESACTIVADAS (población random, más rápido)")
         
         # Inicializar población (con o sin heurísticas)
         if use_heuristics and HEURISTICS_AVAILABLE and self.heuristics:

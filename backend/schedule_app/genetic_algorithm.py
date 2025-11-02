@@ -165,10 +165,10 @@ class Individual:
         new_individual.fitness = self.fitness
         return new_individual
     
-    def repair(self, validator: 'ConstraintValidator'):
+    def repair(self, validator: 'ConstraintValidator', max_iterations=3):
         """
         Operador de reparación inteligente MEJORADO.
-        Corrige violaciones de capacidad Y conflictos de aula.
+        Corrige violaciones de capacidad Y conflictos de aula ITERATIVAMENTE.
         """
         from collections import defaultdict
         
@@ -187,47 +187,133 @@ class Individual:
                             suitable_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
                             self.genes[class_id] = (suitable_rooms[0].id, timeslot_id)
         
-        # 2. Detectar y resolver conflictos de aula
-        room_schedule = defaultdict(list)  # {(room_id, timeslot_id): [class_ids]}
-        
-        for class_id, (room_id, timeslot_id) in self.genes.items():
-            if room_id and timeslot_id:
-                room_schedule[(room_id, timeslot_id)].append(class_id)
-        
-        # Encontrar conflictos (más de 1 clase en misma aula/tiempo)
-        conflicts = [(key, classes) for key, classes in room_schedule.items() if len(classes) > 1]
-        
-        # Resolver conflictos: reasignar clases conflictivas a otras aulas
-        for (room_id, timeslot_id), conflicting_classes in conflicts:
-            # Mantener la primera clase, reasignar las demás
-            for class_id in conflicting_classes[1:]:
+        # 2. Detectar y resolver conflictos de aula CONSIDERANDO DÍAS (ITERATIVO)
+        for iteration in range(max_iterations):
+            # Construir mapa: {room_id: [(class_id, timeslot_obj)]}
+            room_schedule = defaultdict(list)
+            
+            # Cargar todos los timeslots de una vez (optimización)
+            timeslot_map = {}  # {timeslot_id: TimeSlot}
+            timeslot_ids = [ts_id for _, ts_id in self.genes.values() if ts_id]
+            if timeslot_ids:
+                from .models import TimeSlot as TS
+                for ts in TS.objects.filter(id__in=timeslot_ids):
+                    timeslot_map[ts.id] = ts
+            
+            for class_id, (room_id, timeslot_id) in self.genes.items():
+                if room_id and timeslot_id and timeslot_id in timeslot_map:
+                    room_schedule[room_id].append((class_id, timeslot_map[timeslot_id]))
+            
+            # Encontrar conflictos REALES (mismo aula, días que se solapan, horas que se solapan)
+            conflicts_to_fix = []
+            for room_id, assignments in room_schedule.items():
+                for i in range(len(assignments)):
+                    for j in range(i + 1, len(assignments)):
+                        class1_id, ts1 = assignments[i]
+                        class2_id, ts2 = assignments[j]
+                        
+                        # Verificar si días se solapan
+                        days_overlap = any(d1 == '1' and d2 == '1' 
+                                          for d1, d2 in zip(ts1.days, ts2.days))
+                        
+                        if days_overlap:
+                            # Verificar si horarios se solapan
+                            end1 = ts1.start_time + ts1.length
+                            end2 = ts2.start_time + ts2.length
+                            time_overlap = not (end1 <= ts2.start_time or end2 <= ts1.start_time)
+                            
+                            if time_overlap:
+                                # CONFLICTO REAL
+                                conflicts_to_fix.append((room_id, class1_id, class2_id, ts1.id, ts2.id))
+            
+            # Si no hay conflictos, salir del bucle
+            if len(conflicts_to_fix) == 0:
+                break
+            
+            # Resolver conflictos: reasignar clases conflictivas
+            for room_id, class1_id, class2_id, ts1_id, ts2_id in conflicts_to_fix:
+                # Mantener class1, reasignar class2
+                class_id = class2_id
+                timeslot_id = ts2_id
                 class_obj = next((c for c in self.classes if c.id == class_id), None)
                 if not class_obj:
                     continue
                 
-                # Buscar aula alternativa con capacidad adecuada
-                available_rooms = [r for r in self.rooms 
-                                 if validator.room_capacities.get(r.id, 0) >= class_obj.class_limit
-                                 and (r.id, timeslot_id) not in room_schedule]
+                # Obtener el timeslot actual
+                current_timeslot = timeslot_map.get(timeslot_id)
+                if not current_timeslot:
+                    continue
                 
-                if available_rooms:
-                    # Elegir aula con capacidad más cercana
-                    available_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
-                    new_room = available_rooms[0]
-                    self.genes[class_id] = (new_room.id, timeslot_id)
-                    room_schedule[(new_room.id, timeslot_id)].append(class_id)
-                else:
-                    # Si no hay aulas disponibles, intentar cambiar el timeslot
+                # Buscar aula alternativa que esté LIBRE en ese timeslot
+                assigned_room = False
+                candidate_rooms = [r for r in self.rooms 
+                                 if validator.room_capacities.get(r.id, 0) >= class_obj.class_limit
+                                 and r.id != room_id]  # Diferente a la que causa conflicto
+                
+                # Ordenar por capacidad más cercana
+                candidate_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
+                
+                for candidate_room in candidate_rooms:
+                    # Verificar si esta aula está libre en el timeslot actual
+                    is_free = True
+                    for other_class_id, (other_room_id, other_ts_id) in self.genes.items():
+                        if other_class_id == class_id:
+                            continue  # No comparar consigo mismo
+                        if other_room_id == candidate_room.id and other_ts_id in timeslot_map:
+                            other_ts = timeslot_map[other_ts_id]
+                            # Verificar si días se solapan
+                            days_overlap = any(d1 == '1' and d2 == '1' 
+                                              for d1, d2 in zip(current_timeslot.days, other_ts.days))
+                            if days_overlap:
+                                # Verificar si horarios se solapan
+                                end_current = current_timeslot.start_time + current_timeslot.length
+                                end_other = other_ts.start_time + other_ts.length
+                                time_overlap = not (end_current <= other_ts.start_time or end_other <= current_timeslot.start_time)
+                                if time_overlap:
+                                    is_free = False
+                                    break
+                    
+                    if is_free:
+                        # Asignar esta aula libre
+                        self.genes[class_id] = (candidate_room.id, timeslot_id)
+                        assigned_room = True
+                        break
+                
+                # Si no encontró aula libre, intentar cambiar el timeslot
+                if not assigned_room:
                     available_slots = self.time_slots.get(class_id, [])
                     if available_slots and len(available_slots) > 1:
-                        # Buscar timeslot alternativo
+                        # Buscar timeslot alternativo con aula disponible
                         for alt_slot in available_slots:
                             if alt_slot.id != timeslot_id:
-                                suitable_rooms = [r for r in self.rooms 
-                                                if validator.room_capacities.get(r.id, 0) >= class_obj.class_limit]
-                                if suitable_rooms:
-                                    suitable_rooms.sort(key=lambda r: abs(r.capacity - class_obj.class_limit))
-                                    self.genes[class_id] = (suitable_rooms[0].id, alt_slot.id)
+                                # Buscar aula libre para este timeslot alternativo
+                                for candidate_room in self.rooms:
+                                    if validator.room_capacities.get(candidate_room.id, 0) < class_obj.class_limit:
+                                        continue  # Capacidad insuficiente
+                                    
+                                    # Verificar si esta aula está libre en el nuevo timeslot
+                                    is_free = True
+                                    for other_class_id, (other_room_id, other_ts_id) in self.genes.items():
+                                        if other_class_id == class_id:
+                                            continue
+                                        if other_room_id == candidate_room.id and other_ts_id in timeslot_map:
+                                            other_ts = timeslot_map[other_ts_id]
+                                            days_overlap = any(d1 == '1' and d2 == '1' 
+                                                              for d1, d2 in zip(alt_slot.days, other_ts.days))
+                                            if days_overlap:
+                                                end_alt = alt_slot.start_time + alt_slot.length
+                                                end_other = other_ts.start_time + other_ts.length
+                                                time_overlap = not (end_alt <= other_ts.start_time or end_other <= alt_slot.start_time)
+                                                if time_overlap:
+                                                    is_free = False
+                                                    break
+                                    
+                                    if is_free:
+                                        self.genes[class_id] = (candidate_room.id, alt_slot.id)
+                                        assigned_room = True
+                                        break
+                                
+                                if assigned_room:
                                     break
 
 
@@ -267,7 +353,7 @@ class GeneticAlgorithm:
         # Control de estancamiento (REDUCIDO para actuar más rápido)
         self.stagnation_counter = 0
         self.last_best_fitness = float('-inf')
-        self.stagnation_threshold = 30  # Reducido de 50 a 30 generaciones
+        self.stagnation_threshold = 50  # Aumentado a 50 para datasets grandes
         
         # Optimización: Caching y batch processing
         self.use_batch_evaluation = True
@@ -449,19 +535,50 @@ class GeneticAlgorithm:
                 for _ in range(random.randint(3, 5)):
                     self.mutate(self.population[idx])
         
-        # Estrategia 4: Reparar el mejor individuo
-        print(f"   • Reparando mejor individuo...")
+        # Estrategia 4: Hill Climbing AGRESIVO sobre el mejor individuo
+        print(f"   • Hill Climbing agresivo...")
         if self.best_individual:
             best_clone = self.best_individual.clone()
-            best_clone.repair(validator)
-            best_clone.calculate_fitness(validator)
             
-            # Si mejoró, reemplazar al peor de la elite
-            if best_clone.fitness > self.best_individual.fitness:
-                self.population[self.elitism_size - 1] = best_clone
-                print(f"     [OK] Reparación exitosa: {self.best_individual.fitness:.0f} → {best_clone.fitness:.0f}")
-            else:
-                print(f"     [WARNING] Reparación sin mejora significativa")
+            # Intentar reasignar clases conflictivas 50 veces
+            improved = False
+            for attempt in range(50):
+                # Reparar conflictos
+                best_clone.repair(validator)
+                
+                # Intentar mover clases aleatoriamente
+                classes_to_move = random.sample(list(best_clone.genes.keys()), 
+                                               min(20, len(best_clone.genes)))
+                
+                for class_id in classes_to_move:
+                    current_room, current_time = best_clone.genes[class_id]
+                    
+                    # Intentar timeslot diferente
+                    available_slots = best_clone.time_slots.get(class_id, [])
+                    if available_slots and len(available_slots) > 1:
+                        # Elegir slot aleatorio diferente
+                        new_slot = random.choice(available_slots)
+                        if new_slot.id != current_time:
+                            # Elegir aula adecuada
+                            class_obj = next((c for c in best_clone.classes if c.id == class_id), None)
+                            if class_obj:
+                                suitable_rooms = [r for r in best_clone.rooms 
+                                                if r.capacity >= class_obj.class_limit]
+                                if suitable_rooms:
+                                    new_room = random.choice(suitable_rooms[:5])  # Top 5
+                                    best_clone.genes[class_id] = (new_room.id, new_slot.id)
+                
+                # Evaluar y ver si mejoró
+                best_clone.calculate_fitness(validator)
+                if best_clone.fitness > self.best_individual.fitness:
+                    self.population[0] = best_clone
+                    self.best_individual = best_clone
+                    improved = True
+                    print(f"     [OK] Hill Climbing mejoró: {self.best_individual.fitness:.0f} → {best_clone.fitness:.0f}")
+                    break
+            
+            if not improved:
+                print(f"     [WARNING] Hill Climbing sin mejora tras 50 intentos")
         
         # Re-evaluar población
         self.evaluate_population(validator)
@@ -505,11 +622,9 @@ class GeneticAlgorithm:
                 self.mutate(child1)
                 self.mutate(child2)
                 
-                # Reparación habilitada (10% de probabilidad)
-                if random.random() < 0.1:
-                    child1.repair(validator)
-                if random.random() < 0.1:
-                    child2.repair(validator)
+                # Reparación SIEMPRE activada (crítico para eliminar conflictos)
+                child1.repair(validator)
+                child2.repair(validator)
                 
                 new_population.append(child1)
                 if len(new_population) < self.population_size:
@@ -557,18 +672,8 @@ class GeneticAlgorithm:
                       f"Tiempo: {elapsed:.0f}s | ETA: {remaining_time:.0f}s{stagnation_indicator}")
                 sys.stdout.flush()  # Forzar salida inmediata
             
-            # Early stopping basado en BASE_FITNESS
-            # Calcular BASE_FITNESS actual
-            num_classes = len(self.population[0].genes) if self.population else 0
-            BASE_FITNESS = num_classes * 500.0
-            BASE_FITNESS = max(50000.0, min(300000.0, BASE_FITNESS))
-            target_fitness = BASE_FITNESS * 0.90  # 90% del BASE
-            
-            if self.best_fitness_history[-1] >= target_fitness:
-                print(f"\n[GOAL] ¡Fitness excelente alcanzado! ({self.best_fitness_history[-1]:.0f})")
-                print(f"   Deteniendo en generación {generation + 1}/{self.generations}")
-                sys.stdout.flush()
-                break
+            # NO HAY PARADA PREMATURA - Siempre completar todas las generaciones solicitadas
+            # El usuario espera que se completen TODAS las generaciones para maximizar la calidad
         
         total_time = time.time() - start_time
         print(f"\n[OK] Evolución completada en {total_time:.1f} segundos")

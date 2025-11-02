@@ -27,12 +27,17 @@ class ConstraintValidator:
     """
     
     def __init__(self, 
-                 hard_constraint_weight: float = 1000.0,
-                 soft_constraint_weight: float = 1.0):
+                 hard_constraint_weight: float = 100000.0,
+                 soft_constraint_weight: float = 0.1):
         """
         Parámetros:
-        - hard_constraint_weight: Peso de las restricciones duras (reducido a 1000 para evitar fitness negativos)
-        - soft_constraint_weight: Peso de las restricciones blandas
+        - hard_constraint_weight: Peso EXTREMO para restricciones duras (100,000 por conflicto)
+        - soft_constraint_weight: Peso MÍNIMO para restricciones blandas (0.1)
+        
+        ESTRATEGIA CRÍTICA:
+        - hard_weight = 100,000: Hace IMPOSIBLE tener fitness positivo con conflictos
+        - soft_weight = 0.1: IGNORA casi totalmente preferencias de aula/tiempo
+        - Resultado: El algoritmo DEBE eliminar conflictos, ignorando preferencias
         """
         self.hard_weight = hard_constraint_weight
         self.soft_weight = soft_constraint_weight
@@ -194,15 +199,17 @@ class ConstraintValidator:
         """
         Evalúa restricciones blandas y retorna una penalización acumulada.
         
-        NOTA: Preferencias de aula y horario ELIMINADAS según optimización.
-        Solo se evalúan constraints estructurales (gaps, group constraints).
+        OPTIMIZACIÓN CRÍTICA:
+        - ELIMINADAS: Gaps de instructor (no hay instructores asignados)
+        - ELIMINADAS: Preferencias de aula/horario (ruido innecesario)
+        - ELIMINADAS: DIFF_TIME, SAME_TIME (confusas y no críticas)
+        - ÚNICA ACTIVA: BTB (Back-To-Back) - clases consecutivas en aulas lejanas
+        
+        Razón: Reducir ruido para permitir al algoritmo enfocarse en conflictos duros.
         """
         penalty = 0.0
         
-        # 1. Gaps en horarios de instructores
-        penalty += self._check_instructor_gaps(individual)
-        
-        # 2. Restricciones de grupo (BTB, DIFF_TIME, SAME_TIME)
+        # ÚNICA restricción blanda activa: BTB
         penalty += self._check_group_constraints(individual)
         
         return penalty
@@ -390,7 +397,10 @@ class ConstraintValidator:
             if constraint_type == 'BTB':
                 penalty += self._evaluate_btb_constraint(valid_classes, individual, time_slots_map, preference)
             elif constraint_type == 'DIFF_TIME':
-                penalty += self._evaluate_diff_time_constraint(valid_classes, individual, time_slots_map, preference)
+                # DESHABILITADO: Esta restricción es confusa. Clases del mismo curso PUEDEN estar
+                # al mismo tiempo si están en diferentes aulas (esto NO es un conflicto).
+                # penalty += self._evaluate_diff_time_constraint(valid_classes, individual, time_slots_map, preference)
+                pass
             elif constraint_type == 'SAME_TIME':
                 penalty += self._evaluate_same_time_constraint(valid_classes, individual, time_slots_map, preference)
         
@@ -436,28 +446,29 @@ class ConstraintValidator:
                         # Calcular distancia entre aulas
                         distance = self._calculate_distance(room1_id, room2_id)
                         
-                        # Penalización según preferencia y distancia
+                        # Penalización según preferencia y distancia (AUMENTADA)
+                        # NOTA: Penalizaciones más altas para hacer BTB más significativo
                         if preference == 'PROHIBITED':
                             if distance > 200:  # >200 metros
-                                penalty += 100.0  # Penalización alta
+                                penalty += 500.0  # Aumentado de 100 a 500
                             elif distance > 50:
-                                penalty += 20.0
+                                penalty += 100.0  # Aumentado de 20 a 100
                             else:
-                                penalty += 2.0
+                                penalty += 10.0  # Aumentado de 2 a 10
                         elif preference == 'STRONGLY_DISCOURAGED':
                             if distance > 200:
-                                penalty += 50.0
+                                penalty += 250.0  # Aumentado de 50 a 250
                             elif distance > 50:
-                                penalty += 10.0
+                                penalty += 50.0  # Aumentado de 10 a 50
                             else:
-                                penalty += 1.0
+                                penalty += 5.0  # Aumentado de 1 a 5
                         elif preference == 'DISCOURAGED':
                             if distance > 200:
-                                penalty += 20.0
+                                penalty += 100.0  # Aumentado de 20 a 100
                             elif distance > 50:
-                                penalty += 5.0
+                                penalty += 25.0  # Aumentado de 5 a 25
                             else:
-                                penalty += 0.5
+                                penalty += 2.5  # Aumentado de 0.5 a 2.5
         
         return penalty
     

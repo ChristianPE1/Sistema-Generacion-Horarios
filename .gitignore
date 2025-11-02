@@ -51,3 +51,6 @@ env/
 
 # markdown sin usar
 CHANGELOG.md
+
+# sqlite
+*.sqlite3

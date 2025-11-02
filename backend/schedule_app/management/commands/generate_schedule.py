@@ -47,6 +47,11 @@ class Command(BaseCommand):
             default=5,
             help='Tamaño del elitismo (default: 5)'
         )
+        parser.add_argument(
+            '--no-heuristics',
+            action='store_true',
+            help='Deshabilitar heurísticas (inicialización más rápida pero potencialmente menor calidad)'
+        )
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('=== Generador de Horarios - Algoritmo Genético ===\n'))
@@ -71,6 +76,10 @@ class Command(BaseCommand):
         
         # Generar horario
         self.stdout.write('Iniciando generación de horario...\n')
+        use_heuristics = not options['no_heuristics']
+        if options['no_heuristics']:
+            self.stdout.write(self.style.WARNING('[INFO] Heurísticas DESHABILITADAS (inicialización rápida)\n'))
+        
         try:
             schedule = generator.generate(
                 schedule_name=options['name'],
@@ -78,7 +87,8 @@ class Command(BaseCommand):
                            f"population={options['population']}, "
                            f"generations={options['generations']}, "
                            f"mutation_rate={options['mutation_rate']}, "
-                           f"crossover_rate={options['crossover_rate']}"
+                           f"crossover_rate={options['crossover_rate']}",
+                use_heuristics=use_heuristics
             )
             
             self.stdout.write(self.style.SUCCESS(f'\n[OK] Horario generado exitosamente!'))
