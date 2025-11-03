@@ -676,7 +676,7 @@ CORS_ALLOWED_ORIGINS = [
 
 ## 📄 Licencia
 
-Este proyecto fue desarrollado con fines académicos para el curso Interdisciplinar 3 de la Escuela Profesional de Ingeniería de Sistemas, UNSA.
+Este proyecto fue desarrollado con fines académicos para el curso Interdisciplinar 3 de la Escuela Profesional de Ciencia de la Computacion, UNSA.
 
 ---
 
