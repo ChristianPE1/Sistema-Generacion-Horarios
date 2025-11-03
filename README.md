@@ -16,7 +16,7 @@ Sistema automatizado de gestión y generación de horarios académicos que utili
 
 **Universidad Nacional de San Agustín de Arequipa**  
 Facultad de Ingeniería de Producción y Servicios  
-Escuela Profesional de Ingeniería de Sistemas
+Escuela Profesional de Ciencia de la Computacion
 
 ---
 
@@ -55,10 +55,6 @@ El sistema automatiza completamente este proceso mediante:
 - **Validación automática** de restricciones duras y blandas
 - **Interfaz web moderna** para visualización y gestión
 - **Generación en minutos** con resultados optimizados
-
----
-
-## 🎯 Características
 
 ---
 
@@ -678,29 +674,6 @@ CORS_ALLOWED_ORIGINS = [
 
 ---
 
-## 🚧 Trabajo Futuro
-
-### Mejoras Planificadas
-
-- [ ] **Optimización multiobjetivo**: NSGA-II para múltiples criterios
-- [ ] **Paralelización**: Distribución de evaluaciones en múltiples núcleos
-- [ ] **Machine Learning**: Predicción de parámetros óptimos
-- [ ] **Restricciones de estudiantes**: Validación durante generación
-- [ ] **Interfaz de preferencias**: Sistema de prioridades para instructores
-- [ ] **Exportación a PDF**: Generación de reportes imprimibles
-- [ ] **Notificaciones**: Sistema de alertas para cambios
-- [ ] **Historial**: Versionado de horarios generados
-
-### Extensiones Posibles
-
-- Integración con sistemas de matrícula
-- Soporte para múltiples campus
-- Optimización de uso de energía (aulas)
-- Análisis predictivo de demanda
-- App móvil (React Native)
-
----
-
 ## 📄 Licencia
 
 Este proyecto fue desarrollado con fines académicos para el curso Interdisciplinar 3 de la Escuela Profesional de Ingeniería de Sistemas, UNSA.
@@ -716,7 +689,7 @@ Para preguntas o sugerencias sobre el proyecto:
 - **Joselyn Quispe**
 
 **Universidad Nacional de San Agustín de Arequipa**  
-Escuela Profesional de Ingeniería de Sistemas
+Escuela Profesional de Ciencia de la Computacion
 
 ---
 
