@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getSchedules } from '../services/api';
+import { getAllSchedules } from '../services/api';
 import type { Schedule } from '../types';
 import ScheduleViewer from './ScheduleViewer';
 
@@ -16,7 +16,7 @@ function Schedules() {
   const loadSchedules = async () => {
     try {
       setLoading(true);
-      const response = await getSchedules();
+      const response = await getAllSchedules();
       setSchedules(response.data);
       setError(null);
     } catch (err) {

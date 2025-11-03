@@ -3,6 +3,7 @@ import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import api from '../services/api'
+import { getAllRooms, getAllSchedules } from '../services/api'
 
 interface Room {
   id: number
@@ -60,9 +61,8 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
 
   const loadSchedules = async () => {
     try {
-      const response = await api.get('/schedules/')
-      // La API retorna datos paginados con "results"
-      const schedulesData = response.data.results || response.data
+      const response = await getAllSchedules()
+      const schedulesData = response.data
       console.log('Schedules cargados:', schedulesData.length)
       setSchedules(schedulesData)
       // Si no hay schedule seleccionado, tomar el más reciente
@@ -77,10 +77,10 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
 
   const loadRooms = async () => {
     try {
-      // Cargar todas las aulas (sin paginación)
-      const response = await api.get('/rooms/?page_size=1000')
-      // La API retorna datos paginados con "results"
-      const roomsData = response.data.results || response.data
+      setLoading(true)
+      // Usar getAllRooms que carga todas las páginas automáticamente
+      const response = await getAllRooms()
+      const roomsData = response.data
       console.log('Aulas cargadas:', roomsData.length)
       setRooms(roomsData)
       setLoading(false)

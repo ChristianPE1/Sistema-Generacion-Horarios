@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getRooms, createRoom, updateRoom, deleteRoom } from '../services/api';
 import type { Room } from '../types';
+import type { PaginatedResponse } from '../services/api';
+import Pagination from './Pagination';
 
 function Rooms() {
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [paginatedData, setPaginatedData] = useState<PaginatedResponse<Room> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
     xml_id: 0,
     capacity: 0,
@@ -16,14 +19,14 @@ function Rooms() {
   });
 
   useEffect(() => {
-    loadRooms();
-  }, []);
+    loadRooms(currentPage);
+  }, [currentPage]);
 
-  const loadRooms = async () => {
+  const loadRooms = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getRooms();
-      setRooms(response.data);
+      const response = await getRooms(page, 20);
+      setPaginatedData(response.data);
       setError(null);
     } catch (err) {
       setError('Error al cargar las aulas');
@@ -41,7 +44,7 @@ function Rooms() {
       } else {
         await createRoom(formData);
       }
-      await loadRooms();
+      await loadRooms(currentPage);
       setShowModal(false);
       resetForm();
     } catch (err) {
@@ -65,7 +68,7 @@ function Rooms() {
     if (window.confirm('¿Estás seguro de eliminar esta aula?')) {
       try {
         await deleteRoom(id);
-        await loadRooms();
+        await loadRooms(currentPage);
       } catch (err) {
         setError('Error al eliminar el aula');
         console.error(err);
@@ -89,10 +92,20 @@ function Rooms() {
     </div>
   );
 
+  const rooms = paginatedData?.results || [];
+  const totalPages = paginatedData ? Math.ceil(paginatedData.count / 20) : 0;
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">Gestión de Aulas</h2>
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">Gestión de Aulas</h2>
+          {paginatedData && (
+            <p className="text-sm text-gray-600 mt-1">
+              Mostrando {rooms.length} de {paginatedData.count} aulas
+            </p>
+          )}
+        </div>
         <button 
           onClick={() => { resetForm(); setShowModal(true); }}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition font-medium"
@@ -157,6 +170,15 @@ function Rooms() {
             </tbody>
           </table>
         </div>
+        
+        {/* Paginación con componente reutilizable */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={20}
+          totalItems={paginatedData?.count}
+        />
       </div>
 
       {showModal && (

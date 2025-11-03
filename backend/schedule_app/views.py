@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Count, Q
 from django.db.models import Avg, Max
 from .models import (
@@ -17,10 +18,18 @@ from .serializers import (
 from .schedule_generator import ScheduleGenerator
 
 
+class StandardResultsSetPagination(PageNumberPagination):
+    """Paginación estándar para el sistema"""
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class RoomViewSet(viewsets.ModelViewSet):
     """ViewSet para gestionar aulas"""
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
+    pagination_class = StandardResultsSetPagination
     
     @action(detail=True, methods=['get'])
     def assignments(self, request, pk=None):
@@ -129,6 +138,7 @@ class InstructorViewSet(viewsets.ModelViewSet):
     """ViewSet para gestionar instructores"""
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
+    pagination_class = StandardResultsSetPagination
     
     @action(detail=True, methods=['get'])
     def classes(self, request, pk=None):
@@ -158,6 +168,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet para gestionar cursos"""
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    pagination_class = StandardResultsSetPagination
     
     @action(detail=True, methods=['get'])
     def classes(self, request, pk=None):
@@ -176,6 +187,7 @@ class ClassViewSet(viewsets.ModelViewSet):
         'time_slots',
         'enrolled_students'
     ).all()
+    pagination_class = StandardResultsSetPagination
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -208,6 +220,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     """ViewSet para gestionar estudiantes"""
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
+    pagination_class = StandardResultsSetPagination
     
     @action(detail=True, methods=['get'])
     def classes(self, request, pk=None):
@@ -221,6 +234,7 @@ class StudentViewSet(viewsets.ModelViewSet):
 class ScheduleViewSet(viewsets.ModelViewSet):
     """ViewSet para gestionar horarios"""
     queryset = Schedule.objects.all()
+    pagination_class = StandardResultsSetPagination
     
     def get_serializer_class(self):
         if self.action == 'list':

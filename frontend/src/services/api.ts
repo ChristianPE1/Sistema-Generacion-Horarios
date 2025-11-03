@@ -13,8 +13,39 @@ const api = axios.create({
   },
 });
 
+// Interfaz para respuestas paginadas
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+// Helper para obtener todos los resultados paginados
+async function getAllPaginated<T>(url: string): Promise<T[]> {
+  let allResults: T[] = [];
+  let nextUrl: string | null = url;
+  
+  while (nextUrl) {
+    const response = await api.get<PaginatedResponse<T>>(nextUrl);
+    allResults = allResults.concat(response.data.results);
+    nextUrl = response.data.next;
+  }
+  
+  return allResults;
+}
+
 // Rooms
-export const getRooms = (): Promise<{data: Room[]}> => api.get('/rooms/').then(response => ({ ...response, data: response.data.results || response.data }));
+export const getRooms = (page?: number, pageSize?: number): Promise<{data: PaginatedResponse<Room>}> => {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (pageSize) params.append('page_size', pageSize.toString());
+  return api.get(`/rooms/?${params.toString()}`);
+};
+
+export const getAllRooms = (): Promise<{data: Room[]}> => 
+  getAllPaginated<Room>('/rooms/').then(data => ({ data }));
+
 export const getRoom = (id: number) => api.get<Room>(`/rooms/${id}/`);
 export const createRoom = (data: Partial<Room>) => api.post<Room>('/rooms/', data);
 export const updateRoom = (id: number, data: Partial<Room>) => api.put<Room>(`/rooms/${id}/`, data);
@@ -22,7 +53,16 @@ export const deleteRoom = (id: number) => api.delete(`/rooms/${id}/`);
 export const getRoomsStatistics = () => api.get('/rooms/statistics/');
 
 // Instructors
-export const getInstructors = (): Promise<{data: Instructor[]}> => api.get('/instructors/').then(response => ({ ...response, data: response.data.results || response.data }));
+export const getInstructors = (page?: number, pageSize?: number): Promise<{data: PaginatedResponse<Instructor>}> => {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (pageSize) params.append('page_size', pageSize.toString());
+  return api.get(`/instructors/?${params.toString()}`);
+};
+
+export const getAllInstructors = (): Promise<{data: Instructor[]}> => 
+  getAllPaginated<Instructor>('/instructors/').then(data => ({ data }));
+
 export const getInstructor = (id: number) => api.get<Instructor>(`/instructors/${id}/`);
 export const createInstructor = (data: Partial<Instructor>) => api.post<Instructor>('/instructors/', data);
 export const updateInstructor = (id: number, data: Partial<Instructor>) => api.put<Instructor>(`/instructors/${id}/`, data);
@@ -31,7 +71,16 @@ export const getInstructorClasses = (id: number) => api.get(`/instructors/${id}/
 export const getInstructorsStatistics = () => api.get('/instructors/statistics/');
 
 // Courses
-export const getCourses = (): Promise<{data: Course[]}> => api.get('/courses/').then(response => ({ ...response, data: response.data.results || response.data }));
+export const getCourses = (page?: number, pageSize?: number): Promise<{data: PaginatedResponse<Course>}> => {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (pageSize) params.append('page_size', pageSize.toString());
+  return api.get(`/courses/?${params.toString()}`);
+};
+
+export const getAllCourses = (): Promise<{data: Course[]}> => 
+  getAllPaginated<Course>('/courses/').then(data => ({ data }));
+
 export const getCourse = (id: number) => api.get<Course>(`/courses/${id}/`);
 export const createCourse = (data: Partial<Course>) => api.post<Course>('/courses/', data);
 export const updateCourse = (id: number, data: Partial<Course>) => api.put<Course>(`/courses/${id}/`, data);
@@ -39,7 +88,16 @@ export const deleteCourse = (id: number) => api.delete(`/courses/${id}/`);
 export const getCourseClasses = (id: number) => api.get(`/courses/${id}/classes/`);
 
 // Classes
-export const getClasses = (): Promise<{data: Class[]}> => api.get('/classes/').then(response => ({ ...response, data: response.data.results || response.data }));
+export const getClasses = (page?: number, pageSize?: number): Promise<{data: PaginatedResponse<Class>}> => {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (pageSize) params.append('page_size', pageSize.toString());
+  return api.get(`/classes/?${params.toString()}`);
+};
+
+export const getAllClasses = (): Promise<{data: Class[]}> => 
+  getAllPaginated<Class>('/classes/').then(data => ({ data }));
+
 export const getClass = (id: number) => api.get<Class>(`/classes/${id}/`);
 export const createClass = (data: Partial<Class>) => api.post<Class>('/classes/', data);
 export const updateClass = (id: number, data: Partial<Class>) => api.put<Class>(`/classes/${id}/`, data);
@@ -48,7 +106,16 @@ export const getClassStudents = (id: number) => api.get(`/classes/${id}/students
 export const getClassesStatistics = () => api.get('/classes/statistics/');
 
 // Students
-export const getStudents = (): Promise<{data: Student[]}> => api.get('/students/').then(response => ({ ...response, data: response.data.results || response.data }));
+export const getStudents = (page?: number, pageSize?: number): Promise<{data: PaginatedResponse<Student>}> => {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (pageSize) params.append('page_size', pageSize.toString());
+  return api.get(`/students/?${params.toString()}`);
+};
+
+export const getAllStudents = (): Promise<{data: Student[]}> => 
+  getAllPaginated<Student>('/students/').then(data => ({ data }));
+
 export const getStudent = (id: number) => api.get<Student>(`/students/${id}/`);
 export const createStudent = (data: Partial<Student>) => api.post<Student>('/students/', data);
 export const updateStudent = (id: number, data: Partial<Student>) => api.put<Student>(`/students/${id}/`, data);
@@ -56,7 +123,16 @@ export const deleteStudent = (id: number) => api.delete(`/students/${id}/`);
 export const getStudentClasses = (id: number) => api.get(`/students/${id}/classes/`);
 
 // Schedules
-export const getSchedules = (): Promise<{data: Schedule[]}> => api.get('/schedules/').then(response => ({ ...response, data: response.data.results || response.data }));
+export const getSchedules = (page?: number, pageSize?: number): Promise<{data: PaginatedResponse<Schedule>}> => {
+  const params = new URLSearchParams();
+  if (page) params.append('page', page.toString());
+  if (pageSize) params.append('page_size', pageSize.toString());
+  return api.get(`/schedules/?${params.toString()}`);
+};
+
+export const getAllSchedules = (): Promise<{data: Schedule[]}> => 
+  getAllPaginated<Schedule>('/schedules/').then(data => ({ data }));
+
 export const getSchedule = (id: number) => api.get<Schedule>(`/schedules/${id}/`);
 export const createSchedule = (data: Partial<Schedule>) => api.post<Schedule>('/schedules/', data);
 export const updateSchedule = (id: number, data: Partial<Schedule>) => api.put<Schedule>(`/schedules/${id}/`, data);

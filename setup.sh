@@ -15,7 +15,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Verificar si estamos en el directorio correcto
-if [ ! -f "pu-fal07-cs.xml" ]; then
+if [ ! -f "pu-fal07-llr.xml" ]; then
     echo "❌ Error: No se encontró el archivo pu-fal07-cs.xml"
     echo "Por favor ejecuta este script desde el directorio del proyecto"
     exit 1
