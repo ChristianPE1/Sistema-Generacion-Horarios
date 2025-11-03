@@ -54,7 +54,6 @@ class RoomViewSet(viewsets.ModelViewSet):
             'time_slot'
         ).prefetch_related('class_obj__instructors__instructor')
         
-        # Detectar conflictos de solapamiento temporal (igual que SQL)
         # Dos clases en conflicto si: comparten al menos UN día Y horarios se solapan
         conflict_ids = set()
         assignments_list = list(assignments)

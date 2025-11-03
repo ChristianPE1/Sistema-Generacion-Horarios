@@ -45,8 +45,8 @@ class ScheduleGenerator:
         )
         
         self.validator = ConstraintValidator(
-            hard_constraint_weight=100000.0,  # CRÍTICO: 100k por conflicto (hace imposible tener fitness positivo con conflictos)
-            soft_constraint_weight=1.0  # Solo BTB activo, peso 1.0 es razonable
+            hard_constraint_weight=100000.0,  # 100k por conflicto
+            soft_constraint_weight=1.0  # Solo BTB activo
         )
         
         # Inicializar heuristics si está disponible
@@ -61,10 +61,8 @@ class ScheduleGenerator:
     
     def load_data(self):
         """
-        Carga datos con PREPROCESAMIENTO INTELIGENTE:
         1. Filtrar clases sin timeslots (no se pueden programar)
         2. Filtrar aulas no utilizadas (sin asignaciones previas)
-        3. NO crear instructores sintéticos (causan estancamiento)
         """
         import sys
         
@@ -87,7 +85,7 @@ class ScheduleGenerator:
             removed = len(all_classes) - len(self.classes)
             print(f"[WARNING] {removed} clases ignoradas (sin timeslots disponibles)")
         
-        # FILTRO 2: Verificar instructores (NUEVO ENFOQUE: NO asignar durante generación)
+        # FILTRO 2: Verificar instructores (No se asignan durante generación)
         from .models import ClassInstructor
         
         # Contar clases sin instructor
@@ -132,84 +130,12 @@ class ScheduleGenerator:
         # Cargar datos en el validador
         self.validator.load_data(self.classes, self.rooms)
         
-        print(f"\n[GOAL] DATASET OPTIMIZADO:")
+        print(f"\n[GOAL]:")
         print(f"   • Clases a programar: {len(self.classes)}")
         print(f"   • Aulas disponibles: {len(self.rooms)}")
         print(f"   • Ratio clases/aulas: {len(self.classes)/len(self.rooms):.1f}")
         print(f"   • Complejidad reducida: {(len(self.classes) * len(self.rooms)):.0f} combinaciones")
         sys.stdout.flush()
-    
-    def _create_synthetic_instructors(self) -> int:
-        """
-        Crea instructores sintéticos para clases sin instructor asignado.
-        Esto ayuda a:
-        1. Generar horarios completos sin bloqueos
-        2. Identificar cuántos profesores faltan asignar
-        3. Ver qué cursos necesitan más profesores
-        
-        Returns:
-            int: Número de instructores sintéticos creados
-        """
-        synthetic_count = 0
-        
-        # Obtener clases sin instructor
-        classes_with_instructor = set(
-            ClassInstructor.objects.values_list('class_obj_id', flat=True)
-        )
-        
-        classes_without_instructor = [
-            c for c in self.classes if c.id not in classes_with_instructor
-        ]
-        
-        if not classes_without_instructor:
-            return 0
-        
-        print(f"\n[WARNING] Se encontraron {len(classes_without_instructor)} clases sin instructor asignado")
-        print("Creando instructores sintéticos...")
-        
-        # Agrupar por curso (offering)
-        classes_by_course = {}
-        for class_obj in classes_without_instructor:
-            course_key = class_obj.offering_id if class_obj.offering_id else f"nocourse_{class_obj.id}"
-            if course_key not in classes_by_course:
-                classes_by_course[course_key] = []
-            classes_by_course[course_key].append(class_obj)
-        
-        # Crear un instructor sintético por curso
-        for course_key, course_classes in classes_by_course.items():
-            # Obtener nombre del curso
-            if isinstance(course_key, int):
-                course = course_classes[0].offering
-                course_name = course.name if course and course.name else course.code if course and course.code else f"Course_{course_key}"
-            else:
-                course_name = "Sin_Curso"
-            
-            # Crear instructor sintético
-            # Usar XML ID alto para no conflictuar con IDs reales
-            synthetic_xml_id = 900000 + synthetic_count
-            
-            instructor, created = Instructor.objects.get_or_create(
-                xml_id=synthetic_xml_id,
-                defaults={
-                    'name': f'[SINTÉTICO] Profesor para {course_name}',
-                    'email': f'synthetic.instructor.{synthetic_count}@sistema.edu'
-                }
-            )
-            
-            if created:
-                synthetic_count += 1
-            
-            # Asignar instructor sintético a todas las clases del curso
-            for class_obj in course_classes:
-                ClassInstructor.objects.get_or_create(
-                    class_obj=class_obj,
-                    instructor=instructor
-                )
-        
-        print(f"[OK] {synthetic_count} instructores sintéticos creados")
-        print(f"[OK] {len(classes_without_instructor)} clases ahora tienen instructor asignado\n")
-        
-        return synthetic_count
     
     def _create_default_timeslots(self, class_obj: Class) -> List[TimeSlot]:
         """Crea slots de tiempo por defecto para una clase"""
@@ -242,10 +168,6 @@ class ScheduleGenerator:
         """
         Genera un horario optimizado usando el algoritmo genético.
         
-        Args:
-            schedule_name: Nombre del horario
-            description: Descripción del horario
-            use_heuristics: Si usar heurísticas para mejorar convergencia (recomendado para >300 clases)
         """
 
         if not self.classes or not self.rooms:
@@ -316,13 +238,11 @@ class ScheduleGenerator:
             stats
         )
         
-        # NUEVA FASE: Asignar instructores después de generar el horario
         print(f"\n[INFO] Iniciando asignación de instructores...")
         try:
             from .instructor_assigner import assign_instructors_to_schedule
             instructor_stats = assign_instructors_to_schedule(schedule)
             
-            # Actualizar descripción con stats de instructores
             schedule.description += f"""
             
             Asignación de Instructores:
@@ -482,7 +402,6 @@ class ScheduleGenerator:
     def get_synthetic_instructors_report(self) -> Dict:
         """
         Genera un reporte de instructores sintéticos creados.
-        Útil para identificar qué cursos necesitan profesores reales.
         """
         synthetic_instructors = Instructor.objects.filter(xml_id__gte=900000)
         

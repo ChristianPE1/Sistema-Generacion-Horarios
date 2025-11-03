@@ -1,6 +1,5 @@
 """
 Sistema de validación de restricciones para el algoritmo genético.
-Define y evalúa restricciones duras (hard) y blandas (soft).
 """
 
 from typing import List, Dict, Set, Tuple
@@ -11,33 +10,25 @@ import math
 
 class ConstraintValidator:
     """
-    Valida restricciones duras y blandas para evaluar la calidad de una solución.
+    Valida restricciones duras y blandas para evaluar soluciones del algoritmo genético.
     
-    Restricciones Duras (DEBEN cumplirse):
-    - No solapamiento de clases del mismo instructor
+    Restricciones Duras (críticas):
     - No solapamiento de clases en la misma aula
-    - No solapamiento de clases del mismo estudiante (mismo curso/grupo)
     - Capacidad del aula >= límite de estudiantes de la clase
     
-    Restricciones Blandas (PREFERENCIAS):
-    - Preferencias de aula para cada clase
-    - Preferencias de horario para cada clase
-    - Minimizar ventanas horarias (gaps) para instructores
-    - Distribución equilibrada de clases
+    Restricciones Blandas (preferencias):
+    - BTB (Back-To-Back): Penaliza clases consecutivas en edificios lejanos
     """
     
     def __init__(self, 
                  hard_constraint_weight: float = 100000.0,
                  soft_constraint_weight: float = 0.1):
         """
-        Parámetros:
-        - hard_constraint_weight: Peso EXTREMO para restricciones duras (100,000 por conflicto)
-        - soft_constraint_weight: Peso MÍNIMO para restricciones blandas (0.1)
+        Inicializa el validador de restricciones.
         
-        ESTRATEGIA CRÍTICA:
-        - hard_weight = 100,000: Hace IMPOSIBLE tener fitness positivo con conflictos
-        - soft_weight = 0.1: IGNORA casi totalmente preferencias de aula/tiempo
-        - Resultado: El algoritmo DEBE eliminar conflictos, ignorando preferencias
+        Args:
+            hard_constraint_weight: Peso para restricciones duras (100,000 por violación)
+            soft_constraint_weight: Peso para restricciones blandas (0.1 por violación)
         """
         self.hard_weight = hard_constraint_weight
         self.soft_weight = soft_constraint_weight
@@ -129,33 +120,18 @@ class ConstraintValidator:
     def evaluate(self, individual) -> float:
         """
         Evalúa un individuo y retorna su fitness.
-        Fitness = BASE - (violaciones_duras * peso_duro + violaciones_blandas * peso_blando)
         
-        BASE_FITNESS ajustado dinámicamente según el dataset:
-        - Dataset pequeño (<100 clases): BASE = 10,000
-        - Dataset mediano (100-300): BASE = 50,000  
-        - Dataset grande (>300): BASE = 100,000
-        
-        Escala de fitness:
-        - BASE - 1000 = Perfecto (sin violaciones críticas)
-        - BASE - 5000 = Excelente
-        - BASE - 10000 = Bueno
-        - < BASE - 20000 = Necesita mejoras
+        Fórmula: Fitness = BASE - (violaciones_duras * peso_duro + violaciones_blandas * peso_blando)
+        BASE se calcula dinámicamente: num_clases * 500 (mínimo 50k, máximo 300k)
         """
         hard_violations = self._evaluate_hard_constraints(individual)
         soft_violations = self._evaluate_soft_constraints(individual)
         
-        # Penalización total
         penalty = (hard_violations * self.hard_weight + 
                   soft_violations * self.soft_weight)
         
-        # BASE_FITNESS dinámico con restricciones relajadas
-        # Fórmula: BASE = num_classes * 500 (más margen con restricciones reducidas)
         num_classes = len(individual.genes)
-        BASE_FITNESS = num_classes * 500.0
-        
-        # Mínimo 50k, máximo 300k
-        BASE_FITNESS = max(50000.0, min(300000.0, BASE_FITNESS))
+        BASE_FITNESS = max(50000.0, min(300000.0, num_classes * 500.0))
         
         fitness = BASE_FITNESS - penalty
         
@@ -165,32 +141,16 @@ class ConstraintValidator:
         """
         Evalúa restricciones duras y retorna el número de violaciones.
         
-        RESTRICCIONES HABILITADAS:
-        - Conflictos de aula (HABILITADO - crítico)
-        - Violaciones de capacidad (HABILITADO - crítico)
+        Restricciones evaluadas:
+        - Conflictos de aula: Misma aula, mismo horario
+        - Violaciones de capacidad: Aula insuficiente para el número de estudiantes
         
-        RESTRICCIONES DESHABILITADAS:
-        - Conflictos de instructor (DESHABILITADO - se asignan después)
-        - Conflictos de estudiantes (DESHABILITADO - post-procesamiento manual)
-        
-        NOTA: Los instructores se asignan DESPUÉS de generar el horario,
-        por lo tanto sus conflictos no se evalúan durante la generación.
+        Nota: Los conflictos de instructor y estudiantes se manejan en post-procesamiento.
         """
         violations = 0
-        
-        # Obtener asignaciones agrupadas
         time_slots_map = self._get_timeslots_from_genes(individual)
         
-        # 1. Conflictos de instructor - DESHABILITADO (se asignan post-generación)
-        # violations += self._check_instructor_conflicts(individual, time_slots_map)
-        
-        # 2. Conflictos de aula (CRÍTICO - misma aula, mismo horario)
         violations += self._check_room_conflicts(individual, time_slots_map)
-        
-        # 3. Conflictos de estudiantes - DESHABILITADO (post-procesamiento manual)
-        # violations += self._check_student_conflicts(individual, time_slots_map)
-        
-        # 4. Violaciones de capacidad (CRÍTICO - aula muy pequeña)
         violations += self._check_capacity_violations(individual)
         
         return violations
@@ -199,19 +159,10 @@ class ConstraintValidator:
         """
         Evalúa restricciones blandas y retorna una penalización acumulada.
         
-        OPTIMIZACIÓN CRÍTICA:
-        - ELIMINADAS: Gaps de instructor (no hay instructores asignados)
-        - ELIMINADAS: Preferencias de aula/horario (ruido innecesario)
-        - ELIMINADAS: DIFF_TIME, SAME_TIME (confusas y no críticas)
-        - ÚNICA ACTIVA: BTB (Back-To-Back) - clases consecutivas en aulas lejanas
-        
-        Razón: Reducir ruido para permitir al algoritmo enfocarse en conflictos duros.
+        Restricción activa: BTB (Back-To-Back) - Penaliza clases consecutivas en edificios lejanos
         """
         penalty = 0.0
-        
-        # ÚNICA restricción blanda activa: BTB
         penalty += self._check_group_constraints(individual)
-        
         return penalty
     
     def _get_timeslots_from_genes(self, individual) -> Dict[int, Tuple]:
@@ -340,10 +291,6 @@ class ConstraintValidator:
         
         return violations
     
-    # ELIMINADO: _check_room_preferences() - No se evalúan preferencias de aula
-    # ELIMINADO: _check_time_preferences() - No se evalúan preferencias de horario
-    # Razón: Optimización para enfocarse solo en constraints estructurales
-    
     def _check_instructor_gaps(self, individual) -> float:
         """Calcula penalización por gaps en horarios de instructores"""
         penalty = 0.0
@@ -396,11 +343,6 @@ class ConstraintValidator:
             
             if constraint_type == 'BTB':
                 penalty += self._evaluate_btb_constraint(valid_classes, individual, time_slots_map, preference)
-            elif constraint_type == 'DIFF_TIME':
-                # DESHABILITADO: Esta restricción es confusa. Clases del mismo curso PUEDEN estar
-                # al mismo tiempo si están en diferentes aulas (esto NO es un conflicto).
-                # penalty += self._evaluate_diff_time_constraint(valid_classes, individual, time_slots_map, preference)
-                pass
             elif constraint_type == 'SAME_TIME':
                 penalty += self._evaluate_same_time_constraint(valid_classes, individual, time_slots_map, preference)
         
@@ -443,32 +385,29 @@ class ConstraintValidator:
                     is_back_to_back = (end1 == start2) or (end2 == start1)
                     
                     if is_back_to_back:
-                        # Calcular distancia entre aulas
                         distance = self._calculate_distance(room1_id, room2_id)
                         
-                        # Penalización según preferencia y distancia (AUMENTADA)
-                        # NOTA: Penalizaciones más altas para hacer BTB más significativo
                         if preference == 'PROHIBITED':
-                            if distance > 200:  # >200 metros
-                                penalty += 500.0  # Aumentado de 100 a 500
+                            if distance > 200:
+                                penalty += 500.0
                             elif distance > 50:
-                                penalty += 100.0  # Aumentado de 20 a 100
+                                penalty += 100.0
                             else:
-                                penalty += 10.0  # Aumentado de 2 a 10
+                                penalty += 10.0
                         elif preference == 'STRONGLY_DISCOURAGED':
                             if distance > 200:
-                                penalty += 250.0  # Aumentado de 50 a 250
+                                penalty += 250.0
                             elif distance > 50:
-                                penalty += 50.0  # Aumentado de 10 a 50
+                                penalty += 50.0
                             else:
-                                penalty += 5.0  # Aumentado de 1 a 5
+                                penalty += 5.0
                         elif preference == 'DISCOURAGED':
                             if distance > 200:
-                                penalty += 100.0  # Aumentado de 20 a 100
+                                penalty += 100.0
                             elif distance > 50:
-                                penalty += 25.0  # Aumentado de 5 a 25
+                                penalty += 25.0
                             else:
-                                penalty += 2.5  # Aumentado de 0.5 a 2.5
+                                penalty += 2.5
         
         return penalty
     

@@ -1,13 +1,5 @@
 """
-Módulo para asignación inteligente de instructores después de la generación del horario.
-
-Este módulo se encarga de:
-1. Analizar el horario generado (clases ya tienen aula y horario asignados)
-2. Asignar instructores disponibles considerando:
-   - Preferencias de horario del instructor
-   - Evitar conflictos (instructor en 2 lugares al mismo tiempo)
-   - Maximizar match entre preferencias e instructor
-3. Permitir clases sin instructor si no hay disponibilidad
+Módulo para asignación de instructores después de la generación del horario.
 """
 
 from typing import Dict, List, Tuple, Set

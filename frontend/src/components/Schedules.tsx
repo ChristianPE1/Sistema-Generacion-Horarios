@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getSchedules } from '../services/api';
 import type { Schedule } from '../types';
-import TimetableView from './TimetableView';
+import ScheduleViewer from './ScheduleViewer';
 
 function Schedules() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -33,7 +33,6 @@ function Schedules() {
     </div>
   );
 
-  // Si hay un horario seleccionado, mostrar la vista de horario
   if (selectedScheduleId) {
     return (
       <div>
@@ -43,7 +42,7 @@ function Schedules() {
         >
           <span>←</span> Volver a lista de horarios
         </button>
-        <TimetableView scheduleId={selectedScheduleId} />
+        <ScheduleViewer scheduleId={selectedScheduleId} />
       </div>
     );
   }
