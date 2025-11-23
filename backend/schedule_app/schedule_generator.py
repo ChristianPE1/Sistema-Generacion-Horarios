@@ -239,13 +239,17 @@ class ScheduleGenerator:
         print(f"[OK] Mejora total: {stats['improvement']:.2f}")
         sys.stdout.flush()
         
+        # Calcular conflictos totales
+        total_conflicts = self.validator.calculate_total_conflicts(best_solution)
+        
         # Guardar solución en la base de datos
         schedule = self._save_schedule(
             best_solution,
             schedule_name or f"Horario Generado {timezone.now().strftime('%Y-%m-%d %H:%M')}",
             description,
             stats,
-            schedule_instance
+            schedule_instance,
+            conflict_count=total_conflicts
         )
         
         print(f"\n[INFO] Iniciando asignación de instructores...")
@@ -253,13 +257,8 @@ class ScheduleGenerator:
             from .instructor_assigner import assign_instructors_to_schedule
             instructor_stats = assign_instructors_to_schedule(schedule)
             
-            schedule.description += f"""
-            
-            Asignación de Instructores:
-            - Clases con instructor: {instructor_stats['assigned']}
-            - Clases sin instructor: {instructor_stats['unassigned']}
-            - Porcentaje asignado: {instructor_stats['assigned']/instructor_stats['total']*100:.1f}%
-            """
+            # Actualizar solo si es necesario, pero no ensuciar la descripción
+            # schedule.description += ... (Eliminado por redundancia)
             schedule.save()
             
             print(f"[OK] Asignación de instructores completada")
@@ -270,7 +269,7 @@ class ScheduleGenerator:
         return schedule
     
     @transaction.atomic
-    def _save_schedule(self, solution: Individual, name: str, description: str, stats: Dict, schedule_instance: Schedule = None) -> Schedule:
+    def _save_schedule(self, solution: Individual, name: str, description: str, stats: Dict, schedule_instance: Schedule = None, conflict_count: int = 0) -> Schedule:
         """
         Guarda la solución en la base de datos como un Schedule.
         """
@@ -280,6 +279,7 @@ class ScheduleGenerator:
             schedule.name = name
             schedule.description = description
             schedule.fitness_score = solution.fitness
+            schedule.conflict_count = conflict_count
             schedule.is_active = False
             schedule.save()
         else:
@@ -287,6 +287,7 @@ class ScheduleGenerator:
                 name=name,
                 description=description,
                 fitness_score=solution.fitness,
+                conflict_count=conflict_count,
                 is_active=False
             )
         
@@ -331,22 +332,9 @@ class ScheduleGenerator:
                 print(f"Error al guardar asignación para clase {class_id}: {e}")
                 continue
         
-        # Actualizar descripción con estadísticas
-        conflicts_report = self.validator.get_conflicts_report(solution)
-        
-        schedule.description = f"""{description}
-            Estadísticas de Generación:
-            - Fitness Final: {stats['best_fitness']:.2f}
-            - Generaciones: {stats['generations']}
-            - Mejora: {stats['improvement']:.2f}
-
-            Conflictos:
-            - Instructores: {conflicts_report['hard_constraints']['instructor_conflicts']}
-            - Aulas: {conflicts_report['hard_constraints']['room_conflicts']}
-            - Estudiantes: {conflicts_report['hard_constraints']['student_conflicts']}
-            - Capacidad: {conflicts_report['hard_constraints']['capacity_violations']}
-            """
-        schedule.save()
+        # Actualizar descripción con estadísticas (ELIMINADO para evitar redundancia)
+        # conflicts_report = self.validator.get_conflicts_report(solution)
+        # schedule.description = ...
         
         print(f"Horario guardado con ID: {schedule.id}")
         print(f"Total de asignaciones: {schedule.assignments.count()}")
