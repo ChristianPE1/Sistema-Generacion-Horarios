@@ -280,15 +280,14 @@ class ScheduleViewSet(viewsets.ModelViewSet):
 
             def run_generation(schedule_id):
                 try:
-                    # Crear generador (heurísticas desactivadas por defecto para mayor velocidad)
+                    # Crear generador (sin heurísticas para mayor velocidad)
                     generator = ScheduleGenerator(
                         population_size=population_size,
                         generations=generations,
                         mutation_rate=mutation_rate,
                         crossover_rate=crossover_rate,
                         elitism_size=elitism_size,
-                        tournament_size=tournament_size,
-                        use_heuristics=False
+                        tournament_size=tournament_size
                     )
                     
                     # Cargar datos

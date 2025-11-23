@@ -221,11 +221,46 @@ function Schedules() {
         // Crear hoja de cálculo
         const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
-        // Ajustar ancho de columnas (opcional)
+        // Ajustar ancho de columnas
         ws['!cols'] = [
           { wch: 12 }, // Hora
-          ...days.map(() => ({ wch: 25 })) // Días
+          ...days.map(() => ({ wch: 30 })) // Días (más ancho para mejor lectura)
         ];
+
+        // Aplicar formato a todas las celdas: centrado y ajuste de texto
+        const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+          for (let C = range.s.c; C <= range.e.c; ++C) {
+            const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+            if (!ws[cellAddress]) continue;
+            
+            // Inicializar estilo si no existe
+            if (!ws[cellAddress].s) ws[cellAddress].s = {};
+            
+            // Aplicar alineación centrada y ajuste de texto
+            ws[cellAddress].s = {
+              alignment: {
+                vertical: 'center',
+                horizontal: 'center',
+                wrapText: true
+              }
+            };
+            
+            // Hacer encabezados más notorios (negrita, fondo gris)
+            if (R === 2) { // Fila de encabezado (Hora | Lun | Mar | ...)
+              ws[cellAddress].s = {
+                ...ws[cellAddress].s,
+                font: { bold: true },
+                fill: { fgColor: { rgb: 'E0E0E0' } },
+                alignment: {
+                  vertical: 'center',
+                  horizontal: 'center',
+                  wrapText: true
+                }
+              };
+            }
+          }
+        }
 
         // Agregar hoja al libro (nombre de hoja limitado a 31 caracteres)
         const sheetName = roomData.room_name.substring(0, 31);
