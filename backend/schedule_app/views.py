@@ -261,6 +261,7 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             crossover_rate = float(request.data.get('crossover_rate', 0.8))
             elitism_size = int(request.data.get('elitism_size', 5))
             tournament_size = int(request.data.get('tournament_size', 5))
+            use_heuristics = request.data.get('use_heuristics', False)
             
             # Validar parámetros
             if not (0 <= mutation_rate <= 1):
@@ -301,7 +302,7 @@ class ScheduleViewSet(viewsets.ModelViewSet):
                     current_schedule = Schedule.objects.get(id=schedule_id)
                     
                     # Generar horario pasando la instancia
-                    generator.generate(name, description, schedule_instance=current_schedule)
+                    generator.generate(name, description, use_heuristics=use_heuristics, schedule_instance=current_schedule)
                     
                     # Actualizar estado a completed
                     current_schedule.refresh_from_db()

@@ -1,16 +1,16 @@
-# 🎓 Sistema de Generación de Horarios Universitarios
+# Sistema de Generación de Horarios Universitarios
 
 Sistema automatizado de gestión y generación de horarios académicos que utiliza **algoritmos genéticos** para optimizar la asignación de clases, aulas y horarios. Desarrollado con Django REST Framework y React + TypeScript.
 
-[![Estado](https://img.shields.io/badge/Estado-Completo-success)](./PROJECT_STATUS.md)
+[![Estado](https://img.shields.io/badge/Estado-En%20Desarrollo-orange)](./PROJECT_STATUS.md)
 [![Versión](https://img.shields.io/badge/Versión-1.0.0-blue)](./IMPLEMENTATION_SUMMARY.md)
 [![Documentación](https://img.shields.io/badge/Docs-Completa-green)](./INDEX.md)
 
 ---
 
-## � Integrantes del Equipo
+## Integrantes del Equipo
 
-- **Christian Pardave**
+- **Christian Pardavé**
 - **Leonardo Montoya**
 - **Joselyn Quispe**
 
@@ -20,7 +20,7 @@ Escuela Profesional de Ciencia de la Computacion
 
 ---
 
-## 📋 Índice
+## Índice
 
 - [Descripción General](#-descripción-general)
 - [Características](#-características)
@@ -29,6 +29,7 @@ Escuela Profesional de Ciencia de la Computacion
 - [Dataset](#-dataset)
 - [Flujo de Datos](#-flujo-de-datos)
 - [Algoritmo Genético](#-algoritmo-genético)
+- [Resultados](#-resultados)
 - [Instalación](#-instalación)
 - [Ejecución](#️-ejecución)
 - [API Endpoints](#-api-endpoints)
@@ -36,7 +37,7 @@ Escuela Profesional de Ciencia de la Computacion
 
 ---
 
-## 📖 Descripción General
+## Descripción General
 
 Este sistema resuelve el **University Course Timetabling Problem (UCTP)**, un problema NP-completo que consiste en asignar clases a aulas y franjas horarias respetando múltiples restricciones. La solución implementada utiliza un algoritmo genético optimizado que reduce el tiempo de generación de horarios de **semanas a minutos**.
 
@@ -58,43 +59,43 @@ El sistema automatiza completamente este proceso mediante:
 
 ---
 
-## 🎯 Características
+## Características
 
-### ✅ Funcionalidades Principales
+### Funcionalidades Principales
 
-- **🧬 Generación automática con algoritmo genético**
+- **Generación automática con algoritmo genético**
   - Optimización mediante evolución de poblaciones
   - Convergencia en menos de 1000 generaciones
   - Fitness promedio de 450,000+ puntos
 
-- **📊 Dashboard completo**
+- **Dashboard completo**
   - Estadísticas del sistema en tiempo real
   - Visualización de utilización de recursos
   - Análisis de carga de trabajo
 
-- **🔄 Gestión CRUD completa**
+- **Gestión CRUD completa**
   - Aulas, instructores, cursos y clases
   - Estudiantes y restricciones de grupo
   - Importación desde XML (formato ITC-2007/UniTime)
 
-- **📅 Visualización de horarios**
+- **Visualización de horarios**
   - Vista de calendario interactiva con FullCalendar.js
   - Detección automática de conflictos
   - Filtros por aula, instructor o curso
 
-- **🔍 Validación de restricciones**
+- **Validación de restricciones**
   - **Restricciones duras**: Capacidad, conflictos de aula
   - **Restricciones blandas**: BTB, ventanas horarias
   - Asignación post-generación de instructores
 
-- **🌐 API REST completa**
+- **API REST completa**
   - Django REST Framework
   - Endpoints documentados
   - Soporte para operaciones batch
 
 ---
 
-## 🏗️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 El sistema implementa una arquitectura cliente-servidor de 3 capas:
 
@@ -164,32 +165,7 @@ El sistema implementa una arquitectura cliente-servidor de 3 capas:
 
 ---
 
-## 🛠 Stack Tecnológico
-
-### Backend
-
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| **Python** | 3.12+ | Lenguaje principal |
-| **Django** | 4.2+ | Framework web |
-| **Django REST Framework** | 3.14+ | API REST |
-| **NumPy** | 1.24+ | Operaciones numéricas para AG |
-| **SQLite** | 3.x | Base de datos (desarrollo) |
-
-### Frontend
-
-| Tecnología | Versión | Propósito |
-|------------|---------|-----------|
-| **React** | 18.2+ | Framework UI |
-| **TypeScript** | 5.2+ | Tipado estático |
-| **Vite** | 7.1+ | Build tool |
-| **TailwindCSS** | 3.4+ | Estilos |
-| **FullCalendar.js** | 6.1+ | Visualización de calendario |
-| **Axios** | 1.6+ | Cliente HTTP |
-
----
-
-## 📊 Dataset
+## Dataset
 
 El sistema fue probado con el benchmark **LLR (Lower Austria University of Applied Sciences)** del ITC-2007:
 
@@ -213,7 +189,7 @@ El sistema soporta importación desde:
 
 ---
 
-## 🔄 Flujo de Datos
+## Flujo de Datos
 
 ### 1. Importación de Datos
 
@@ -277,13 +253,13 @@ Base de Datos → API REST → Frontend → Renderizado
 
 ---
 
-## 🧬 Algoritmo Genético
+## Algoritmo Genético
 
-### Parámetros Optimizados
+### Parámetros Recomendados
 
 ```python
-POPULATION_SIZE = 200          # Individuos por generación
-GENERATIONS = 1000             # Iteraciones máximas
+POPULATION_SIZE = 100          # Individuos por generación
+GENERATIONS = 100             # Iteraciones máximas
 MUTATION_RATE = 0.20          # Probabilidad de mutación
 CROSSOVER_RATE = 0.80         # Probabilidad de cruce
 TOURNAMENT_SIZE = 5           # Tamaño del torneo de selección
@@ -318,41 +294,36 @@ fitness = BASE - (
 )
 ```
 
-**Interpretación:**
-- `fitness ≥ BASE - 1,000`: ✅ Excelente
-- `BASE - 5,000 ≤ fitness < BASE - 1,000`: ⚠️ Bueno
-- `fitness < BASE - 10,000`: ❌ Requiere mejoras
+## Resultados
 
-### Operadores Genéticos
+- **Fitness promedio**: 200,000 puntos
+- **Convergencia**: < 50 generaciones (regularmente)
+- **Tiempo de ejecución**: 5-10 minutos (dataset LLR)
+- **Conflictos**: < 20 en promedio
 
-1. **Selección por Torneo**
-   - Se eligen 5 individuos al azar
-   - El mejor de los 5 es seleccionado como padre
 
-2. **Cruce de Punto Único**
-   - Se elige un punto de corte aleatorio
-   - Se intercambian genes entre padres
-   - Tasa: 80%
+### Capturas de Pantalla
 
-3. **Mutación**
-   - Se cambia aleatoriamente la asignación de una clase
-   - Nueva aula y/o slot horario
-   - Tasa: 20%
+#### Generación de Horarios
+![Inicio de Generación](assets/generando-horario-0.png)
+*Vista inicial del proceso de generación de horarios en el frontend.*
 
-4. **Elitismo**
-   - Los 5 mejores individuos pasan directamente a la siguiente generación
-   - Garantiza no perder buenas soluciones
+![Fitness Inicial Negativo](assets/generando-horario-1.png)
+*Fitness inicial negativo (-56,700,000) durante la evolución del algoritmo genético.*
 
-### Resultados
+![Fitness Final](assets/generando-horario-2.png)
+*Resultado final con fitness de 200,000 puntos y 16 conflictos detectados.*
 
-- **Fitness promedio**: 450,000+ puntos
-- **Convergencia**: < 500 generaciones (típicamente)
-- **Tiempo de ejecución**: 2-5 minutos (dataset LLR)
-- **Conflictos**: < 5 en promedio
+#### Visualización y Exportación
+![Visualización en Frontend](assets/horario-generado.png)
+*Visualización del horario generado en la interfaz web del frontend.*
+
+![Exportación a Excel](assets/horario-exportado.png)
+*Vista de la exportación del horario a formato Excel con todas las aulas.*
 
 ---
 
-## 🚀 Instalación
+## Instalación
 
 ### Requisitos Previos
 
@@ -402,7 +373,7 @@ npm install
 
 ---
 
-## ▶️ Ejecución
+## Ejecución
 
 ### Opción 1: Ejecución Manual
 
@@ -425,7 +396,7 @@ npm run dev
 
 La interfaz estará en: `http://localhost:5173`
 
-### Opción 2: Script Automatizado (Linux/Mac)
+### Opción 2: Script Automatizado (Linux)
 
 ```bash
 chmod +x run_clean_arch.sh
@@ -450,7 +421,7 @@ run_clean_windows.bat
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Gestión de Entidades
 
@@ -513,191 +484,10 @@ curl http://localhost:8000/api/dashboard-stats/
 
 ---
 
-## 📚 Documentación
 
-### Documentación Técnica
-
-- **[INFORME_TECNICO.md](./INFORME_TECNICO.md)**: Documentación completa del sistema
-  - Marco teórico
-  - Arquitectura detallada
-  - Algoritmo genético en profundidad
-  - Resultados y análisis
-
-- **[CONSTRAINTS_DOCUMENTATION.md](./docs/CONSTRAINTS_DOCUMENTATION.md)**: Especificación de restricciones
-  - Restricciones duras y blandas
-  - Implementación de validadores
-  - Casos de prueba
-
-- **[PROJECT_STATUS.md](./PROJECT_STATUS.md)**: Estado y progreso del proyecto
-
-### Comandos de Django
-
-```bash
-# Importar dataset XML
-python manage.py import_xml path/to/dataset.xml
-
-# Generar horario desde terminal
-python manage.py generate_schedule
-
-# Crear slots horarios
-python manage.py create_daily_timeslots
-
-# Verificar conflictos de instructores
-python manage.py verify_instructor_conflicts
-
-# Ver instructores sintéticos
-python manage.py show_synthetic_instructors
-```
-
----
-
-## 🔧 Configuración Avanzada
-
-### Variables de Entorno
-
-Crear archivo `.env` en `backend/`:
-
-```env
-# Django
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# Base de datos (opcional - PostgreSQL)
-DB_ENGINE=django.db.backends.postgresql
-DB_NAME=timetable_db
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-DB_HOST=localhost
-DB_PORT=5432
-
-# CORS
-CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
-
-# Algoritmo Genético
-GA_POPULATION_SIZE=200
-GA_GENERATIONS=1000
-GA_MUTATION_RATE=0.20
-GA_CROSSOVER_RATE=0.80
-```
-
-### Base de Datos en Producción
-
-Para usar PostgreSQL en lugar de SQLite:
-
-```python
-# backend/timetable_system/settings.py
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'timetable_db',
-        'USER': 'postgres',
-        'PASSWORD': 'yourpassword',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-```
-
----
-
-## 📊 Resultados y Rendimiento
-
-### Métricas del Sistema
-
-- **Tiempo de generación**: 2-5 minutos (896 clases)
-- **Fitness promedio**: 450,000+ puntos
-- **Convergencia**: < 500 generaciones
-- **Conflictos de aula**: < 5 en promedio
-- **Violaciones de capacidad**: 0-2
-- **Escalabilidad**: Probado hasta 1000+ clases
-
-### Comparación Manual vs Automatizado
-
-| Aspecto | Manual | Automatizado |
-|---------|--------|--------------|
-| Tiempo | 2-4 semanas | 2-5 minutos |
-| Conflictos | 10-20+ | < 5 |
-| Optimización | Subjetiva | Cuantificable |
-| Reproducibilidad | Baja | Alta |
-| Escalabilidad | Limitada | Excelente |
-
----
-
-## 🐛 Solución de Problemas
-
-### Backend no inicia
-
-```bash
-# Verificar que el entorno virtual esté activado
-source venv/bin/activate
-
-# Reinstalar dependencias
-pip install -r requirements.txt
-
-# Verificar migraciones
-python manage.py migrate
-```
-
-### Frontend no carga
-
-```bash
-# Limpiar caché de npm
-npm cache clean --force
-
-# Reinstalar dependencias
-rm -rf node_modules package-lock.json
-npm install
-
-# Verificar puerto 5173 disponible
-lsof -i :5173  # Linux/Mac
-netstat -ano | findstr :5173  # Windows
-```
-
-### Error de CORS
-
-Verificar en `backend/timetable_system/settings.py`:
-
-```python
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-]
-```
-
-### Generación lenta
-
-- Reducir `POPULATION_SIZE` a 100
-- Reducir `GENERATIONS` a 500
-- Usar dataset más pequeño para pruebas
-
----
-
-## 📄 Licencia
+## Licencia
 
 Este proyecto fue desarrollado con fines académicos para el curso Interdisciplinar 3 de la Escuela Profesional de Ciencia de la Computacion, UNSA.
-
----
-
-## 📞 Contacto
-
-Para preguntas o sugerencias sobre el proyecto:
-
-- **Christian Pardave** - [GitHub](https://github.com/ChristianPE1)
-- **Leonardo Montoya**
-- **Joselyn Quispe**
-
-**Universidad Nacional de San Agustín de Arequipa**  
-Escuela Profesional de Ciencia de la Computacion
-
----
-
-## 🙏 Agradecimientos
-
-- Dataset ITC-2007 (International Timetabling Competition)
-- Comunidad de Django y React
-- Documentación de algoritmos genéticos para UCTP
 
 ---
 

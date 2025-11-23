@@ -30,7 +30,8 @@ function Schedules() {
     population_size: 100,
     generations: 200,
     mutation_rate: 0.1,
-    crossover_rate: 0.8
+    crossover_rate: 0.8,
+    use_heuristics: false
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -84,7 +85,8 @@ function Schedules() {
         population_size: 100,
         generations: 200,
         mutation_rate: 0.1,
-        crossover_rate: 0.8
+        crossover_rate: 0.8,
+        use_heuristics: false
       });
       await loadSchedules(1);
       setCurrentPage(1);
@@ -365,6 +367,19 @@ function Schedules() {
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   rows={3}
                 />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="use_heuristics"
+                  checked={generateFormData.use_heuristics}
+                  onChange={(e) => setGenerateFormData({...generateFormData, use_heuristics: e.target.checked})}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <label htmlFor="use_heuristics" className="text-sm font-medium text-gray-700">
+                  Usar heurísticas
+                </label>
               </div>
 
               <div className="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-md">
