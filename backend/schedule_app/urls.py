@@ -30,6 +30,7 @@ urlpatterns = [
     path('schedules/<int:schedule_id>/timetable/', api.get_schedule_timetable, name='schedule-timetable'),
     path('schedules/<int:schedule_id>/conflicts/', api.get_conflict_analysis, name='schedule-conflicts'),
     path('schedules/<int:schedule_id>/rooms/', api.get_room_utilization, name='schedule-rooms'),
+    path('schedules/<int:schedule_id>/export_excel/', api.export_schedule_excel, name='schedule-export-excel'),
     path('analysis/workload/', api.get_workload_analysis, name='workload-analysis'),
     path('instructors-list/', api.get_instructors_list, name='instructors-list'),
     path('instructors/<int:instructor_id>/schedule/', api.get_instructor_schedule, name='instructor-schedule'),

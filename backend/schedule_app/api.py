@@ -462,3 +462,99 @@ def get_schedule_timetable(request, schedule_id):
             'needs_multiple_views': max_concurrent > 10
         }
     })
+
+
+@api_view(['GET'])
+def export_schedule_excel(request, schedule_id):
+    """
+    Retorna datos del horario estructurados por aula para exportación a Excel.
+    
+    GET /api/schedules/<id>/export_excel/
+    
+    Retorna datos organizados por aula, día y hora para facilitar la generación
+    de archivos Excel en el frontend (una hoja por aula).
+    """
+    schedule = get_object_or_404(Schedule, id=schedule_id)
+    assignments = ScheduleAssignment.objects.filter(
+        schedule=schedule
+    ).select_related(
+        'class_obj__offering',
+        'room',
+        'time_slot'
+    ).prefetch_related(
+        'class_obj__instructors__instructor'
+    )
+    
+    # Nombres de días
+    day_names = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+    
+    # Agrupar por aula
+    rooms = Room.objects.all().order_by('xml_id')
+    rooms_data = []
+    
+    for room in rooms:
+        room_assignments = assignments.filter(room=room)
+        
+        if not room_assignments.exists():
+            continue
+        
+        # Estructura: {dia: {hora_inicio: [clases]}}
+        schedule_grid = {day: {} for day in day_names}
+        
+        for assignment in room_assignments:
+            ts = assignment.time_slot
+            if not ts:
+                continue
+            
+            # Decodificar días
+            days_bits = ts.days[:7] if len(ts.days) >= 7 else ts.days.ljust(7, '0')
+            
+            # Calcular hora de inicio
+            start_minutes = ts.start_time * 5
+            start_hour = start_minutes // 60
+            start_min = start_minutes % 60
+            start_time_str = f"{start_hour:02d}:{start_min:02d}"
+            
+            # Calcular hora de fin
+            end_minutes = start_minutes + (ts.length * 5)
+            end_hour = end_minutes // 60
+            end_min = end_minutes % 60
+            end_time_str = f"{end_hour:02d}:{end_min:02d}"
+            
+            # Obtener instructores
+            instructors = [ci.instructor.name for ci in assignment.class_obj.instructors.all()]
+            
+            # Información de la clase
+            class_info = {
+                'name': assignment.class_obj.offering.name if assignment.class_obj.offering else f"Clase {assignment.class_obj.xml_id}",
+                'code': assignment.class_obj.offering.code if assignment.class_obj.offering else "N/A",
+                'instructors': instructors,
+                'start': start_time_str,
+                'end': end_time_str,
+                'students': assignment.class_obj.enrolled_students.count(),
+                'capacity': room.capacity
+            }
+            
+            # Agregar a cada día activo
+            for day_idx, bit in enumerate(days_bits):
+                if bit == '1' and day_idx < 7:
+                    day_name = day_names[day_idx]
+                    
+                    if start_time_str not in schedule_grid[day_name]:
+                        schedule_grid[day_name][start_time_str] = []
+                    
+                    schedule_grid[day_name][start_time_str].append(class_info)
+        
+        rooms_data.append({
+            'room_id': room.xml_id,
+            'room_name': f"Aula {room.xml_id}",
+            'capacity': room.capacity,
+            'schedule': schedule_grid
+        })
+    
+    return Response({
+        'schedule_id': schedule.id,
+        'schedule_name': schedule.name,
+        'rooms': rooms_data,
+        'days': day_names
+    })
