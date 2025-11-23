@@ -170,6 +170,7 @@ class Schedule(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     fitness_score = models.FloatField(default=0.0)
+    conflict_count = models.IntegerField(default=0)
     is_active = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='completed')
     

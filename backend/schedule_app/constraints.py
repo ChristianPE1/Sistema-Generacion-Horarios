@@ -541,3 +541,62 @@ class ConstraintValidator:
             },
             'total_fitness': individual.fitness
         }
+    
+    def calculate_total_conflicts(self, individual) -> int:
+        """Calcula el número total de CLASES afectadas por conflictos (duros) para reporte"""
+        affected_classes = set()
+        time_slots_map = self._get_timeslots_from_genes(individual)
+        
+        # 1. Room Conflicts
+        room_schedules = defaultdict(list)
+        for class_id, (room_id, timeslot_id) in individual.genes.items():
+            days, start, length = time_slots_map.get(class_id, (None, None, None))
+            if room_id and days and start is not None and length:
+                room_schedules[room_id].append({
+                    'class_id': class_id,
+                    'days': days,
+                    'start': start,
+                    'end': start + length
+                })
+        
+        for room_id, schedule in room_schedules.items():
+            if len(schedule) < 2: continue
+            for i in range(len(schedule)):
+                for j in range(i + 1, len(schedule)):
+                    if self._times_overlap(schedule[i], schedule[j]):
+                        affected_classes.add(schedule[i]['class_id'])
+                        affected_classes.add(schedule[j]['class_id'])
+
+        # 2. Capacity Violations
+        for class_id, (room_id, timeslot_id) in individual.genes.items():
+            if room_id:
+                room_capacity = self.room_capacities.get(room_id, float('inf'))
+                class_limit = self.class_limits.get(class_id, 0)
+                if room_capacity < class_limit:
+                    affected_classes.add(class_id)
+
+        # 3. Instructor Conflicts
+        instructor_schedules = defaultdict(list)
+        for class_id, (room_id, timeslot_id) in individual.genes.items():
+            instructors = self.class_instructors.get(class_id, set())
+            if not instructors: continue
+            days, start, length = time_slots_map.get(class_id, (None, None, None))
+            if days and start is not None and length:
+                class_info = {
+                    'class_id': class_id,
+                    'days': days,
+                    'start': start,
+                    'end': start + length
+                }
+                for instructor_id in instructors:
+                    instructor_schedules[instructor_id].append(class_info)
+        
+        for instructor_id, schedule in instructor_schedules.items():
+            if len(schedule) < 2: continue
+            for i in range(len(schedule)):
+                for j in range(i + 1, len(schedule)):
+                    if self._times_overlap(schedule[i], schedule[j]):
+                        affected_classes.add(schedule[i]['class_id'])
+                        affected_classes.add(schedule[j]['class_id'])
+        
+        return len(affected_classes)

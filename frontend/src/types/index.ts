@@ -94,6 +94,7 @@ export interface Schedule {
   created_at: string;
   updated_at: string;
   fitness_score: number;
+  conflict_count?: number;
   is_active: boolean;
   assignment_count?: number;
   status?: 'generating' | 'completed' | 'failed';

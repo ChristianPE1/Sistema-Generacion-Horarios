@@ -22,6 +22,7 @@ function Schedules() {
   const [processing, setProcessing] = useState(false);
   const [scheduleToEdit, setScheduleToEdit] = useState<Schedule | null>(null);
   const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
 
   const [generateFormData, setGenerateFormData] = useState({
     name: '',
@@ -204,6 +205,7 @@ function Schedules() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fitness Score</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conflictos</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asignaciones</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creado</th>
@@ -214,10 +216,17 @@ function Schedules() {
                   {paginatedData.results.map(schedule => (
                     <tr key={schedule.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{schedule.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{schedule.description || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title={schedule.description}>
+                        {schedule.description || '-'}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <span className="font-bold text-green-600">
                           {schedule.fitness_score.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className={`font-bold ${schedule.conflict_count && schedule.conflict_count > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {schedule.conflict_count || 0}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -252,6 +261,42 @@ function Schedules() {
                           >
                             Ver
                           </button>
+                          <div className="relative">
+                            <button 
+                              onClick={() => setOpenDropdownId(openDropdownId === schedule.id ? null : schedule.id)}
+                              className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded transition flex items-center gap-1"
+                            >
+                              Exportar ▾
+                            </button>
+                            {openDropdownId === schedule.id && (
+                              <>
+                                <div 
+                                  className="fixed inset-0 z-10" 
+                                  onClick={() => setOpenDropdownId(null)}
+                                ></div>
+                                <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-20">
+                                  <a 
+                                    href={`http://localhost:8000/api/schedules/${schedule.id}/export_xlsx/`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    onClick={() => setOpenDropdownId(null)}
+                                  >
+                                    Excel (.xlsx)
+                                  </a>
+                                  <a 
+                                    href={`http://localhost:8000/api/schedules/${schedule.id}/export_xml/`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    onClick={() => setOpenDropdownId(null)}
+                                  >
+                                    XML
+                                  </a>
+                                </div>
+                              </>
+                            )}
+                          </div>
                           <button
                             onClick={() => handleEditClick(schedule)}
                             className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded transition"

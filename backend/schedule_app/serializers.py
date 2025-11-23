@@ -149,4 +149,4 @@ class ScheduleListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = ['id', 'name', 'description', 'fitness_score', 'is_active', 
-                  'created_at', 'updated_at', 'assignment_count', 'status']
+                  'created_at', 'updated_at', 'assignment_count', 'status', 'conflict_count']
