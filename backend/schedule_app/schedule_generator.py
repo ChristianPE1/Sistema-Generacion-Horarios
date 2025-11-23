@@ -164,7 +164,7 @@ class ScheduleGenerator:
     
     def generate(self, schedule_name: str = None, 
                 description: str = "", 
-                use_heuristics: bool = False,
+                use_heuristics: bool = True,
                 schedule_instance: Schedule = None) -> Schedule:
         """
         Genera un horario optimizado usando el algoritmo genético.
