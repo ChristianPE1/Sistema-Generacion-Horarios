@@ -1,74 +1,68 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import api from '../services/api'
-import { getAllRooms, getAllSchedules } from '../services/api'
-
-interface Room {
-  id: number
-  xml_id: string
-  building?: string
-  capacity: number
-}
-
-interface Schedule {
-  id: number
-  name: string
-  description: string
-  fitness_score: number
-  created_at: string
-}
-
-interface ClassAssignment {
-  id: number
-  class_id: number  // xml_id de la clase
-  class_name: string
-  room_id: string  // xml_id del aula
-  instructor_name: string
-  days: string // "0110000" formato binario
-  start_time: number // minutos desde medianoche
-  length: number // duración en minutos
-  student_count: number
-  has_conflict: boolean
-}
+import { getAllRooms, getAllSchedules, getAllInstructors, getScheduleCalendarView } from '../services/api'
+import type { CalendarEvent, Room, Instructor, Schedule } from '../types'
 
 interface ScheduleViewerProps {
   scheduleId?: number
 }
 
+type ViewMode = 'room' | 'instructor'
+
 const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialScheduleId }) => {
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(initialScheduleId || null)
+  
+  // Data
   const [rooms, setRooms] = useState<Room[]>([])
-  const [currentRoomIndex, setCurrentRoomIndex] = useState(0)
-  const [assignments, setAssignments] = useState<ClassAssignment[]>([])
-  const [events, setEvents] = useState<any[]>([])
+  const [instructors, setInstructors] = useState<Instructor[]>([])
+  const [allEvents, setAllEvents] = useState<CalendarEvent[]>([])
+  
+  // View State
+  const [viewMode, setViewMode] = useState<ViewMode>('room')
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
+  const [selectedInstructorName, setSelectedInstructorName] = useState<string | null>(null)
+  
   const [loading, setLoading] = useState(true)
-  const [conflictCount, setConflictCount] = useState(0)
-  const [pageInput, setPageInput] = useState('')
+  const [loadingEvents, setLoadingEvents] = useState(false)
 
   useEffect(() => {
-    loadSchedules()
-    loadRooms()
+    const init = async () => {
+      setLoading(true)
+      await Promise.all([loadSchedules(), loadRooms(), loadInstructors()])
+      setLoading(false)
+    }
+    init()
   }, [])
 
   useEffect(() => {
-    if (rooms.length > 0 && selectedScheduleId) {
-      loadAssignments(rooms[currentRoomIndex].id)
+    if (selectedScheduleId) {
+      loadScheduleEvents(selectedScheduleId)
     }
-  }, [currentRoomIndex, rooms, selectedScheduleId])
+  }, [selectedScheduleId])
+
+  // Set default selections when data loads
+  useEffect(() => {
+    if (rooms.length > 0 && !selectedRoomId) {
+      setSelectedRoomId(rooms[0].id)
+    }
+  }, [rooms])
+
+  useEffect(() => {
+    if (instructors.length > 0 && !selectedInstructorName) {
+      // Find first instructor with events if possible, otherwise just the first one
+      setSelectedInstructorName(instructors[0].name || `Instructor ${instructors[0].xml_id}`)
+    }
+  }, [instructors])
 
   const loadSchedules = async () => {
     try {
       const response = await getAllSchedules()
-      const schedulesData = response.data
-      console.log('Schedules cargados:', schedulesData.length)
-      setSchedules(schedulesData)
-      // Si no hay schedule seleccionado, tomar el más reciente
-      if (!selectedScheduleId && schedulesData.length > 0) {
-        setSelectedScheduleId(schedulesData[0].id)
-        console.log('Schedule seleccionado:', schedulesData[0].id, schedulesData[0].name)
+      setSchedules(response.data)
+      if (!selectedScheduleId && response.data.length > 0) {
+        setSelectedScheduleId(response.data[0].id)
       }
     } catch (error) {
       console.error('Error cargando schedules:', error)
@@ -77,137 +71,80 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
 
   const loadRooms = async () => {
     try {
-      setLoading(true)
-      // Usar getAllRooms que carga todas las páginas automáticamente
       const response = await getAllRooms()
-      const roomsData = response.data
-      console.log('Aulas cargadas:', roomsData.length)
-      setRooms(roomsData)
-      setLoading(false)
+      setRooms(response.data.sort((a, b) => a.xml_id - b.xml_id))
     } catch (error) {
       console.error('Error cargando aulas:', error)
-      setLoading(false)
     }
   }
 
-  const loadAssignments = async (roomId: number) => {
-    if (!selectedScheduleId) return
-    
+  const loadInstructors = async () => {
     try {
-      setLoading(true)
-      const endpoint = `/schedules/${selectedScheduleId}/room/${roomId}/assignments/`
-      console.log('Cargando asignaciones desde:', endpoint)
-      const response = await api.get(endpoint)
-      const assignmentsData = response.data
-
-      console.log('Asignaciones recibidas:', assignmentsData.length)
-      setAssignments(assignmentsData)
-
-      // Convertir asignaciones a eventos de FullCalendar
-      const calendarEvents = convertToCalendarEvents(assignmentsData)
-      console.log('Eventos del calendario:', calendarEvents.length)
-      setEvents(calendarEvents)
-
-      // Contar conflictos
-      const conflicts = assignmentsData.filter((a: ClassAssignment) => a.has_conflict).length
-      setConflictCount(conflicts)
-
-      setLoading(false)
+      const response = await getAllInstructors()
+      setInstructors(response.data.sort((a, b) => a.name.localeCompare(b.name)))
     } catch (error) {
-      console.error('Error cargando asignaciones:', error)
-      setLoading(false)
+      console.error('Error cargando instructores:', error)
     }
   }
 
-  const convertToCalendarEvents = (assignments: ClassAssignment[]) => {
-    const events: any[] = []
+  const loadScheduleEvents = async (scheduleId: number) => {
+    try {
+      setLoadingEvents(true)
+      const response = await getScheduleCalendarView(scheduleId)
+      setAllEvents(response.data)
+    } catch (error) {
+      console.error('Error cargando eventos:', error)
+    } finally {
+      setLoadingEvents(false)
+    }
+  }
 
-    assignments.forEach(assignment => {
-      // Decodificar días de la semana (formato binario "1000000")
-      // IMPORTANTE: Nuestro formato es: posición 0=Lunes, 1=Martes, ..., 6=Domingo
-      // FullCalendar usa: 0=Domingo, 1=Lunes, 2=Martes, ..., 6=Sábado
-      const days = assignment.days
+  // Filter events based on current view and selection
+  const filteredEvents = useMemo(() => {
+    if (!allEvents.length) return []
 
-      // Mapeo de nuestro formato a FullCalendar:
-      // Posición 0 (bit 0) = Lunes → FullCalendar día 1
-      // Posición 1 (bit 1) = Martes → FullCalendar día 2
-      // Posición 2 (bit 2) = Miércoles → FullCalendar día 3
-      // Posición 3 (bit 3) = Jueves → FullCalendar día 4
-      // Posición 4 (bit 4) = Viernes → FullCalendar día 5
-      // Posición 5 (bit 5) = Sábado → FullCalendar día 6
-      // Posición 6 (bit 6) = Domingo → FullCalendar día 0
-      const dayMapping = [1, 2, 3, 4, 5, 6, 0] // [Lun, Mar, Mie, Jue, Vie, Sab, Dom]
-
-      days.split('').forEach((bit, index) => {
-        if (bit === '1') {
-          // Crear evento para cada día (con mapeo correcto)
-          const daysOfWeek = [dayMapping[index]]
-
-          // Convertir start_time (minutos) a hora "HH:mm"
-          const startHour = Math.floor(assignment.start_time / 60)
-          const startMin = assignment.start_time % 60
-          const endTime = assignment.start_time + assignment.length
-          const endHour = Math.floor(endTime / 60)
-          const endMin = endTime % 60
-
-          events.push({
-            id: `${assignment.id}-${index}`,
-            title: `Clase ${assignment.class_id}`,
-            daysOfWeek,
-            startTime: `${startHour.toString().padStart(2, '0')}:${startMin.toString().padStart(2, '0')}`,
-            endTime: `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`,
-            backgroundColor: assignment.has_conflict ? '#ef4444' : '#3b82f6',
-            borderColor: assignment.has_conflict ? '#dc2626' : '#2563eb',
-            textColor: '#ffffff',
-            extendedProps: {
-              classXmlId: assignment.class_id,
-              courseName: assignment.class_name,
-              instructor: assignment.instructor_name,
-              students: assignment.student_count,
-              conflict: assignment.has_conflict
-            }
-          })
+    if (viewMode === 'room') {
+      if (!selectedRoomId) return []
+      // Filter by roomId (using the new prop added to backend) or fallback to string matching
+      return allEvents.filter(event => {
+        if (event.extendedProps.roomId) {
+          return event.extendedProps.roomId === selectedRoomId
         }
+        // Fallback for older backend responses
+        const room = rooms.find(r => r.id === selectedRoomId)
+        return room && event.extendedProps.room === `Room ${room.xml_id}`
       })
-    })
-
-    return events
-  }
-
-  const handlePrevRoom = () => {
-    if (currentRoomIndex > 0) {
-      setCurrentRoomIndex(currentRoomIndex - 1)
+    } else {
+      if (!selectedInstructorName) return []
+      return allEvents.filter(event => {
+        const eventInstructors = event.extendedProps.instructors
+        if (Array.isArray(eventInstructors)) {
+          return eventInstructors.includes(selectedInstructorName)
+        }
+        return false
+      })
     }
-  }
+  }, [allEvents, viewMode, selectedRoomId, selectedInstructorName, rooms])
 
-  const handleNextRoom = () => {
-    if (currentRoomIndex < rooms.length - 1) {
-      setCurrentRoomIndex(currentRoomIndex + 1)
-    }
-  }
+  // Calculate stats for current view
+  const stats = useMemo(() => {
+    const conflictCount = filteredEvents.filter(e => e.extendedProps.conflict).length
+    const totalClasses = filteredEvents.length
+    const totalHours = filteredEvents.reduce((acc, curr) => {
+      const start = new Date(`2000-01-01T${curr.startTime}`).getTime()
+      const end = new Date(`2000-01-01T${curr.endTime}`).getTime()
+      return acc + (end - start) / (1000 * 60 * 60)
+    }, 0)
 
-  const handleGoToPage = () => {
-    const pageNum = parseInt(pageInput, 10)
-    if (isNaN(pageNum) || pageNum < 1 || pageNum > rooms.length) {
-      alert(`Por favor ingrese un número válido entre 1 y ${rooms.length}`)
-      return
-    }
-    setCurrentRoomIndex(pageNum - 1) // Convertir a índice base 0
-    setPageInput('') // Limpiar el input
-  }
-
-  const handlePageInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleGoToPage()
-    }
-  }
+    return { conflictCount, totalClasses, totalHours }
+  }, [filteredEvents])
 
   const handleEventClick = (info: any) => {
     const props = info.event.extendedProps
     alert(
-      `Clase XML ID: ${props.classXmlId}\n` +
-      `Curso: ${props.courseName}\n` +
-      `Instructor: ${props.instructor}\n` +
+      `Clase: ${info.event.title}\n` +
+      `Aula: ${props.room}\n` +
+      `Instructor: ${props.instructors.join(', ')}\n` +
       `Estudiantes: ${props.students}\n` +
       `Conflicto: ${props.conflict ? 'SÍ' : 'No'}`
     )
@@ -216,220 +153,172 @@ const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialSche
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Cargando horarios...</div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
-  if (schedules.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">No hay horarios disponibles</div>
-      </div>
-    )
-  }
-
-  if (rooms.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">No hay aulas disponibles</div>
-      </div>
-    )
-  }
-
-  if (!selectedScheduleId) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">Seleccione un horario</div>
-      </div>
-    )
-  }
-
-  const currentRoom = rooms[currentRoomIndex]
   const currentSchedule = schedules.find(s => s.id === selectedScheduleId)
 
-  if (!currentRoom) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-gray-600">No se encontró el aula actual</div>
-      </div>
-    )
-  }
-
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      {/* Selector de Schedule */}
-      <div className="mb-6 bg-white rounded-lg shadow p-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Seleccionar Horario
-        </label>
-        <select
-          value={selectedScheduleId || ''}
-          onChange={(e) => setSelectedScheduleId(Number(e.target.value))}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          {schedules.map((schedule) => (
-            <option key={schedule.id} value={schedule.id}>
-              {schedule.name} (Fitness: {schedule.fitness_score?.toFixed(0) || 'N/A'})
-            </option>
-          ))}
-        </select>
-        {currentSchedule && (
-          <div className="mt-2 text-sm text-gray-600">
-            {currentSchedule.description && <p>{currentSchedule.description}</p>}
-            <p>Creado: {new Date(currentSchedule.created_at).toLocaleString('es-ES')}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Header con navegación */}
-      <div className="mb-6 bg-white rounded-lg shadow p-4">
-        <div className="flex justify-between items-center mb-4">
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
+      {/* Header & Controls */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">
-              Horario del Aula
-            </h2>
-            <p className="text-gray-600">
-              Vista {currentRoomIndex + 1} de {rooms.length}
+            <h2 className="text-2xl font-bold text-gray-800">Visualizador de Horarios</h2>
+            <p className="text-gray-500 text-sm mt-1">
+              {currentSchedule ? (
+                <>
+                  <span className="font-medium text-gray-900">{currentSchedule.name}</span>
+                  <span className="mx-2">•</span>
+                  Fitness: <span className="text-green-600 font-mono">{currentSchedule.fitness_score.toLocaleString()}</span>
+                </>
+              ) : 'Seleccione un horario'}
             </p>
           </div>
-          <div className="flex gap-2 items-center">
+          
+          <div className="flex items-center gap-3 bg-gray-100 p-1 rounded-lg">
             <button
-              onClick={handlePrevRoom}
-              disabled={currentRoomIndex === 0}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              onClick={() => setViewMode('room')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'room' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              ← Anterior
+              Por Aula
             </button>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Ir a página:</span>
-              <input
-                type="number"
-                value={pageInput}
-                onChange={(e) => setPageInput(e.target.value)}
-                onKeyPress={handlePageInputKeyPress}
-                placeholder={(currentRoomIndex + 1).toString()}
-                min="1"
-                max={rooms.length}
-                className="w-16 px-2 py-1 border border-gray-300 rounded text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <button
-                onClick={handleGoToPage}
-                className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+            <button
+              onClick={() => setViewMode('instructor')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'instructor' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Por Instructor
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Horario</label>
+            <select
+              value={selectedScheduleId || ''}
+              onChange={(e) => setSelectedScheduleId(Number(e.target.value))}
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            >
+              {schedules.map((schedule) => (
+                <option key={schedule.id} value={schedule.id}>
+                  {schedule.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {viewMode === 'room' ? (
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Aula</label>
+              <select
+                value={selectedRoomId || ''}
+                onChange={(e) => setSelectedRoomId(Number(e.target.value))}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
               >
-                Ir
-              </button>
+                {rooms.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    Aula {room.xml_id} (Cap: {room.capacity})
+                  </option>
+                ))}
+              </select>
             </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Instructor</label>
+              <select
+                value={selectedInstructorName || ''}
+                onChange={(e) => setSelectedInstructorName(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              >
+                {instructors.map((instructor) => (
+                  <option key={instructor.id} value={instructor.name || `Instructor ${instructor.xml_id}`}>
+                    {instructor.name || `Instructor ${instructor.xml_id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-            <button
-              onClick={handleNextRoom}
-              disabled={currentRoomIndex === rooms.length - 1}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              Siguiente →
-            </button>
+          <div className="flex items-end">
+            <div className="w-full bg-blue-50 rounded-lg p-2 flex justify-around items-center border border-blue-100">
+              <div className="text-center">
+                <div className="text-xs text-blue-600 font-medium">Clases</div>
+                <div className="text-lg font-bold text-blue-800">{stats.totalClasses}</div>
+              </div>
+              <div className="w-px h-8 bg-blue-200"></div>
+              <div className="text-center">
+                <div className="text-xs text-blue-600 font-medium">Horas</div>
+                <div className="text-lg font-bold text-blue-800">{stats.totalHours.toFixed(1)}</div>
+              </div>
+              <div className="w-px h-8 bg-blue-200"></div>
+              <div className="text-center">
+                <div className="text-xs text-red-600 font-medium">Conflictos</div>
+                <div className={`text-lg font-bold ${stats.conflictCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {stats.conflictCount}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Info del aula actual */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-blue-50 p-3 rounded">
-            <div className="text-sm text-gray-600">Aula</div>
-            <div className="text-xl font-bold text-blue-600">
-              {currentRoom?.xml_id || 'N/A'}
-            </div>
-          </div>
-          <div className="bg-green-50 p-3 rounded">
-            <div className="text-sm text-gray-600">Capacidad</div>
-            <div className="text-xl font-bold text-green-600">
-              {currentRoom?.capacity || 0}
-            </div>
-          </div>
-          <div className="bg-purple-50 p-3 rounded">
-            <div className="text-sm text-gray-600">Clases Asignadas</div>
-            <div className="text-xl font-bold text-purple-600">
-              {assignments.length}
-            </div>
-          </div>
-          <div className={`${conflictCount > 0 ? 'bg-red-50' : 'bg-gray-50'} p-3 rounded`}>
-            <div className="text-sm text-gray-600">Conflictos</div>
-            <div className={`text-xl font-bold ${conflictCount > 0 ? 'text-red-600' : 'text-gray-600'}`}>
-              {conflictCount}
-            </div>
-          </div>
-        </div>
-
-        {conflictCount > 0 && (
-          <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded text-red-800">
-            ⚠️ Esta aula tiene {conflictCount} conflicto(s) de horario
-          </div>
-        )}
       </div>
 
-      {/* Calendario */}
-      <div className="bg-white rounded-lg shadow p-4">
+      {/* Calendar Area */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1 relative min-h-[600px]">
+        {loadingEvents && (
+          <div className="absolute inset-0 bg-white/80 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <span className="text-gray-500 font-medium">Cargando eventos...</span>
+            </div>
+          </div>
+        )}
+        
         <FullCalendar
           plugins={[timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
           headerToolbar={{
             left: '',
-            center: 'title',
+            center: '',
             right: ''
           }}
-          titleFormat={{ year: 'numeric', month: 'long', day: 'numeric' }}
+          allDaySlot={false}
           slotMinTime="07:00:00"
           slotMaxTime="22:00:00"
-          allDaySlot={false}
           height="auto"
-          events={events}
+          events={filteredEvents}
           eventClick={handleEventClick}
-          eventTimeFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          }}
-          slotLabelFormat={{
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-          }}
           locale="es"
           weekends={true}
           slotDuration="00:30:00"
-          slotLabelInterval="01:00"
           dayHeaderFormat={{ weekday: 'long' }}
           initialDate="2007-01-01"
-          validRange={{
-            start: '2007-01-01',
-            end: '2007-01-08'
-          }}
           firstDay={1}
           eventContent={(arg) => {
             const props = arg.event.extendedProps
             return (
-              <div className="p-1 overflow-hidden text-xs w-full h-full">
-                <div className="font-semibold truncate">{arg.event.title}</div>
-                <div className="truncate text-[10px]">{props.instructor}</div>
+              <div className="h-full w-full p-1 flex flex-col overflow-hidden">
+                <div className="font-bold text-xs truncate leading-tight">{arg.event.title}</div>
+                <div className="text-[10px] opacity-90 truncate mt-0.5">
+                  {viewMode === 'room' ? props.instructors.join(', ') : props.room}
+                </div>
+                {props.conflict && (
+                  <div className="absolute top-1 right-1 text-[10px]">⚠️</div>
+                )}
               </div>
             )
           }}
         />
-      </div>
-
-      {/* Leyenda */}
-      <div className="mt-4 bg-white rounded-lg shadow p-4">
-        <h3 className="font-bold mb-2">Leyenda:</h3>
-        <div className="flex gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <span className="text-sm">Sin conflictos</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-500 rounded"></div>
-            <span className="text-sm">Con conflictos</span>
-          </div>
-        </div>
       </div>
     </div>
   )

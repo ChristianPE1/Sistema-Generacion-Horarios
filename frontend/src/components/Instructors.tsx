@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getInstructors, createInstructor, updateInstructor, deleteInstructor } from '../services/api';
 import type { Instructor } from '../types';
+import type { PaginatedResponse } from '../services/api';
+import Pagination from './Pagination';
 
 function Instructors() {
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [paginatedData, setPaginatedData] = useState<PaginatedResponse<Instructor> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
     xml_id: 0,
     name: '',
@@ -15,14 +18,14 @@ function Instructors() {
   });
 
   useEffect(() => {
-    loadInstructors();
-  }, []);
+    loadInstructors(currentPage);
+  }, [currentPage]);
 
-  const loadInstructors = async () => {
+  const loadInstructors = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getInstructors();
-      setInstructors(response.data);
+      const response = await getInstructors(page, 20);
+      setPaginatedData(response.data);
       setError(null);
     } catch (err) {
       setError('Error al cargar los instructores');
@@ -40,7 +43,7 @@ function Instructors() {
       } else {
         await createInstructor(formData);
       }
-      await loadInstructors();
+      await loadInstructors(currentPage);
       setShowModal(false);
       resetForm();
     } catch (err) {
@@ -63,7 +66,7 @@ function Instructors() {
     if (window.confirm('¿Estás seguro de eliminar este instructor?')) {
       try {
         await deleteInstructor(id);
-        await loadInstructors();
+        await loadInstructors(currentPage);
       } catch (err) {
         setError('Error al eliminar el instructor');
         console.error(err);
@@ -117,14 +120,14 @@ function Instructors() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {instructors.length === 0 ? (
+              {!paginatedData?.results.length ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                     No hay instructores registrados. Importa un archivo XML o agrega manualmente.
                   </td>
                 </tr>
               ) : (
-                instructors.map(instructor => (
+                paginatedData.results.map(instructor => (
                   <tr key={instructor.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{instructor.xml_id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{instructor.name}</td>
@@ -154,6 +157,14 @@ function Instructors() {
             </tbody>
           </table>
         </div>
+        {paginatedData && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(paginatedData.count / 20)}
+            onPageChange={setCurrentPage}
+            totalItems={paginatedData.count}
+          />
+        )}
       </div>
 
       {showModal && (

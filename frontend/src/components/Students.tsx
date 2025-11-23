@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getStudents, createStudent, updateStudent, deleteStudent } from '../services/api';
 import type { Student } from '../types';
+import type { PaginatedResponse } from '../services/api';
+import Pagination from './Pagination';
 
 function Students() {
-  const [students, setStudents] = useState<Student[]>([]);
+  const [paginatedData, setPaginatedData] = useState<PaginatedResponse<Student> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
     xml_id: 0,
     name: '',
@@ -15,14 +18,14 @@ function Students() {
   });
 
   useEffect(() => {
-    loadStudents();
-  }, []);
+    loadStudents(currentPage);
+  }, [currentPage]);
 
-  const loadStudents = async () => {
+  const loadStudents = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getStudents();
-      setStudents(response.data);
+      const response = await getStudents(page, 20);
+      setPaginatedData(response.data);
       setError(null);
     } catch (err) {
       setError('Error al cargar los estudiantes');
@@ -40,7 +43,7 @@ function Students() {
       } else {
         await createStudent(formData);
       }
-      await loadStudents();
+      await loadStudents(currentPage);
       setShowModal(false);
       resetForm();
     } catch (err) {
@@ -63,7 +66,7 @@ function Students() {
     if (window.confirm('¿Estás seguro de eliminar este estudiante?')) {
       try {
         await deleteStudent(id);
-        await loadStudents();
+        await loadStudents(currentPage);
       } catch (err) {
         setError('Error al eliminar el estudiante');
         console.error(err);
@@ -117,14 +120,14 @@ function Students() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {students.length === 0 ? (
+              {!paginatedData?.results.length ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                     No hay estudiantes registrados. Importa un archivo XML o agrega manualmente.
                   </td>
                 </tr>
               ) : (
-                students.map(student => (
+                paginatedData.results.map(student => (
                   <tr key={student.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.xml_id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{student.name}</td>
@@ -154,6 +157,14 @@ function Students() {
             </tbody>
           </table>
         </div>
+        {paginatedData && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(paginatedData.count / 20)}
+            onPageChange={setCurrentPage}
+            totalItems={paginatedData.count}
+          />
+        )}
       </div>
 
       {showModal && (

@@ -96,6 +96,7 @@ export interface Schedule {
   fitness_score: number;
   is_active: boolean;
   assignment_count?: number;
+  status?: 'generating' | 'completed' | 'failed';
 }
 
 export interface ScheduleAssignment {
@@ -112,12 +113,19 @@ export interface CalendarEvent {
   daysOfWeek: number[];
   startTime: string;
   endTime: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  textColor?: string;
   extendedProps: {
     classId: number;
     room: string;
+    roomId?: number;
+    roomXmlId?: number;
     roomCapacity: number;
     instructors: string[];
     classLimit: number;
+    conflict?: boolean;
+    students?: number;
   };
 }
 

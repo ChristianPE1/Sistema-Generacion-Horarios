@@ -164,7 +164,8 @@ class ScheduleGenerator:
     
     def generate(self, schedule_name: str = None, 
                 description: str = "", 
-                use_heuristics: bool = True) -> Schedule:
+                use_heuristics: bool = True,
+                schedule_instance: Schedule = None) -> Schedule:
         """
         Genera un horario optimizado usando el algoritmo genético.
         
@@ -219,7 +220,15 @@ class ScheduleGenerator:
         
         # Ejecutar algoritmo genético
         print("[INFO] Ejecutando evolución...")
-        best_solution = self.ga.evolve(self.validator)
+        
+        def update_progress(generation, fitness):
+            if schedule_instance:
+                # Actualizar fitness en DB cada 5 generaciones para no saturar
+                if generation % 5 == 0 or generation == 1:
+                    schedule_instance.fitness_score = fitness
+                    schedule_instance.save(update_fields=['fitness_score'])
+        
+        best_solution = self.ga.evolve(self.validator, on_generation=update_progress)
         
         # Obtener estadísticas
         stats = self.ga.get_statistics()
@@ -235,7 +244,8 @@ class ScheduleGenerator:
             best_solution,
             schedule_name or f"Horario Generado {timezone.now().strftime('%Y-%m-%d %H:%M')}",
             description,
-            stats
+            stats,
+            schedule_instance
         )
         
         print(f"\n[INFO] Iniciando asignación de instructores...")
@@ -260,17 +270,25 @@ class ScheduleGenerator:
         return schedule
     
     @transaction.atomic
-    def _save_schedule(self, solution: Individual, name: str, description: str, stats: Dict) -> Schedule:
+    def _save_schedule(self, solution: Individual, name: str, description: str, stats: Dict, schedule_instance: Schedule = None) -> Schedule:
         """
         Guarda la solución en la base de datos como un Schedule.
         """
-        # Crear el registro de Schedule
-        schedule = Schedule.objects.create(
-            name=name,
-            description=description,
-            fitness_score=solution.fitness,
-            is_active=False
-        )
+        # Crear o usar el registro de Schedule
+        if schedule_instance:
+            schedule = schedule_instance
+            schedule.name = name
+            schedule.description = description
+            schedule.fitness_score = solution.fitness
+            schedule.is_active = False
+            schedule.save()
+        else:
+            schedule = Schedule.objects.create(
+                name=name,
+                description=description,
+                fitness_score=solution.fitness,
+                is_active=False
+            )
         
         # Crear las asignaciones
         for class_id, (room_id, timeslot_id) in solution.genes.items():

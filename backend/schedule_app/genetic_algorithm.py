@@ -586,7 +586,7 @@ class GeneticAlgorithm:
         print(f"   [OK] Diversidad restaurada - Mejor fitness: {self.best_fitness_history[-1]:.0f}")
         sys.stdout.flush()
     
-    def evolve(self, validator: 'ConstraintValidator') -> Individual:
+    def evolve(self, validator: 'ConstraintValidator', on_generation=None) -> Individual:
         """
         Ejecuta el proceso evolutivo completo.
         Retorna el mejor individuo encontrado.
@@ -601,6 +601,9 @@ class GeneticAlgorithm:
         self.evaluate_population(validator)
         print(f"[OK] Población inicial evaluada - Mejor fitness: {self.best_fitness_history[0]:.2f}")
         sys.stdout.flush()
+        
+        if on_generation:
+            on_generation(0, self.best_fitness_history[0])
         
         for generation in range(self.generations):
             new_population = []
@@ -671,6 +674,9 @@ class GeneticAlgorithm:
                       f"Promedio: {self.avg_fitness_history[-1]:.0f} | "
                       f"Tiempo: {elapsed:.0f}s | ETA: {remaining_time:.0f}s{stagnation_indicator}")
                 sys.stdout.flush()  # Forzar salida inmediata
+                
+                if on_generation:
+                    on_generation(generation + 1, self.best_fitness_history[-1])
             
             # NO HAY PARADA PREMATURA - Siempre completar todas las generaciones solicitadas
             # El usuario espera que se completen TODAS las generaciones para maximizar la calidad

@@ -16,6 +16,7 @@ from .serializers import (
     TimeSlotSerializer, ClassInstructorSerializer, ClassRoomSerializer
 )
 from .schedule_generator import ScheduleGenerator
+import threading
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -243,7 +244,7 @@ class ScheduleViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def generate(self, request):
-        """Generar un nuevo horario usando algoritmo genético"""
+        """Generar un nuevo horario usando algoritmo genético en segundo plano"""
         try:
             # Obtener parámetros del request
             name = request.data.get('name', f'Horario Generado')
@@ -270,38 +271,63 @@ class ScheduleViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Crear generador
-            generator = ScheduleGenerator(
-                population_size=population_size,
-                generations=generations,
-                mutation_rate=mutation_rate,
-                crossover_rate=crossover_rate,
-                elitism_size=elitism_size,
-                tournament_size=tournament_size
+            # Crear el objeto Schedule con estado 'generating'
+            schedule = Schedule.objects.create(
+                name=name,
+                description=description,
+                status='generating'
             )
+
+            def run_generation(schedule_id):
+                try:
+                    # Crear generador
+                    generator = ScheduleGenerator(
+                        population_size=population_size,
+                        generations=generations,
+                        mutation_rate=mutation_rate,
+                        crossover_rate=crossover_rate,
+                        elitism_size=elitism_size,
+                        tournament_size=tournament_size
+                    )
+                    
+                    # Cargar datos
+                    generator.load_data()
+                    
+                    # Obtener la instancia de schedule
+                    current_schedule = Schedule.objects.get(id=schedule_id)
+                    
+                    # Generar horario pasando la instancia
+                    generator.generate(name, description, schedule_instance=current_schedule)
+                    
+                    # Actualizar estado a completed
+                    current_schedule.refresh_from_db()
+                    current_schedule.status = 'completed'
+                    current_schedule.save()
+                    
+                except Exception as e:
+                    print(f"Error en generación background: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    try:
+                        s = Schedule.objects.get(id=schedule_id)
+                        s.status = 'failed'
+                        s.description += f"\nError: {str(e)}"
+                        s.save()
+                    except:
+                        pass
+
+            # Iniciar hilo
+            thread = threading.Thread(target=run_generation, args=(schedule.id,))
+            thread.daemon = True
+            thread.start()
             
-            # Cargar datos
-            generator.load_data()
-            
-            # Generar horario
-            schedule = generator.generate(name, description)
-            
-            # Obtener resumen
-            summary = generator.get_schedule_summary(schedule)
-            
-            # Serializar respuesta
+            # Serializar respuesta inicial
             serializer = ScheduleSerializer(schedule)
             
             return Response({
                 'schedule': serializer.data,
-                'summary': {
-                    'total_assignments': summary['total_assignments'],
-                    'unassigned_classes': summary['unassigned_classes'],
-                    'instructor_count': len(summary['instructor_schedules']),
-                    'room_count': len(summary['room_schedules'])
-                },
-                'message': 'Horario generado exitosamente'
-            }, status=status.HTTP_201_CREATED)
+                'message': 'Generación de horario iniciada en segundo plano'
+            }, status=status.HTTP_202_ACCEPTED)
             
         except ValueError as e:
             return Response(
@@ -310,7 +336,7 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             )
         except Exception as e:
             return Response(
-                {'error': f'Error al generar horario: {str(e)}'},
+                {'error': f'Error al iniciar generación: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
@@ -365,8 +391,69 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             'time_slot'
         ).prefetch_related('class_obj__instructors__instructor')
         
+        # --- Conflict Detection Logic ---
+        assignments_list = list(assignments)
+        conflict_assignment_ids = set()
+
+        def check_overlap(a1, a2):
+            # Check days
+            days_overlap = False
+            for i in range(7):
+                if a1.time_slot.days[i] == '1' and a2.time_slot.days[i] == '1':
+                    days_overlap = True
+                    break
+            if not days_overlap: return False
+            
+            # Check time
+            start1 = a1.time_slot.start_time
+            end1 = start1 + a1.time_slot.length
+            start2 = a2.time_slot.start_time
+            end2 = start2 + a2.time_slot.length
+            
+            return (start1 < end2 and start2 < end1)
+
+        # 1. Room Conflicts
+        by_room = {}
+        for a in assignments_list:
+            if a.room_id not in by_room: by_room[a.room_id] = []
+            by_room[a.room_id].append(a)
+        
+        for room_id, room_assignments in by_room.items():
+            for i, a1 in enumerate(room_assignments):
+                for a2 in room_assignments[i+1:]:
+                    if check_overlap(a1, a2):
+                        conflict_assignment_ids.add(a1.id)
+                        conflict_assignment_ids.add(a2.id)
+
+        # 2. Instructor Conflicts
+        by_instructor = {}
+        for a in assignments_list:
+            for class_instructor in a.class_obj.instructors.all():
+                inst_id = class_instructor.instructor_id
+                if inst_id not in by_instructor: by_instructor[inst_id] = []
+                by_instructor[inst_id].append(a)
+        
+        for inst_id, inst_assignments in by_instructor.items():
+             for i, a1 in enumerate(inst_assignments):
+                for a2 in inst_assignments[i+1:]:
+                    if a1.id == a2.id: continue
+                    if check_overlap(a1, a2):
+                        conflict_assignment_ids.add(a1.id)
+                        conflict_assignment_ids.add(a2.id)
+        
+        # --- Color Generation Helper ---
+        import hashlib
+        def get_color(text):
+            hash_object = hashlib.md5(text.encode())
+            digest = hash_object.digest()
+            # Darker colors for white text readability (Range 40-170)
+            r = int((digest[0] / 255.0) * 130 + 40)
+            g = int((digest[1] / 255.0) * 130 + 40)
+            b = int((digest[2] / 255.0) * 130 + 40)
+            return f"#{r:02x}{g:02x}{b:02x}"
+
         events = []
-        for assignment in assignments:
+        for assignment in assignments_list:
             time_slot = assignment.time_slot
             class_obj = assignment.class_obj
             
@@ -374,22 +461,32 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             instructors = [ci.instructor.name or f"Instructor {ci.instructor.xml_id}" 
                           for ci in class_obj.instructors.all()]
             
+            course_name = class_obj.offering.name if class_obj.offering else 'Sin curso'
+            color = get_color(course_name)
+            is_conflict = assignment.id in conflict_assignment_ids
+
             # Convertir días binarios a eventos
             day_map = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
             for i, day_active in enumerate(time_slot.days):
                 if day_active == '1':
                     events.append({
                         'id': f"{assignment.id}_{i}",
-                        'title': f"{class_obj.offering.name if class_obj.offering else 'Sin curso'}",
+                        'title': course_name,
                         'daysOfWeek': [i + 1 if i < 6 else 0],  # FullCalendar usa 0=Domingo
                         'startTime': time_slot.get_start_time_formatted(),
                         'endTime': time_slot.get_end_time_formatted(),
+                        'backgroundColor': '#ef4444' if is_conflict else color, # Red if conflict
+                        'borderColor': '#b91c1c' if is_conflict else color,
+                        'textColor': '#ffffff',
                         'extendedProps': {
                             'classId': class_obj.xml_id,
                             'room': f"Room {assignment.room.xml_id}",
+                            'roomId': assignment.room.id,
+                            'roomXmlId': assignment.room.xml_id,
                             'roomCapacity': assignment.room.capacity,
                             'instructors': instructors,
-                            'classLimit': class_obj.class_limit
+                            'classLimit': class_obj.class_limit,
+                            'conflict': is_conflict
                         }
                     })
         
@@ -470,6 +567,92 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             })
         
         return Response(result)
+    
+    @action(detail=True, methods=['get'])
+    def timetable(self, request, pk=None):
+        """Obtener vista completa del horario para el frontend"""
+        schedule = self.get_object()
+        
+        # Obtener asignaciones
+        assignments = schedule.assignments.select_related(
+            'class_obj__offering',
+            'room',
+            'time_slot'
+        ).prefetch_related('class_obj__instructors__instructor')
+        
+        # Estructura de respuesta
+        days_map = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+        grid = {day: {} for day in days_map}
+        classes_info = []
+        time_slots_set = set()
+        classes_by_day = {day: 0 for day in days_map}
+        
+        for assignment in assignments:
+            time_slot = assignment.time_slot
+            class_obj = assignment.class_obj
+            
+            # Formatear hora
+            start_time = time_slot.get_start_time_formatted()
+            end_time = time_slot.get_end_time_formatted()
+            time_str = f"{start_time} - {end_time}"
+            time_slots_set.add(time_str)
+            
+            # Instructores
+            instructors = [ci.instructor.name or f"Instructor {ci.instructor.xml_id}" 
+                          for ci in class_obj.instructors.all()]
+            
+            class_info = {
+                'id': assignment.id,
+                'xml_id': class_obj.xml_id,
+                'name': class_obj.offering.name if class_obj.offering else f"Clase {class_obj.xml_id}",
+                'code': class_obj.offering.course.code if class_obj.offering and class_obj.offering.course else "",
+                'instructors': instructors,
+                'room': assignment.room.code if assignment.room else "Sin aula",
+                'room_capacity': assignment.room.capacity if assignment.room else 0,
+                'limit': class_obj.class_limit,
+                'students': class_obj.enrolled_students.count(),
+                'start': start_time,
+                'end': end_time,
+                'duration_min': time_slot.length * 5,
+                'time': time_str
+            }
+            
+            classes_info.append(class_info)
+            
+            # Llenar grid
+            for i, day_active in enumerate(time_slot.days):
+                if day_active == '1' and i < 7:
+                    day_name = days_map[i]
+                    classes_by_day[day_name] += 1
+                    
+                    if time_str not in grid[day_name]:
+                        grid[day_name][time_str] = []
+                    
+                    grid[day_name][time_str].append(class_info)
+        
+        # Ordenar slots de tiempo
+        sorted_time_slots = sorted(list(time_slots_set))
+        
+        return Response({
+            'schedule': {
+                'id': schedule.id,
+                'name': schedule.name,
+                'description': schedule.description,
+                'fitness_score': schedule.fitness_score,
+                'total_assignments': assignments.count()
+            },
+            'time_slots': sorted_time_slots,
+            'days': days_map,
+            'grid': grid,
+            'classes': classes_info,
+            'stats': {
+                'total_classes': assignments.count(),
+                'classes_by_day': classes_by_day,
+                'max_concurrent_classes': 0, # Simplificado
+                'needs_multiple_views': False
+            }
+        })
+    
 
 
 class TimeSlotViewSet(viewsets.ReadOnlyModelViewSet):

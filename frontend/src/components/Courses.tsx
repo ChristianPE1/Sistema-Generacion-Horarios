@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
 import { getCourses } from '../services/api';
 import type { Course } from '../types';
+import type { PaginatedResponse } from '../services/api';
+import Pagination from './Pagination';
 
 function Courses() {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [paginatedData, setPaginatedData] = useState<PaginatedResponse<Course> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    loadCourses();
-  }, []);
+    loadCourses(currentPage);
+  }, [currentPage]);
 
-  const loadCourses = async () => {
+  const loadCourses = async (page: number) => {
     try {
       setLoading(true);
-      const response = await getCourses();
-      setCourses(response.data);
+      const response = await getCourses(page, 20);
+      setPaginatedData(response.data);
       setError(null);
     } catch (err) {
       setError('Error al cargar los cursos');
@@ -53,14 +56,14 @@ function Courses() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {courses.length === 0 ? (
+              {!paginatedData?.results.length ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                     No hay cursos registrados. Importa un archivo XML para cargar los cursos.
                   </td>
                 </tr>
               ) : (
-                courses.map(course => (
+                paginatedData.results.map(course => (
                   <tr key={course.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{course.xml_id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{course.code}</td>
@@ -76,6 +79,14 @@ function Courses() {
             </tbody>
           </table>
         </div>
+        {paginatedData && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(paginatedData.count / 20)}
+            onPageChange={setCurrentPage}
+            totalItems={paginatedData.count}
+          />
+        )}
       </div>
     </div>
   );

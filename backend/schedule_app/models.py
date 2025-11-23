@@ -159,12 +159,19 @@ class StudentClass(models.Model):
 
 class Schedule(models.Model):
     """Modelo para horarios generados"""
+    STATUS_CHOICES = [
+        ('generating', 'Generando'),
+        ('completed', 'Completado'),
+        ('failed', 'Fallido'),
+    ]
+
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     fitness_score = models.FloatField(default=0.0)
     is_active = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='completed')
     
     class Meta:
         db_table = 'schedules'
