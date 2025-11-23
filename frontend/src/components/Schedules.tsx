@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { getSchedules, generateSchedule, updateSchedule, deleteSchedule, exportScheduleExcel } from '../services/api';
+import { getSchedules, generateSchedule, updateSchedule, deleteSchedule } from '../services/api';
 import type { Schedule } from '../types';
 import type { PaginatedResponse } from '../services/api';
 import Pagination from './Pagination';
 import ScheduleViewer from './ScheduleViewer';
-import * as XLSX from 'xlsx';
 
 function Schedules() {
   const [paginatedData, setPaginatedData] = useState<PaginatedResponse<Schedule> | null>(null);
@@ -21,7 +20,6 @@ function Schedules() {
   // Action state
   const [generating, setGenerating] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [exporting, setExporting] = useState<number | null>(null);
   const [scheduleToEdit, setScheduleToEdit] = useState<Schedule | null>(null);
   const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(null);
 
@@ -151,99 +149,6 @@ function Schedules() {
     }
   };
 
-  const handleExportExcel = async (schedule: Schedule) => {
-    try {
-      setExporting(schedule.id);
-      setError(null);
-
-      // Obtener datos del backend
-      const response = await exportScheduleExcel(schedule.id);
-      const data = response.data;
-
-      // Crear nuevo libro de Excel
-      const wb = XLSX.utils.book_new();
-
-      // Días de la semana
-      const days = data.days || ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-
-      // Procesar cada aula (cada una será una hoja)
-      for (const roomData of data.rooms) {
-        const sheetData: any[][] = [];
-
-        // Encabezado: primera fila con nombre de aula y capacidad
-        sheetData.push([`${roomData.room_name} (Capacidad: ${roomData.capacity})`]);
-        sheetData.push([]); // Fila vacía
-
-        // Encabezado de columnas: Hora | Lun | Mar | Mie | Jue | Vie | Sab | Dom
-        const headerRow = ['Hora', ...days];
-        sheetData.push(headerRow);
-
-        // Recolectar todas las horas únicas
-        const allHours = new Set<string>();
-        for (const day of days) {
-          const daySchedule = roomData.schedule[day];
-          if (daySchedule) {
-            Object.keys(daySchedule).forEach(hour => allHours.add(hour));
-          }
-        }
-
-        // Ordenar horas
-        const sortedHours = Array.from(allHours).sort();
-
-        // Crear filas para cada hora
-        for (const hour of sortedHours) {
-          const row: any[] = [hour];
-
-          for (const day of days) {
-            const daySchedule = roomData.schedule[day];
-            const classes = daySchedule?.[hour] || [];
-
-            if (classes.length === 0) {
-              row.push('');
-            } else if (classes.length === 1) {
-              // Una sola clase
-              const cls = classes[0];
-              const instructors = cls.instructors.join(', ') || 'Sin instructor';
-              row.push(`${cls.name}\n${instructors}\n${cls.start}-${cls.end}`);
-            } else {
-              // Múltiples clases (conflicto)
-              const classInfo = classes.map(cls => {
-                const instructors = cls.instructors.join(', ') || 'Sin instructor';
-                return `${cls.name} (${instructors}) ${cls.start}-${cls.end}`;
-              }).join('\n---\n');
-              row.push(classInfo);
-            }
-          }
-
-          sheetData.push(row);
-        }
-
-        // Crear hoja de cálculo
-        const ws = XLSX.utils.aoa_to_sheet(sheetData);
-
-        // Ajustar ancho de columnas (opcional)
-        ws['!cols'] = [
-          { wch: 12 }, // Hora
-          ...days.map(() => ({ wch: 25 })) // Días
-        ];
-
-        // Agregar hoja al libro (nombre de hoja limitado a 31 caracteres)
-        const sheetName = roomData.room_name.substring(0, 31);
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
-      }
-
-      // Generar archivo y descargar
-      const fileName = `${data.schedule_name.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-
-    } catch (err: any) {
-      console.error('Error al exportar a Excel:', err);
-      setError(`Error al exportar: ${err.response?.data?.detail || err.message || 'Error desconocido'}`);
-    } finally {
-      setExporting(null);
-    }
-  };
-
   if (loading) return (
     <div className="flex justify-center items-center h-64">
       <div className="text-gray-600">Cargando horarios...</div>
@@ -346,14 +251,6 @@ function Schedules() {
                             title="Ver detalles"
                           >
                             Ver
-                          </button>
-                          <button
-                            onClick={() => handleExportExcel(schedule)}
-                            disabled={exporting === schedule.id}
-                            className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Exportar a Excel"
-                          >
-                            {exporting === schedule.id ? '...' : 'Excel'}
                           </button>
                           <button
                             onClick={() => handleEditClick(schedule)}

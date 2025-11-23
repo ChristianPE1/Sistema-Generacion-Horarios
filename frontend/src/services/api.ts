@@ -140,7 +140,6 @@ export const deleteSchedule = (id: number) => api.delete(`/schedules/${id}/`);
 export const activateSchedule = (id: number) => api.post(`/schedules/${id}/activate/`);
 export const getScheduleCalendarView = (id: number) => api.get<CalendarEvent[]>(`/schedules/${id}/calendar_view/`);
 export const getScheduleTimetable = (id: number) => api.get(`/schedules/${id}/timetable/`);
-export const exportScheduleExcel = (id: number) => api.get(`/schedules/${id}/export_excel/`);
 export const generateSchedule = (data: {
   name: string;
   description?: string;
