@@ -135,17 +135,3 @@ if ($LASTEXITCODE -ne 0) {
     Read-Host "Presiona Enter para salir"
     exit 1
 }
-
-Write-Host ""
-Write-Host "========================================" -ForegroundColor Green
-Write-Host " PROCESO COMPLETADO" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "El horario fue generado exitosamente" -ForegroundColor Green
-Write-Host ""
-Write-Host "Para ver los resultados:"
-Write-Host "1. Inicia el servidor: python manage.py runserver"
-Write-Host "2. Abre el navegador en: http://localhost:8000"
-Write-Host "3. Ve a la seccion 'Ver Horarios'"
-Write-Host ""
-Read-Host "Presiona Enter para salir"

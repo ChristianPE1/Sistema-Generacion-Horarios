@@ -369,19 +369,6 @@ function Schedules() {
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="use_heuristics"
-                  checked={generateFormData.use_heuristics}
-                  onChange={(e) => setGenerateFormData({...generateFormData, use_heuristics: e.target.checked})}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <label htmlFor="use_heuristics" className="text-sm font-medium text-gray-700">
-                  Usar heurísticas
-                </label>
-              </div>
-
               <div className="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-md">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Población</label>
