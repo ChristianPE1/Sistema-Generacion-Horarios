@@ -123,7 +123,7 @@ El sistema implementa una arquitectura cliente-servidor de 3 capas:
                            │ ORM Django
 ┌──────────────────────────┴──────────────────────────────────┐
 │                    CAPA DE DATOS                             │
-│     SQLite (desarrollo) / PostgreSQL (producción)            │
+│     PostgreSQL 15 (Docker Container)                         │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │  Clases, Aulas, Instructores, Horarios,             │    │
 │  │  Restricciones, Estudiantes                          │    │
@@ -330,6 +330,7 @@ fitness = BASE - (
 - Python 3.12+
 - Node.js 18+ y npm
 - Git
+- Docker y Docker Compose (para la base de datos PostgreSQL)
 
 ### 1. Clonar el Repositorio
 
@@ -338,8 +339,24 @@ git clone https://github.com/ChristianPE1/Sistema-Generacion-Horarios.git
 cd Sistema-Generacion-Horarios
 ```
 
-### 2. Configurar el Backend
+### 2. Configurar el Entorno (Automático)
 
+Recomendamos usar el script de configuración automática que maneja Docker, dependencias y migraciones:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+### 3. Configurar Manualmente (Opcional)
+
+#### Base de Datos
+```bash
+# Iniciar PostgreSQL
+docker-compose up -d
+```
+
+#### Backend
 ```bash
 cd backend
 
@@ -362,7 +379,7 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-### 3. Configurar el Frontend
+#### Frontend
 
 ```bash
 cd ../frontend
@@ -376,6 +393,12 @@ npm install
 ## Ejecución
 
 ### Opción 1: Ejecución Manual
+
+#### Base de Datos
+Asegúrese de que el contenedor de Docker esté corriendo:
+```bash
+docker-compose up -d
+```
 
 #### Backend (Terminal 1)
 
@@ -399,12 +422,13 @@ La interfaz estará en: `http://localhost:5173`
 ### Opción 2: Script Automatizado (Linux)
 
 ```bash
-chmod +x run_clean_arch.sh
-./run_clean_arch.sh
+chmod +x setup.sh
+./setup.sh
 ```
 
 Este script:
-- Limpia bases de datos anteriores
+- Verifica e inicia el contenedor de Docker (PostgreSQL)
+- Limpia bases de datos anteriores (opcional)
 - Ejecuta migraciones
 - Importa el dataset XML
 - Inicia backend y frontend automáticamente

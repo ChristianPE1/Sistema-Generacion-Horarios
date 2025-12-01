@@ -16,15 +16,35 @@ NC='\033[0m' # No Color
 
 # Verificar si estamos en el directorio correcto
 if [ ! -f "pu-fal07-llr.xml" ]; then
-    echo "❌ Error: No se encontró el archivo pu-fal07-cs.xml"
+    echo "❌ Error: No se encontró el archivo pu-fal07-llr.xml"
     echo "Por favor ejecuta este script desde el directorio del proyecto"
     exit 1
 fi
 
+# Verificar Docker
+if ! command -v docker &> /dev/null; then
+    echo "❌ Error: Docker no está instalado"
+    echo "Por favor instala Docker para usar la base de datos PostgreSQL"
+    exit 1
+fi
+
 # ==========================================
-# 1. BACKEND - Configuración de Python
+# 1. BASE DE DATOS - Docker
 # ==========================================
-echo -e "\n${YELLOW}📦 Paso 1: Configurando Backend (Django)${NC}"
+echo -e "\n${YELLOW}📦 Paso 1: Iniciando Base de Datos (PostgreSQL)${NC}"
+
+# Iniciar contenedor
+echo "Levantando contenedor de base de datos..."
+docker-compose up -d db
+
+# Esperar a que la BD esté lista
+echo "Esperando a que PostgreSQL esté listo..."
+sleep 5
+
+# ==========================================
+# 2. BACKEND - Configuración de Python
+# ==========================================
+echo -e "\n${YELLOW}📦 Paso 2: Configurando Backend (Django)${NC}"
 
 cd backend
 
@@ -68,9 +88,9 @@ fi
 cd ..
 
 # ==========================================
-# 2. FRONTEND - Configuración de Node.js
+# 3. FRONTEND - Configuración de Node.js
 # ==========================================
-echo -e "\n${YELLOW}📦 Paso 2: Configurando Frontend (React + Vite)${NC}"
+echo -e "\n${YELLOW}📦 Paso 3: Configurando Frontend (React + Vite)${NC}"
 
 cd frontend
 
@@ -102,21 +122,24 @@ echo "=========================================="
 echo ""
 echo "Para ejecutar el sistema:"
 echo ""
-echo "1. Backend (Django):"
+echo "1. Base de Datos:"
+echo "   docker-compose up -d db"
+echo ""
+echo "2. Backend (Django):"
 echo "   cd backend"
 echo "   source venv/bin/activate"
 echo "   python manage.py runserver"
 echo ""
-echo "2. Frontend (React) - En otra terminal:"
+echo "3. Frontend (React) - En otra terminal:"
 echo "   cd frontend"
 echo "   npm run dev"
 echo ""
-echo "3. Accede a la aplicación:"
+echo "4. Accede a la aplicación:"
 echo "   - Frontend: http://localhost:3000"
 echo "   - API Backend: http://localhost:8000/api/"
 echo "   - Admin Django: http://localhost:8000/admin/"
 echo ""
-echo "4. Importar datos XML:"
+echo "5. Importar datos XML:"
 echo "   Ve a http://localhost:3000/import-xml"
 echo "   Y sube el archivo pu-fal07-cs.xml"
 echo ""
