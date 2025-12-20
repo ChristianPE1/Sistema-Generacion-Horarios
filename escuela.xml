@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<timetable version="3.0" type="escuela" source="datos_horarios.json">
+  <rooms>
+    <room id="101" capacity="50" type="aula"/>
+    <room id="201" capacity="35" type="aula"/>
+    <room id="202" capacity="30" type="aula"/>
+    <room id="203" capacity="30" type="aula"/>
+    <room id="301" capacity="40" type="aula"/>
+    <room id="L01" capacity="30" type="laboratorio"/>
+    <room id="L02" capacity="20" type="laboratorio"/>
+    <room id="L03" capacity="20" type="laboratorio"/>
+    <room id="L04" capacity="20" type="laboratorio"/>
+  </rooms>
+  <instructors>
+    <instructor id="P001" name="Alvaro" status="assigned"/>
+    <instructor id="P002" name="Yessenia" status="assigned"/>
+    <instructor id="P003" name="Percy" status="assigned"/>
+    <instructor id="P004" name="Juan Carlos" status="assigned"/>
+    <instructor id="P005" name="Rolando" status="assigned"/>
+    <instructor id="P006" name="Wilber" status="assigned"/>
+    <instructor id="P007" name="Edgard" status="assigned"/>
+    <instructor id="P008" name="Eliana" status="assigned"/>
+    <instructor id="P009" name="Edward" status="assigned"/>
+    <instructor id="P010" name="Roxana" status="assigned"/>
+    <instructor id="P011" name="Yuber" status="assigned"/>
+    <instructor id="P012" name="Ana Maria" status="assigned"/>
+    <instructor id="P013" name="Contrato1" status="pending"/>
+    <instructor id="P014" name="Contrato2" status="pending"/>
+    <instructor id="P015" name="Contrato1" status="pending"/>
+    <instructor id="P016" name="Contrato2" status="pending"/>
+    <instructor id="P017" name="Contrato1" status="pending"/>
+    <instructor id="P018" name="Contrato1" status="pending"/>
+  </instructors>
+  <classes>
+    <class id="1" name="Estructuras Discretas II - Teoría" code="2501207" students="30" instructor="P006" type="teoria" hours="4" year="1"/>
+    <class id="2" name="Estructuras Discretas II - Práctica" code="2501207" students="30" instructor="P006" type="practica" hours="2" year="1"/>
+    <class id="3" name="Programación I - Teoría" code="2501208" students="30" instructor="P008" type="teoria" hours="2" year="1"/>
+    <class id="4" name="Programación I - Práctica" code="2501208" students="30" instructor="P008" type="practica" hours="2" year="1"/>
+    <class id="5" name="Programación I - Laboratorio" code="2501208" students="30" instructor="P008" type="laboratorio" hours="4" year="1"/>
+    <class id="6" name="Cálculo en Una Variable - Teoría" code="2501209" students="30" instructor="P013" type="teoria" hours="4" year="1"/>
+    <class id="7" name="Cálculo en Una Variable - Práctica" code="2501209" students="30" instructor="P013" type="practica" hours="2" year="1"/>
+    <class id="8" name="Inglés II - Teoría" code="2501210" students="30" instructor="P017" type="teoria" hours="2" year="1"/>
+    <class id="9" name="Inglés II - Práctica" code="2501210" students="30" instructor="P017" type="practica" hours="2" year="1"/>
+    <class id="10" name="Lingüística, Comprensión y Redacción Académica - Teoría" code="2501211" students="30" instructor="P015" type="teoria" hours="1" year="1"/>
+    <class id="11" name="Lingüística, Comprensión y Redacción Académica - Práctica" code="2501211" students="30" instructor="P015" type="practica" hours="4" year="1"/>
+    <class id="12" name="Realidad Nacional - Teoría" code="2501212" students="30" instructor="P016" type="teoria" hours="1" year="1"/>
+    <class id="13" name="Realidad Nacional - Práctica" code="2501212" students="30" instructor="P016" type="practica" hours="2" year="1"/>
+    <class id="14" name="Estructuras Discretas II - Teoría" code="1701208" students="28" instructor="P006" type="teoria" hours="2" year="1"/>
+    <class id="15" name="Estructuras Discretas II - Práctica" code="1701208" students="28" instructor="P006" type="practica" hours="2" year="1"/>
+    <class id="16" name="Estructuras Discretas II - Laboratorio" code="1701208" students="28" instructor="P006" type="laboratorio" hours="4" year="1"/>
+    <class id="17" name="Ciencia de la Computación I - Teoría" code="1701209" students="28" instructor="P008" type="teoria" hours="2" year="1"/>
+    <class id="18" name="Ciencia de la Computación I - Práctica" code="1701209" students="28" instructor="P008" type="practica" hours="2" year="1"/>
+    <class id="19" name="Ciencia de la Computación I - Laboratorio" code="1701209" students="28" instructor="P008" type="laboratorio" hours="4" year="1"/>
+    <class id="20" name="Cálculo en Una Variable - Teoría" code="1701210" students="28" instructor="P013" type="teoria" hours="4" year="1"/>
+    <class id="21" name="Cálculo en Una Variable - Práctica" code="1701210" students="28" instructor="P013" type="practica" hours="2" year="1"/>
+    <class id="22" name="Inglés Técnico Profesional II - Teoría" code="1701212" students="28" instructor="P017" type="teoria" hours="2" year="1"/>
+    <class id="23" name="Inglés Técnico Profesional II - Práctica" code="1701212" students="28" instructor="P017" type="practica" hours="2" year="1"/>
+    <class id="24" name="Comunicación Integral - Teoría" code="1701215" students="28" instructor="P015" type="teoria" hours="2" year="1"/>
+    <class id="25" name="Comunicación Integral - Práctica" code="1701215" students="28" instructor="P015" type="practica" hours="2" year="1"/>
+    <class id="26" name="Realidad Nacional - Teoría" code="1701216" students="28" instructor="P016" type="teoria" hours="1" year="1"/>
+    <class id="27" name="Realidad Nacional - Práctica" code="1701216" students="28" instructor="P016" type="practica" hours="2" year="1"/>
+    <class id="28" name="Algoritmos y Estructuras de Datos - Teoría" code="1702224" students="26" instructor="P005" type="teoria" hours="2" year="2"/>
+    <class id="29" name="Algoritmos y Estructuras de Datos - Práctica" code="1702224" students="26" instructor="P005" type="practica" hours="2" year="2"/>
+    <class id="30" name="Algoritmos y Estructuras de Datos - Laboratorio" code="1702224" students="26" instructor="P005" type="laboratorio" hours="4" year="2"/>
+    <class id="31" name="Teoría de la Computación - Teoría" code="1702225" students="26" instructor="P006" type="teoria" hours="2" year="2"/>
+    <class id="32" name="Teoría de la Computación - Práctica" code="1702225" students="26" instructor="P006" type="practica" hours="2" year="2"/>
+    <class id="33" name="Teoría de la Computación - Laboratorio" code="1702225" students="26" instructor="P006" type="laboratorio" hours="2" year="2"/>
+    <class id="34" name="Base de Datos I - Teoría" code="1702226" students="26" instructor="P007" type="teoria" hours="2" year="2"/>
+    <class id="35" name="Base de Datos I - Laboratorio" code="1702226" students="26" instructor="P007" type="laboratorio" hours="4" year="2"/>
+    <class id="36" name="Álgebra Lineal Numérica - Teoría" code="1702227" students="26" instructor="P014" type="teoria" hours="2" year="2"/>
+    <class id="37" name="Álgebra Lineal Numérica - Práctica" code="1702227" students="26" instructor="P014" type="practica" hours="2" year="2"/>
+    <class id="38" name="Álgebra Lineal Numérica - Laboratorio" code="1702227" students="26" instructor="P014" type="laboratorio" hours="2" year="2"/>
+    <class id="39" name="Estadística y Probabilidades - Teoría" code="1702228" students="26" instructor="P014" type="teoria" hours="3" year="2"/>
+    <class id="40" name="Estadística y Probabilidades - Práctica" code="1702228" students="26" instructor="P014" type="practica" hours="2" year="2"/>
+    <class id="41" name="Ecología y Conservación Ambiental - Teoría" code="1702229" students="26" instructor="P015" type="teoria" hours="1" year="2"/>
+    <class id="42" name="Ecología y Conservación Ambiental - Práctica" code="1702229" students="26" instructor="P015" type="practica" hours="2" year="2"/>
+    <class id="43" name="Programación Competitiva - Práctica" code="1703236" students="24" instructor="P004" type="practica" hours="6" year="3"/>
+    <class id="44" name="Ingeniería de Software II - Teoría" code="1703237" students="24" instructor="P007" type="teoria" hours="2" year="3"/>
+    <class id="45" name="Ingeniería de Software II - Práctica" code="1703237" students="24" instructor="P007" type="practica" hours="2" year="3"/>
+    <class id="46" name="Ingeniería de Software II - Laboratorio" code="1703237" students="24" instructor="P007" type="laboratorio" hours="2" year="3"/>
+    <class id="47" name="Estructuras de Datos Avanzados - Teoría" code="1703238" students="24" instructor="P005" type="teoria" hours="2" year="3"/>
+    <class id="48" name="Estructuras de Datos Avanzados - Práctica" code="1703238" students="24" instructor="P005" type="practica" hours="2" year="3"/>
+    <class id="49" name="Estructuras de Datos Avanzados - Laboratorio" code="1703238" students="24" instructor="P005" type="laboratorio" hours="2" year="3"/>
+    <class id="50" name="Sistemas Operativos - Teoría" code="1703239" students="24" instructor="P011" type="teoria" hours="2" year="3"/>
+    <class id="51" name="Sistemas Operativos - Práctica" code="1703239" students="24" instructor="P011" type="practica" hours="2" year="3"/>
+    <class id="52" name="Sistemas Operativos - Laboratorio" code="1703239" students="24" instructor="P011" type="laboratorio" hours="2" year="3"/>
+    <class id="53" name="Trabajo Interdisciplinar II - Teoría" code="1703240" students="24" instructor="P009" type="teoria" hours="2" year="3"/>
+    <class id="54" name="Trabajo Interdisciplinar II - Práctica" code="1703240" students="24" instructor="P009" type="practica" hours="2" year="3"/>
+    <class id="55" name="Matemática Aplicada a la Computación - Teoría" code="1703241" students="24" instructor="P014" type="teoria" hours="2" year="3"/>
+    <class id="56" name="Matemática Aplicada a la Computación - Práctica" code="1703241" students="24" instructor="P014" type="practica" hours="2" year="3"/>
+    <class id="57" name="Matemática Aplicada a la Computación - Laboratorio" code="1703241" students="24" instructor="P014" type="laboratorio" hours="2" year="3"/>
+    <class id="58" name="Interacción Humano Computador - Teoría" code="1704248" students="22" instructor="P012" type="teoria" hours="1" year="4"/>
+    <class id="59" name="Interacción Humano Computador - Práctica" code="1704248" students="22" instructor="P012" type="practica" hours="4" year="4"/>
+    <class id="60" name="Proyecto de Final de Carrera I - Teoría" code="1704249" students="22" instructor="P002" type="teoria" hours="2" year="4"/>
+    <class id="61" name="Proyecto de Final de Carrera I - Práctica" code="1704249" students="22" instructor="P002" type="practica" hours="2" year="4"/>
+    <class id="62" name="Computación Paralela y Distribuida - Teoría" code="1704250" students="22" instructor="P001" type="teoria" hours="2" year="4"/>
+    <class id="63" name="Computación Paralela y Distribuida - Práctica" code="1704250" students="22" instructor="P001" type="practica" hours="2" year="4"/>
+    <class id="64" name="Computación Paralela y Distribuida - Laboratorio" code="1704250" students="22" instructor="P001" type="laboratorio" hours="2" year="4"/>
+    <class id="65" name="Seguridad en Computación - Teoría" code="1704251" students="22" instructor="P005" type="teoria" hours="1" year="4"/>
+    <class id="66" name="Seguridad en Computación - Práctica" code="1704251" students="22" instructor="P005" type="practica" hours="2" year="4"/>
+    <class id="67" name="Seguridad en Computación - Laboratorio" code="1704251" students="22" instructor="P005" type="laboratorio" hours="2" year="4"/>
+    <class id="68" name="Formación de Empresas de Base Tecnológica I - Teoría" code="1704252" students="22" instructor="P018" type="teoria" hours="2" year="4"/>
+    <class id="69" name="Formación de Empresas de Base Tecnológica I - Práctica" code="1704252" students="22" instructor="P018" type="practica" hours="2" year="4"/>
+    <class id="70" name="Relaciones Humanas - Teoría" code="1704253" students="22" instructor="P015" type="teoria" hours="1" year="4"/>
+    <class id="71" name="Relaciones Humanas - Práctica" code="1704253" students="22" instructor="P015" type="practica" hours="2" year="4"/>
+    <class id="72" name="Física Computacional (E) - Teoría" code="1704254" students="20" instructor="P014" type="teoria" hours="1" year="4"/>
+    <class id="73" name="Física Computacional (E) - Práctica" code="1704254" students="20" instructor="P014" type="practica" hours="2" year="4"/>
+    <class id="74" name="Física Computacional (E) - Laboratorio" code="1704254" students="20" instructor="P014" type="laboratorio" hours="2" year="4"/>
+    <class id="75" name="Cloud Computing - Teoría" code="1705265" students="30" instructor="P001" type="teoria" hours="2" year="5"/>
+    <class id="76" name="Cloud Computing - Práctica" code="1705265" students="30" instructor="P001" type="practica" hours="2" year="5"/>
+    <class id="77" name="Cloud Computing - Laboratorio" code="1705265" students="30" instructor="P001" type="laboratorio" hours="2" year="5"/>
+    <class id="78" name="Trabajo Interdisciplinar III - Teoría" code="1705267" students="25" instructor="P002" type="teoria" hours="1" year="5"/>
+    <class id="79" name="Trabajo Interdisciplinar III - Práctica" code="1705267" students="25" instructor="P002" type="practica" hours="2" year="5"/>
+    <class id="80" name="Internet de las Cosas - Teoría" code="1705268" students="28" instructor="P003" type="teoria" hours="1" year="5"/>
+    <class id="81" name="Internet de las Cosas - Práctica" code="1705268" students="28" instructor="P003" type="practica" hours="2" year="5"/>
+    <class id="82" name="Internet de las Cosas - Laboratorio" code="1705268" students="28" instructor="P003" type="laboratorio" hours="2" year="5"/>
+    <class id="83" name="Robótica (E) - Teoría" code="1705269" students="26" instructor="P003" type="teoria" hours="2" year="5"/>
+    <class id="84" name="Robótica (E) - Laboratorio" code="1705269" students="26" instructor="P003" type="laboratorio" hours="4" year="5"/>
+    <class id="85" name="Tópicos en Ciberseguridad (E) - Teoría" code="1705270" students="27" instructor="P005" type="teoria" hours="2" year="5"/>
+    <class id="86" name="Tópicos en Ciberseguridad (E) - Laboratorio" code="1705270" students="27" instructor="P005" type="laboratorio" hours="4" year="5"/>
+    <class id="87" name="Prácticas Pre Profesionales - Práctica" code="1705271" students="20" instructor="P006" type="practica" hours="4" year="5"/>
+    <class id="88" name="Trabajo de Investigación - Teoría" code="1705272" students="18" instructor="P004" type="teoria" hours="3" year="5"/>
+    <class id="89" name="Trabajo de Investigación - Práctica" code="1705272" students="18" instructor="P004" type="practica" hours="6" year="5"/>
+  </classes>
+  <config days="lunes,martes,miercoles,jueves,viernes" block_duration="50" break_duration="10" start_time="07:00" end_time="20:10" max_consecutive="3"/>
+</timetable>

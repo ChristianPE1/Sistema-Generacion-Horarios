@@ -1,527 +1,255 @@
 import { useState, useEffect } from 'react';
-import { getSchedules, generateSchedule, updateSchedule, deleteSchedule } from '../services/api';
-import type { Schedule } from '../types';
-import type { PaginatedResponse } from '../services/api';
-import Pagination from './Pagination';
-import ScheduleViewer from './ScheduleViewer';
+import { useNavigate } from 'react-router-dom';
+import { 
+  getDatasets,
+  generateScheduleFromDataset,
+  type DatasetInfo
+} from '../services/api';
+import { Play, Database, Users, Building2, BookOpen, Loader2, AlertCircle } from 'lucide-react';
 
 function Schedules() {
-  const [paginatedData, setPaginatedData] = useState<PaginatedResponse<Schedule> | null>(null);
+  const navigate = useNavigate();
+  const [datasets, setDatasets] = useState<DatasetInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  
-  // Modals state
-  const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
-  // Action state
   const [generating, setGenerating] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [scheduleToEdit, setScheduleToEdit] = useState<Schedule | null>(null);
-  const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(null);
-  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
-
-  const [generateFormData, setGenerateFormData] = useState({
-    name: '',
-    description: '',
-    population_size: 100,
-    generations: 200,
-    mutation_rate: 0.1,
-    crossover_rate: 0.8,
-    use_heuristics: false
-  });
-
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    description: ''
+  const [error, setError] = useState<string | null>(null);
+  
+  const [formData, setFormData] = useState({
+    dataset: '',
+    population_size: 50,
+    generations: 100
   });
 
   useEffect(() => {
-    loadSchedules(currentPage);
-  }, [currentPage]);
+    loadDatasets();
+  }, []);
 
-  // Polling para actualizar estado de generación
-  useEffect(() => {
-    let interval: any;
-    const hasGenerating = paginatedData?.results.some(s => s.status === 'generating');
-    
-    if (hasGenerating) {
-      interval = setInterval(() => {
-        loadSchedules(currentPage, true);
-      }, 3000);
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [paginatedData, currentPage]);
-
-  const loadSchedules = async (page: number, background = false) => {
+  const loadDatasets = async () => {
     try {
-      if (!background) setLoading(true);
-      const response = await getSchedules(page, 20);
-      setPaginatedData(response.data);
-      setError(null);
+      setLoading(true);
+      const response = await getDatasets();
+      if (response.data.success) {
+        // Filtrar solo XMLs
+        const xmlDatasets = response.data.datasets.filter(
+          (d: DatasetInfo) => d.type === 'xml'
+        );
+        setDatasets(xmlDatasets);
+        if (xmlDatasets.length > 0 && !formData.dataset) {
+          setFormData(prev => ({ ...prev, dataset: xmlDatasets[0].name }));
+        }
+      }
     } catch (err) {
-      if (!background) setError('Error al cargar los horarios');
+      setError('Error cargando datasets');
       console.error(err);
     } finally {
-      if (!background) setLoading(false);
+      setLoading(false);
     }
   };
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.dataset) {
+      setError('Seleccione un dataset');
+      return;
+    }
+    
     try {
       setGenerating(true);
-      await generateSchedule(generateFormData);
-      setShowGenerateModal(false);
-      setGenerateFormData({
-        name: '',
-        description: '',
-        population_size: 100,
-        generations: 200,
-        mutation_rate: 0.1,
-        crossover_rate: 0.8,
-        use_heuristics: false
+      setError(null);
+      
+      const response = await generateScheduleFromDataset({
+        dataset: formData.dataset,
+        name: `Horario - ${formData.dataset}`,
+        population_size: formData.population_size,
+        generations: formData.generations
       });
-      await loadSchedules(1);
-      setCurrentPage(1);
-    } catch (err) {
-      setError('Error al generar el horario');
+      
+      if (response.data.success && response.data.schedule) {
+        // Guardar en localStorage para que ScheduleViewer lo pueda leer
+        localStorage.setItem('generatedSchedule', JSON.stringify(response.data.schedule));
+        // Redirigir a schedule-viewer
+        navigate('/schedule-viewer');
+      } else {
+        setError('Error en la generación del horario');
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al generar horario';
+      setError(errorMessage);
       console.error(err);
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleEditClick = (schedule: Schedule) => {
-    setScheduleToEdit(schedule);
-    setEditFormData({
-      name: schedule.name,
-      description: schedule.description || ''
-    });
-    setShowEditModal(true);
-  };
+  const selectedDataset = datasets.find(d => d.name === formData.dataset);
 
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!scheduleToEdit) return;
-
-    try {
-      setProcessing(true);
-      await updateSchedule(scheduleToEdit.id, editFormData);
-      setShowEditModal(false);
-      setScheduleToEdit(null);
-      await loadSchedules(currentPage);
-    } catch (err) {
-      setError('Error al actualizar el horario');
-      console.error(err);
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleDeleteClick = (schedule: Schedule) => {
-    setScheduleToDelete(schedule);
-    setShowDeleteModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!scheduleToDelete) return;
-
-    try {
-      setProcessing(true);
-      await deleteSchedule(scheduleToDelete.id);
-      setShowDeleteModal(false);
-      setScheduleToDelete(null);
-      // Si es el último elemento de la página y no es la primera página, ir a la anterior
-      if (paginatedData?.results.length === 1 && currentPage > 1) {
-        setCurrentPage(prev => prev - 1);
-      } else {
-        await loadSchedules(currentPage);
-      }
-    } catch (err) {
-      setError('Error al eliminar el horario');
-      console.error(err);
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  if (loading) return (
-    <div className="flex justify-center items-center h-64">
-      <div className="text-gray-600">Cargando horarios...</div>
-    </div>
-  );
-
-  if (selectedScheduleId) {
+  if (loading) {
     return (
-      <div>
-        <button
-          onClick={() => setSelectedScheduleId(null)}
-          className="mb-4 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition flex items-center gap-2"
-        >
-          <span>←</span> Volver a lista de horarios
-        </button>
-        <ScheduleViewer scheduleId={selectedScheduleId} />
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">Horarios Generados</h2>
-        <button
-          onClick={() => setShowGenerateModal(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center gap-2"
-        >
-          <span>⚙️</span> Generar Nuevo Horario
-        </button>
+    <div className="max-w-3xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Generar Horario</h1>
+        <p className="text-gray-600 mt-2">
+          Seleccione un dataset y configure los parámetros del algoritmo genético
+        </p>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-red-500" />
+          <span className="text-red-700">{error}</span>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        {!paginatedData?.results.length ? (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">No hay horarios generados</h3>
-            <p className="text-gray-600 mb-6">
-              Utiliza el botón "Generar Nuevo Horario" para crear una nueva distribución de clases.
-            </p>
+      <form onSubmit={handleGenerate} className="space-y-6">
+        {/* Dataset Selection */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Database className="h-5 w-5 text-indigo-600" />
+            Dataset
+          </h2>
+          
+          <div className="grid grid-cols-1 gap-3">
+            {datasets.map((dataset) => (
+              <label
+                key={dataset.name}
+                className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  formData.dataset === dataset.name
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="dataset"
+                  value={dataset.name}
+                  checked={formData.dataset === dataset.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, dataset: e.target.value }))}
+                  className="sr-only"
+                />
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                  formData.dataset === dataset.name
+                    ? 'border-indigo-500 bg-indigo-500'
+                    : 'border-gray-300'
+                }`}>
+                  {formData.dataset === dataset.name && (
+                    <div className="w-2 h-2 bg-white rounded-full" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{dataset.name}</div>
+                  <div className="text-sm text-gray-500 flex gap-4 mt-1">
+                    <span className="flex items-center gap-1">
+                      <BookOpen className="h-3 w-3" />
+                      {dataset.stats?.classes ?? dataset.stats?.courses ?? 0} clases
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Building2 className="h-3 w-3" />
+                      {dataset.stats?.rooms ?? 0} aulas
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      {dataset.stats?.instructors ?? 0} instructores
+                    </span>
+                  </div>
+                </div>
+              </label>
+            ))}
           </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fitness Score</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conflictos</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asignaciones</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creado</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {paginatedData.results.map(schedule => (
-                    <tr key={schedule.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{schedule.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title={schedule.description}>
-                        {schedule.description || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span className="font-bold text-green-600">
-                          {schedule.fitness_score.toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span className={`font-bold ${schedule.conflict_count && schedule.conflict_count > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                          {schedule.conflict_count || 0}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
-                          {schedule.assignment_count || 0}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {schedule.status === 'generating' ? (
-                          <span className="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800 flex items-center gap-1 w-fit">
-                            <span className="animate-spin">↻</span> Generando
-                          </span>
-                        ) : schedule.status === 'failed' ? (
-                          <span className="px-2 py-1 text-xs rounded bg-red-100 text-red-800">
-                            Fallido
-                          </span>
-                        ) : (
-                          <span className={`px-2 py-1 text-xs rounded ${schedule.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                            {schedule.is_active ? 'Activo' : 'Inactivo'}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(schedule.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setSelectedScheduleId(schedule.id)}
-                            className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition"
-                            title="Ver detalles"
-                          >
-                            Ver
-                          </button>
-                          <div className="relative">
-                            <button 
-                              onClick={() => setOpenDropdownId(openDropdownId === schedule.id ? null : schedule.id)}
-                              className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded transition flex items-center gap-1"
-                            >
-                              Exportar ▾
-                            </button>
-                            {openDropdownId === schedule.id && (
-                              <>
-                                <div 
-                                  className="fixed inset-0 z-10" 
-                                  onClick={() => setOpenDropdownId(null)}
-                                ></div>
-                                <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-20">
-                                  <a 
-                                    href={`http://localhost:8000/api/schedules/${schedule.id}/export_xlsx/`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    onClick={() => setOpenDropdownId(null)}
-                                  >
-                                    Excel (.xlsx)
-                                  </a>
-                                  <a 
-                                    href={`http://localhost:8000/api/schedules/${schedule.id}/export_xml/`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    onClick={() => setOpenDropdownId(null)}
-                                  >
-                                    XML
-                                  </a>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => handleEditClick(schedule)}
-                            className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded transition"
-                            title="Editar nombre/descripción"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(schedule)}
-                            className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded transition"
-                            title="Eliminar horario"
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+          {datasets.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No hay datasets XML disponibles. Coloque archivos .xml en la carpeta raíz del proyecto.
             </div>
-            {paginatedData && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={Math.ceil(paginatedData.count / 20)}
-                onPageChange={setCurrentPage}
-                totalItems={paginatedData.count}
+          )}
+        </div>
+
+        {/* AG Parameters */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Parámetros del Algoritmo
+          </h2>
+          
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tamaño de Población
+              </label>
+              <input
+                type="number"
+                min="10"
+                max="500"
+                value={formData.population_size}
+                onChange={(e) => setFormData(prev => ({ 
+                  ...prev, 
+                  population_size: parseInt(e.target.value) || 50 
+                }))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
-            )}
-          </>
+              <p className="text-xs text-gray-500 mt-1">Recomendado: 50-100</p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Generaciones
+              </label>
+              <input
+                type="number"
+                min="10"
+                max="1000"
+                value={formData.generations}
+                onChange={(e) => setFormData(prev => ({ 
+                  ...prev, 
+                  generations: parseInt(e.target.value) || 100 
+                }))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">Recomendado: 100-500</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Summary & Generate Button */}
+        {selectedDataset && (
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-lg">{selectedDataset.name}</h3>
+                <p className="text-indigo-100 text-sm mt-1">
+                  {selectedDataset.stats?.classes ?? selectedDataset.stats?.courses ?? 0} clases × {selectedDataset.stats?.rooms ?? 0} aulas × 5 días × 13 bloques
+                </p>
+              </div>
+              <button
+                type="submit"
+                disabled={generating || !formData.dataset}
+                className={`px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all ${
+                  generating
+                    ? 'bg-white/20 cursor-not-allowed'
+                    : 'bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg'
+                }`}
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Generando...
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-5 w-5" />
+                    Generar Horario
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         )}
-      </div>
-
-      {/* Generate Modal */}
-      {showGenerateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all scale-100">
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h3 className="text-xl font-bold text-gray-900">Generar Nuevo Horario</h3>
-              <button 
-                onClick={() => setShowGenerateModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl font-light"
-              >
-                ×
-              </button>
-            </div>
-            
-            <form onSubmit={handleGenerate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                <input
-                  type="text"
-                  value={generateFormData.name}
-                  onChange={(e) => setGenerateFormData({...generateFormData, name: e.target.value})}
-                  placeholder="Ej: Horario 2025-1"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                <textarea
-                  value={generateFormData.description}
-                  onChange={(e) => setGenerateFormData({...generateFormData, description: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-md">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Población</label>
-                  <input
-                    type="number"
-                    value={generateFormData.population_size}
-                    onChange={(e) => setGenerateFormData({...generateFormData, population_size: parseInt(e.target.value)})}
-                    min="10"
-                    max="1000"
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Generaciones</label>
-                  <input
-                    type="number"
-                    value={generateFormData.generations}
-                    onChange={(e) => setGenerateFormData({...generateFormData, generations: parseInt(e.target.value)})}
-                    min="10"
-                    max="1000"
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6 pt-2 border-t">
-                <button
-                  type="button"
-                  onClick={() => setShowGenerateModal(false)}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                  disabled={generating}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-green-400 flex items-center gap-2 transition-colors shadow-sm"
-                  disabled={generating}
-                >
-                  {generating ? (
-                    <>
-                      <span className="animate-spin">↻</span> Generando...
-                    </>
-                  ) : (
-                    'Generar'
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all scale-100">
-            <div className="flex justify-between items-center mb-4 border-b pb-2">
-              <h3 className="text-xl font-bold text-gray-900">Editar Horario</h3>
-              <button 
-                onClick={() => setShowEditModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl font-light"
-              >
-                ×
-              </button>
-            </div>
-            
-            <form onSubmit={handleUpdate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                <input
-                  type="text"
-                  value={editFormData.name}
-                  onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                <textarea
-                  value={editFormData.description}
-                  onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                  rows={4}
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6 pt-2 border-t">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                  disabled={processing}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400 flex items-center gap-2 transition-colors shadow-sm"
-                  disabled={processing}
-                >
-                  {processing ? (
-                    <>
-                      <span className="animate-spin">↻</span> Guardando...
-                    </>
-                  ) : (
-                    'Guardar Cambios'
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && scheduleToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
-            <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <span className="text-red-600 text-xl">⚠️</span>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">¿Eliminar Horario?</h3>
-              <p className="text-sm text-gray-500 mb-6">
-                Estás a punto de eliminar el horario <span className="font-bold text-gray-700">"{scheduleToDelete.name}"</span>. 
-                Esta acción no se puede deshacer.
-              </p>
-            </div>
-            
-            <div className="flex justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors"
-                disabled={processing}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-400 transition-colors shadow-sm"
-                disabled={processing}
-              >
-                {processing ? 'Eliminando...' : 'Sí, Eliminar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </form>
     </div>
   );
 }

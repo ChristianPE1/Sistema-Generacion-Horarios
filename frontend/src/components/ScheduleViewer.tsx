@@ -1,327 +1,330 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import FullCalendar from '@fullcalendar/react'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
-import { getAllRooms, getAllSchedules, getAllInstructors, getScheduleCalendarView } from '../services/api'
-import type { CalendarEvent, Room, Instructor, Schedule } from '../types'
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { type GeneratedSchedule } from '../services/api';
+import { Building2, User, Calendar, AlertCircle, ArrowLeft, Clock, CheckCircle2 } from 'lucide-react';
 
-interface ScheduleViewerProps {
-  scheduleId?: number
+type ViewMode = 'room' | 'instructor' | 'year';
+
+interface ScheduleBlock {
+  day: string;
+  block: number;
+  start: string;
+  end: string;
 }
 
-type ViewMode = 'room' | 'instructor'
+interface Assignment {
+  class_id: string;
+  class_name: string;
+  class_type: string;
+  year: number;
+  room: { id: string; type: string };
+  instructor: { id: string; name: string };
+  schedule: ScheduleBlock[];
+}
 
-const ScheduleViewer: React.FC<ScheduleViewerProps> = ({ scheduleId: initialScheduleId }) => {
-  const [schedules, setSchedules] = useState<Schedule[]>([])
-  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(initialScheduleId || null)
-  
-  // Data
-  const [rooms, setRooms] = useState<Room[]>([])
-  const [instructors, setInstructors] = useState<Instructor[]>([])
-  const [allEvents, setAllEvents] = useState<CalendarEvent[]>([])
-  
-  // View State
-  const [viewMode, setViewMode] = useState<ViewMode>('room')
-  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null)
-  const [selectedInstructorName, setSelectedInstructorName] = useState<string | null>(null)
-  
-  const [loading, setLoading] = useState(true)
-  const [loadingEvents, setLoadingEvents] = useState(false)
+function ScheduleViewer() {
+  const navigate = useNavigate();
+  const [schedule, setSchedule] = useState<GeneratedSchedule | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('room');
+  const [selectedFilter, setSelectedFilter] = useState<string>('');
 
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true)
-      await Promise.all([loadSchedules(), loadRooms(), loadInstructors()])
-      setLoading(false)
-    }
-    init()
-  }, [])
+  const days = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+  const blocks = Array.from({ length: 13 }, (_, i) => i);
 
   useEffect(() => {
-    if (selectedScheduleId) {
-      loadScheduleEvents(selectedScheduleId)
-    }
-  }, [selectedScheduleId])
-
-  // Set default selections when data loads
-  useEffect(() => {
-    if (rooms.length > 0 && !selectedRoomId) {
-      setSelectedRoomId(rooms[0].id)
-    }
-  }, [rooms])
-
-  useEffect(() => {
-    if (instructors.length > 0 && !selectedInstructorName) {
-      // Find first instructor with events if possible, otherwise just the first one
-      setSelectedInstructorName(instructors[0].name || `Instructor ${instructors[0].xml_id}`)
-    }
-  }, [instructors])
-
-  const loadSchedules = async () => {
-    try {
-      const response = await getAllSchedules()
-      setSchedules(response.data)
-      if (!selectedScheduleId && response.data.length > 0) {
-        setSelectedScheduleId(response.data[0].id)
+    const stored = localStorage.getItem('generatedSchedule');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as GeneratedSchedule;
+        setSchedule(parsed);
+      } catch (e) {
+        console.error('Error parsing schedule:', e);
       }
-    } catch (error) {
-      console.error('Error cargando schedules:', error)
     }
-  }
+  }, []);
 
-  const loadRooms = async () => {
-    try {
-      const response = await getAllRooms()
-      setRooms(response.data.sort((a, b) => a.xml_id - b.xml_id))
-    } catch (error) {
-      console.error('Error cargando aulas:', error)
+  // Extraer opciones de filtro según el modo
+  const filterOptions = useMemo(() => {
+    if (!schedule) return [];
+    
+    const options = new Set<string>();
+    schedule.assignments.forEach((a: Assignment) => {
+      if (viewMode === 'room') {
+        options.add(a.room.id);
+      } else if (viewMode === 'instructor') {
+        options.add(a.instructor.name);
+      } else if (viewMode === 'year') {
+        options.add(a.year.toString());
+      }
+    });
+    
+    return Array.from(options).sort((a, b) => {
+      if (viewMode === 'year') return parseInt(a) - parseInt(b);
+      return a.localeCompare(b);
+    });
+  }, [schedule, viewMode]);
+
+  // Establecer filtro por defecto cuando cambia el modo
+  useEffect(() => {
+    if (filterOptions.length > 0 && !filterOptions.includes(selectedFilter)) {
+      setSelectedFilter(filterOptions[0]);
     }
-  }
+  }, [filterOptions, viewMode]);
 
-  const loadInstructors = async () => {
-    try {
-      const response = await getAllInstructors()
-      setInstructors(response.data.sort((a, b) => a.name.localeCompare(b.name)))
-    } catch (error) {
-      console.error('Error cargando instructores:', error)
-    }
-  }
+  // Filtrar asignaciones
+  const filteredAssignments = useMemo(() => {
+    if (!schedule || !selectedFilter) return [];
+    
+    return schedule.assignments.filter((a: Assignment) => {
+      if (viewMode === 'room') return a.room.id === selectedFilter;
+      if (viewMode === 'instructor') return a.instructor.name === selectedFilter;
+      if (viewMode === 'year') return a.year.toString() === selectedFilter;
+      return true;
+    });
+  }, [schedule, selectedFilter, viewMode]);
 
-  const loadScheduleEvents = async (scheduleId: number) => {
-    try {
-      setLoadingEvents(true)
-      const response = await getScheduleCalendarView(scheduleId)
-      setAllEvents(response.data)
-    } catch (error) {
-      console.error('Error cargando eventos:', error)
-    } finally {
-      setLoadingEvents(false)
-    }
-  }
+  // Obtener asignaciones en una celda específica
+  const getAssignmentsAt = (day: string, block: number): Assignment[] => {
+    return filteredAssignments.filter((a: Assignment) => 
+      a.schedule.some((s: ScheduleBlock) => s.day === day && s.block === block)
+    );
+  };
 
-  // Filter events based on current view and selection
-  const filteredEvents = useMemo(() => {
-    if (!allEvents.length) return []
+  const getBlockTime = (block: number) => {
+    const startMinutes = 7 * 60 + block * 60;
+    const h = Math.floor(startMinutes / 60);
+    const m = startMinutes % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+  };
 
-    if (viewMode === 'room') {
-      if (!selectedRoomId) return []
-      // Filter by roomId (using the new prop added to backend) or fallback to string matching
-      return allEvents.filter(event => {
-        if (event.extendedProps.roomId) {
-          return event.extendedProps.roomId === selectedRoomId
-        }
-        // Fallback for older backend responses
-        const room = rooms.find(r => r.id === selectedRoomId)
-        return room && event.extendedProps.room === `Room ${room.xml_id}`
-      })
-    } else {
-      if (!selectedInstructorName) return []
-      return allEvents.filter(event => {
-        const eventInstructors = event.extendedProps.instructors
-        if (Array.isArray(eventInstructors)) {
-          return eventInstructors.includes(selectedInstructorName)
-        }
-        return false
-      })
-    }
-  }, [allEvents, viewMode, selectedRoomId, selectedInstructorName, rooms])
+  const typeColors: Record<string, string> = {
+    teoria: 'bg-blue-100 border-blue-300 text-blue-800',
+    practica: 'bg-green-100 border-green-300 text-green-800',
+    laboratorio: 'bg-purple-100 border-purple-300 text-purple-800'
+  };
 
-  // Calculate stats for current view
-  const stats = useMemo(() => {
-    const conflictCount = filteredEvents.filter(e => e.extendedProps.conflict).length
-    const totalClasses = filteredEvents.length
-    const totalHours = filteredEvents.reduce((acc, curr) => {
-      const start = new Date(`2000-01-01T${curr.startTime}`).getTime()
-      const end = new Date(`2000-01-01T${curr.endTime}`).getTime()
-      return acc + (end - start) / (1000 * 60 * 60)
-    }, 0)
-
-    return { conflictCount, totalClasses, totalHours }
-  }, [filteredEvents])
-
-  const handleEventClick = (info: any) => {
-    const props = info.event.extendedProps
-    alert(
-      `Clase: ${info.event.title}\n` +
-      `Aula: ${props.room}\n` +
-      `Instructor: ${props.instructors.join(', ')}\n` +
-      `Estudiantes: ${props.students}\n` +
-      `Conflicto: ${props.conflict ? 'SÍ' : 'No'}`
-    )
-  }
-
-  if (loading) {
+  if (!schedule) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center">
+          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">No hay horario generado</h2>
+          <p className="text-gray-600 mb-6">
+            Primero debe generar un horario desde la sección correspondiente.
+          </p>
+          <button
+            onClick={() => navigate('/schedules')}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center gap-2"
+          >
+            <Calendar className="h-5 w-5" />
+            Ir a Generar Horario
+          </button>
+        </div>
       </div>
-    )
+    );
   }
-
-  const currentSchedule = schedules.find(s => s.id === selectedScheduleId)
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header & Controls */}
+    <div className="space-y-6">
+      {/* Header con stats */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">Visualizador de Horarios</h2>
-            <p className="text-gray-500 text-sm mt-1">
-              {currentSchedule ? (
-                <>
-                  <span className="font-medium text-gray-900">{currentSchedule.name}</span>
-                  <span className="mx-2">•</span>
-                  Fitness: <span className="text-green-600 font-mono">{currentSchedule.fitness_score.toLocaleString()}</span>
-                </>
-              ) : 'Seleccione un horario'}
-            </p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/schedules')}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{schedule.name || 'Horario Generado'}</h1>
+              <p className="text-sm text-gray-500">{schedule.dataset}</p>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-3 bg-gray-100 p-1 rounded-lg">
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+            <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+              <CheckCircle2 className="h-4 w-4" />
+              Fitness
+            </div>
+            <div className="text-2xl font-bold text-green-700 mt-1">{schedule.fitness_score}</div>
+          </div>
+          <div className={`rounded-lg p-4 border ${schedule.conflict_count > 0 ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'}`}>
+            <div className={`flex items-center gap-2 text-sm font-medium ${schedule.conflict_count > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              <AlertCircle className="h-4 w-4" />
+              Conflictos
+            </div>
+            <div className={`text-2xl font-bold mt-1 ${schedule.conflict_count > 0 ? 'text-red-700' : 'text-green-700'}`}>
+              {schedule.conflict_count}
+            </div>
+          </div>
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+            <div className="flex items-center gap-2 text-blue-600 text-sm font-medium">
+              <Calendar className="h-4 w-4" />
+              Asignadas
+            </div>
+            <div className="text-2xl font-bold text-blue-700 mt-1">
+              {schedule.classes_assigned}/{schedule.classes_total}
+            </div>
+          </div>
+          <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+            <div className="flex items-center gap-2 text-purple-600 text-sm font-medium">
+              <Clock className="h-4 w-4" />
+              Tiempo
+            </div>
+            <div className="text-2xl font-bold text-purple-700 mt-1">{schedule.generation_time_ms}ms</div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="text-gray-600 text-sm font-medium">Generaciones</div>
+            <div className="text-2xl font-bold text-gray-700 mt-1">{schedule.generations_run}</div>
+          </div>
+        </div>
+
+        {/* View Mode Toggle & Filter */}
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
             <button
               onClick={() => setViewMode('room')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                viewMode === 'room' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'room' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
+              <Building2 className="h-4 w-4" />
               Por Aula
             </button>
             <button
               onClick={() => setViewMode('instructor')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                viewMode === 'instructor' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'instructor' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
+              <User className="h-4 w-4" />
               Por Instructor
             </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Horario</label>
-            <select
-              value={selectedScheduleId || ''}
-              onChange={(e) => setSelectedScheduleId(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            <button
+              onClick={() => setViewMode('year')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'year' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
-              {schedules.map((schedule) => (
-                <option key={schedule.id} value={schedule.id}>
-                  {schedule.name}
-                </option>
-              ))}
-            </select>
+              <Calendar className="h-4 w-4" />
+              Por Año
+            </button>
           </div>
 
-          {viewMode === 'room' ? (
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Aula</label>
-              <select
-                value={selectedRoomId || ''}
-                onChange={(e) => setSelectedRoomId(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              >
-                {rooms.map((room) => (
-                  <option key={room.id} value={room.id}>
-                    Aula {room.xml_id} (Cap: {room.capacity})
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Instructor</label>
-              <select
-                value={selectedInstructorName || ''}
-                onChange={(e) => setSelectedInstructorName(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              >
-                {instructors.map((instructor) => (
-                  <option key={instructor.id} value={instructor.name || `Instructor ${instructor.xml_id}`}>
-                    {instructor.name || `Instructor ${instructor.xml_id}`}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <select
+            value={selectedFilter}
+            onChange={(e) => setSelectedFilter(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-w-[200px]"
+          >
+            {filterOptions.map((option) => (
+              <option key={option} value={option}>
+                {viewMode === 'room' && `Aula ${option}`}
+                {viewMode === 'instructor' && option}
+                {viewMode === 'year' && `${option}° Año`}
+              </option>
+            ))}
+          </select>
 
-          <div className="flex items-end">
-            <div className="w-full bg-blue-50 rounded-lg p-2 flex justify-around items-center border border-blue-100">
-              <div className="text-center">
-                <div className="text-xs text-blue-600 font-medium">Clases</div>
-                <div className="text-lg font-bold text-blue-800">{stats.totalClasses}</div>
-              </div>
-              <div className="w-px h-8 bg-blue-200"></div>
-              <div className="text-center">
-                <div className="text-xs text-blue-600 font-medium">Horas</div>
-                <div className="text-lg font-bold text-blue-800">{stats.totalHours.toFixed(1)}</div>
-              </div>
-              <div className="w-px h-8 bg-blue-200"></div>
-              <div className="text-center">
-                <div className="text-xs text-red-600 font-medium">Conflictos</div>
-                <div className={`text-lg font-bold ${stats.conflictCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                  {stats.conflictCount}
-                </div>
-              </div>
-            </div>
+          <div className="text-sm text-gray-500">
+            {filteredAssignments.length} clases en esta vista
           </div>
         </div>
       </div>
 
-      {/* Calendar Area */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1 relative min-h-[600px]">
-        {loadingEvents && (
-          <div className="absolute inset-0 bg-white/80 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
-            <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-              <span className="text-gray-500 font-medium">Cargando eventos...</span>
-            </div>
-          </div>
-        )}
-        
-        <FullCalendar
-          plugins={[timeGridPlugin, interactionPlugin]}
-          initialView="timeGridWeek"
-          headerToolbar={{
-            left: '',
-            center: '',
-            right: ''
-          }}
-          allDaySlot={false}
-          slotMinTime="07:00:00"
-          slotMaxTime="22:00:00"
-          height="auto"
-          events={filteredEvents}
-          eventClick={handleEventClick}
-          locale="es"
-          weekends={true}
-          slotDuration="00:30:00"
-          dayHeaderFormat={{ weekday: 'long' }}
-          initialDate="2007-01-01"
-          firstDay={1}
-          eventContent={(arg) => {
-            const props = arg.event.extendedProps
-            return (
-              <div className="h-full w-full p-1 flex flex-col overflow-hidden">
-                <div className="font-bold text-xs truncate leading-tight">{arg.event.title}</div>
-                <div className="text-[10px] opacity-90 truncate mt-0.5">
-                  {viewMode === 'room' ? props.instructors.join(', ') : props.room}
-                </div>
-                {props.conflict && (
-                  <div className="absolute top-1 right-1 text-[10px]">⚠️</div>
-                )}
-              </div>
-            )
-          }}
-        />
+      {/* Timetable Grid */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse min-w-[800px]">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="border-b border-r border-gray-200 p-3 text-left text-sm font-semibold text-gray-600 w-20">
+                  Hora
+                </th>
+                {days.map(day => (
+                  <th key={day} className="border-b border-gray-200 p-3 text-center text-sm font-semibold text-gray-600 capitalize">
+                    {day}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {blocks.map(block => (
+                <tr key={block} className="hover:bg-gray-50/50">
+                  <td className="border-b border-r border-gray-200 p-2 text-center text-sm font-medium text-gray-500 bg-gray-50">
+                    {getBlockTime(block)}
+                  </td>
+                  {days.map(day => {
+                    const assignments = getAssignmentsAt(day, block);
+                    return (
+                      <td 
+                        key={`${day}-${block}`} 
+                        className="border-b border-gray-200 p-1 align-top min-h-[60px]"
+                      >
+                        {assignments.map((a, idx) => (
+                          <div
+                            key={`${a.class_id}-${idx}`}
+                            className={`text-xs p-2 mb-1 rounded-lg border ${typeColors[a.class_type] || 'bg-gray-100 border-gray-300'}`}
+                            title={`${a.class_name}\nAula: ${a.room.id}\nProfesor: ${a.instructor.name}`}
+                          >
+                            <div className="font-semibold truncate leading-tight">
+                              {a.class_name.length > 25 ? a.class_name.substring(0, 25) + '...' : a.class_name}
+                            </div>
+                            <div className="text-[10px] opacity-80 mt-0.5 flex justify-between">
+                              <span>{viewMode !== 'room' ? `Aula ${a.room.id}` : a.instructor.name}</span>
+                              {viewMode === 'room' && <span>{a.year}°</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* Legend */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="flex flex-wrap gap-4 items-center justify-center">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-blue-100 border border-blue-300"></div>
+            <span className="text-sm text-gray-600">Teoría</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-green-100 border border-green-300"></div>
+            <span className="text-sm text-gray-600">Práctica</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-purple-100 border border-purple-300"></div>
+            <span className="text-sm text-gray-600">Laboratorio</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Unassigned Classes */}
+      {schedule.unassigned && schedule.unassigned.length > 0 && (
+        <div className="bg-red-50 rounded-xl border border-red-200 p-6">
+          <h3 className="text-lg font-semibold text-red-800 mb-4 flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            Clases sin asignar ({schedule.unassigned.length})
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {schedule.unassigned.map((className: string, idx: number) => (
+              <div key={idx} className="bg-white rounded-lg p-3 text-sm text-red-700 border border-red-200">
+                {className}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
-export default ScheduleViewer
+export default ScheduleViewer;

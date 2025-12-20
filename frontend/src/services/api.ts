@@ -140,6 +140,8 @@ export const deleteSchedule = (id: number) => api.delete(`/schedules/${id}/`);
 export const activateSchedule = (id: number) => api.post(`/schedules/${id}/activate/`);
 export const getScheduleCalendarView = (id: number) => api.get<CalendarEvent[]>(`/schedules/${id}/calendar_view/`);
 export const getScheduleTimetable = (id: number) => api.get(`/schedules/${id}/timetable/`);
+
+// LEGACY - Generación con BD (lento)
 export const generateSchedule = (data: {
   name: string;
   description?: string;
@@ -148,6 +150,86 @@ export const generateSchedule = (data: {
   mutation_rate?: number;
   crossover_rate?: number;
 }) => api.post('/schedules/generate/', data);
+
+// =====================================================
+// NUEVO: Generación con Algoritmo Genético Optimizado
+// =====================================================
+
+// Interfaz para datasets disponibles
+export interface DatasetInfo {
+  name: string;
+  path: string;
+  type: 'xml' | 'json';
+  stats?: {
+    rooms: number;
+    instructors: number;
+    classes?: number;
+    courses?: number;
+  };
+  error?: string;
+}
+
+// Interfaz para horario generado
+export interface GeneratedSchedule {
+  name?: string;
+  dataset?: string;
+  assignments: Array<{
+    class_id: string;
+    class_name: string;
+    class_type: string;
+    year: number;
+    room: {
+      id: string;
+      type: string;
+    };
+    instructor: {
+      id: string;
+      name: string;
+    };
+    schedule: Array<{
+      day: string;
+      block: number;
+      start: string;
+      end: string;
+    }>;
+  }>;
+  fitness_score: number;
+  conflict_count: number;
+  generation_time_ms: number;
+  generations_run: number;
+  classes_assigned: number;
+  classes_total: number;
+  unassigned: string[];
+}
+
+// Lista datasets disponibles (escuela.xml, purdue_clean.xml)
+export const getDatasets = () => 
+  api.get<{success: boolean; datasets: DatasetInfo[]}>('/generate/datasets/');
+
+// Preparar datasets (limpiar XML Purdue, convertir JSON escuela)
+export const prepareDatasets = () => 
+  api.post<{success: boolean; results: any}>('/generate/prepare/');
+
+// Generar horario desde dataset
+export const generateScheduleFromDataset = (data: {
+  dataset: string;
+  name: string;
+  population_size?: number;
+  generations?: number;
+}) => api.post<{success: boolean; schedule: GeneratedSchedule}>('/generate/schedule/', data);
+
+// Generar horario desde archivo subido
+export const generateScheduleFromUpload = (formData: FormData) => {
+  return axios.post<{success: boolean; schedule: GeneratedSchedule}>(`${API_BASE_URL}/generate/upload/`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+// Obtener último horario generado
+export const getLastGeneratedSchedule = () => 
+  api.get<{success: boolean; schedule: GeneratedSchedule}>('/generate/last/');
 
 // Import XML
 export const importXML = (formData: FormData) => {

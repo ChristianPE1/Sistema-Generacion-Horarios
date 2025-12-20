@@ -1,24 +1,14 @@
                                                                 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  Building2, 
-  Users, 
-  BookOpen, 
-  GraduationCap, 
   Calendar, 
-  FileUp,
   Menu,
   X,
   CalendarDays
 } from 'lucide-react';
 import { useState } from 'react';
 import Dashboard from './components/Dashboard';
-import Rooms from './components/Rooms';
-import Instructors from './components/Instructors';
-import Courses from './components/Courses';
-import Classes from './components/Classes';
 import Schedules from './components/Schedules';
-import ImportXML from './components/ImportXML';
 import ScheduleViewer from './components/ScheduleViewer';
 
 function Navbar() {
@@ -31,13 +21,8 @@ function Navbar() {
 
   const navItems = [
     { path: '/', label: 'Inicio', icon: LayoutDashboard },
-    { path: '/rooms', label: 'Aulas', icon: Building2 },
-    { path: '/instructors', label: 'Instructores', icon: Users },
-    { path: '/courses', label: 'Cursos', icon: BookOpen },
-    { path: '/classes', label: 'Clases', icon: GraduationCap },
-    { path: '/schedules', label: 'Horarios', icon: Calendar },
-    { path: '/schedule-viewer', label: 'Visualizar', icon: CalendarDays },
-    { path: '/import', label: 'Importar', icon: FileUp },
+    { path: '/schedules', label: 'Generar Horario', icon: Calendar },
+    { path: '/schedule-viewer', label: 'Ver Horario', icon: CalendarDays },
   ];
   
   return (
@@ -123,13 +108,8 @@ function App() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/rooms" element={<Rooms />} />
-            <Route path="/instructors" element={<Instructors />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/classes" element={<Classes />} />
             <Route path="/schedules" element={<Schedules />} />
             <Route path="/schedule-viewer" element={<ScheduleViewer />} />
-            <Route path="/import" element={<ImportXML />} />
           </Routes>
         </main>
       </div>

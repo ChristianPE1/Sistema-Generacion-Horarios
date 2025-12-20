@@ -1,0 +1,624 @@
+{
+  "cursos": [
+    {
+      "codigo": "2501207",
+      "nombre": "Estructuras Discretas II",
+      "anio": 1,
+      "horas_teoria": 4,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P006",
+      "num_estudiantes": 30,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "2501208",
+      "nombre": "Programación I",
+      "anio": 1,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 4,
+      "profesor_id": "P008",
+      "num_estudiantes": 30,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "2501209",
+      "nombre": "Cálculo en Una Variable",
+      "anio": 1,
+      "horas_teoria": 4,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P013",
+      "num_estudiantes": 30,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "2501210",
+      "nombre": "Inglés II",
+      "anio": 1,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P017",
+      "num_estudiantes": 30,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "2501211",
+      "nombre": "Lingüística, Comprensión y Redacción Académica",
+      "anio": 1,
+      "horas_teoria": 1,
+      "horas_practica": 4,
+      "horas_lab": 0,
+      "profesor_id": "P015",
+      "num_estudiantes": 30,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "2501212",
+      "nombre": "Realidad Nacional",
+      "anio": 1,
+      "horas_teoria": 1,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P016",
+      "num_estudiantes": 30,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1701208",
+      "nombre": "Estructuras Discretas II",
+      "anio": 1,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 4,
+      "profesor_id": "P006",
+      "num_estudiantes": 28,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1701209",
+      "nombre": "Ciencia de la Computación I",
+      "anio": 1,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 4,
+      "profesor_id": "P008",
+      "num_estudiantes": 28,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1701210",
+      "nombre": "Cálculo en Una Variable",
+      "anio": 1,
+      "horas_teoria": 4,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P013",
+      "num_estudiantes": 28,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1701212",
+      "nombre": "Inglés Técnico Profesional II",
+      "anio": 1,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P017",
+      "num_estudiantes": 28,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1701215",
+      "nombre": "Comunicación Integral",
+      "anio": 1,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P015",
+      "num_estudiantes": 28,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1701216",
+      "nombre": "Realidad Nacional",
+      "anio": 1,
+      "horas_teoria": 1,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P016",
+      "num_estudiantes": 28,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1702224",
+      "nombre": "Algoritmos y Estructuras de Datos",
+      "anio": 2,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 4,
+      "profesor_id": "P005",
+      "num_estudiantes": 26,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1702225",
+      "nombre": "Teoría de la Computación",
+      "anio": 2,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P006",
+      "num_estudiantes": 26,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1702226",
+      "nombre": "Base de Datos I",
+      "anio": 2,
+      "horas_teoria": 2,
+      "horas_practica": 0,
+      "horas_lab": 4,
+      "profesor_id": "P007",
+      "num_estudiantes": 26,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1702227",
+      "nombre": "Álgebra Lineal Numérica",
+      "anio": 2,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P014",
+      "num_estudiantes": 26,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1702228",
+      "nombre": "Estadística y Probabilidades",
+      "anio": 2,
+      "horas_teoria": 3,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P014",
+      "num_estudiantes": 26,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1702229",
+      "nombre": "Ecología y Conservación Ambiental",
+      "anio": 2,
+      "horas_teoria": 1,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P015",
+      "num_estudiantes": 26,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1703236",
+      "nombre": "Programación Competitiva",
+      "anio": 3,
+      "horas_teoria": 0,
+      "horas_practica": 6,
+      "horas_lab": 0,
+      "profesor_id": "P004",
+      "num_estudiantes": 24,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1703237",
+      "nombre": "Ingeniería de Software II",
+      "anio": 3,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P007",
+      "num_estudiantes": 24,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1703238",
+      "nombre": "Estructuras de Datos Avanzados",
+      "anio": 3,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P005",
+      "num_estudiantes": 24,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1703239",
+      "nombre": "Sistemas Operativos",
+      "anio": 3,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P011",
+      "num_estudiantes": 24,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1703240",
+      "nombre": "Trabajo Interdisciplinar II",
+      "anio": 3,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P009",
+      "num_estudiantes": 24,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1703241",
+      "nombre": "Matemática Aplicada a la Computación",
+      "anio": 3,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P014",
+      "num_estudiantes": 24,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1704248",
+      "nombre": "Interacción Humano Computador",
+      "anio": 4,
+      "horas_teoria": 1,
+      "horas_practica": 4,
+      "horas_lab": 0,
+      "profesor_id": "P012",
+      "num_estudiantes": 22,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1704249",
+      "nombre": "Proyecto de Final de Carrera I",
+      "anio": 4,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P002",
+      "num_estudiantes": 22,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1704250",
+      "nombre": "Computación Paralela y Distribuida",
+      "anio": 4,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P001",
+      "num_estudiantes": 22,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1704251",
+      "nombre": "Seguridad en Computación",
+      "anio": 4,
+      "horas_teoria": 1,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P005",
+      "num_estudiantes": 22,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1704252",
+      "nombre": "Formación de Empresas de Base Tecnológica I",
+      "anio": 4,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P018",
+      "num_estudiantes": 22,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1704253",
+      "nombre": "Relaciones Humanas",
+      "anio": 4,
+      "horas_teoria": 1,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P015",
+      "num_estudiantes": 22,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1704254",
+      "nombre": "Física Computacional (E)",
+      "anio": 4,
+      "horas_teoria": 1,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P014",
+      "num_estudiantes": 20,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1705265",
+      "nombre": "Cloud Computing",
+      "anio": 5,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P001",
+      "num_estudiantes": 30,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1705267",
+      "nombre": "Trabajo Interdisciplinar III",
+      "anio": 5,
+      "horas_teoria": 1,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P002",
+      "num_estudiantes": 25,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1705268",
+      "nombre": "Internet de las Cosas",
+      "anio": 5,
+      "horas_teoria": 1,
+      "horas_practica": 2,
+      "horas_lab": 2,
+      "profesor_id": "P003",
+      "num_estudiantes": 28,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1705269",
+      "nombre": "Robótica (E)",
+      "anio": 5,
+      "horas_teoria": 2,
+      "horas_practica": 0,
+      "horas_lab": 4,
+      "profesor_id": "P003",
+      "num_estudiantes": 26,
+      "requiere_lab": 2
+    },
+    {
+      "codigo": "1705270",
+      "nombre": "Tópicos en Ciberseguridad (E)",
+      "anio": 5,
+      "horas_teoria": 2,
+      "horas_practica": 0,
+      "horas_lab": 4,
+      "profesor_id": "P005",
+      "num_estudiantes": 27,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1705271",
+      "nombre": "Prácticas Pre Profesionales",
+      "anio": 5,
+      "horas_teoria": 0,
+      "horas_practica": 4,
+      "horas_lab": 0,
+      "profesor_id": "P006",
+      "num_estudiantes": 20,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "1705272",
+      "nombre": "Trabajo de Investigación",
+      "anio": 5,
+      "horas_teoria": 3,
+      "horas_practica": 6,
+      "horas_lab": 0,
+      "profesor_id": "P004",
+      "num_estudiantes": 18,
+      "requiere_lab": 0
+    }
+  ],
+  "profesores": [
+    {
+      "id": "P001",
+      "nombre": "Alvaro",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P002",
+      "nombre": "Yessenia",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P003",
+      "nombre": "Percy",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P004",
+      "nombre": "Juan Carlos",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P005",
+      "nombre": "Rolando",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P006",
+      "nombre": "Wilber",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P007",
+      "nombre": "Edgard",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P008",
+      "nombre": "Eliana",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P009",
+      "nombre": "Edward",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P010",
+      "nombre": "Roxana",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P011",
+      "nombre": "Yuber",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P012",
+      "nombre": "Ana Maria",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P013",
+      "nombre": "Contrato1",
+      "departamento": "Matematicas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P014",
+      "nombre": "Contrato2",
+      "departamento": "Matematicas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P015",
+      "nombre": "Contrato1",
+      "departamento": "Sociología",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+
+    {
+      "id": "P016",
+      "nombre": "Contrato2",
+      "departamento": "Sociología",
+      "max_horas_diarias": 8,
+      "disponibilidad": {
+        "martes": ["07:00-10:00"],
+        "jueves": ["10:00-13:00"]
+      }
+    },
+    {
+      "id": "P017",
+      "nombre": "Contrato1",
+      "departamento": "Idiomas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P018",
+      "nombre": "Contrato1",
+      "departamento": "Industrial",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    }
+
+  ],
+  "salas": [
+    {
+      "id": "101",
+      "tipo": 1,
+      "capacidad": 50,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "201",
+      "tipo": 1,
+      "capacidad": 35,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "202",
+      "tipo": 1,
+      "capacidad": 30,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "203",
+      "tipo": 1,
+      "capacidad": 30,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "301",
+      "tipo": 1,
+      "capacidad": 40,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "L01",
+      "tipo": 2,
+      "subtipo": 1,
+      "capacidad": 30,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "L02",
+      "tipo": 2,
+      "subtipo": 1,
+      "capacidad": 20,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "L03",
+      "tipo": 2,
+      "subtipo": 2,
+      "capacidad": 20,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "L04",
+      "tipo": 2,
+      "subtipo": 1,
+      "capacidad": 20,
+      "ocupaciones_previas": {}
+    }
+  ],
+  "configuracion_general": {
+    "dias": ["lunes", "martes", "miercoles", "jueves", "viernes"],
+    "duracion_bloque_min": 50,
+    "descanso_entre_bloques_min": 10,
+    "inicio_jornada": "07:00",
+    "fin_jornada": "20:10",
+    "max_bloques_consecutivos_por_sesion": 3,
+    "min_buffer_entre_sesiones_min": 10
+  }
+}
