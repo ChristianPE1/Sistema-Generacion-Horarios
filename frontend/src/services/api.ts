@@ -231,6 +231,25 @@ export const generateScheduleFromUpload = (formData: FormData) => {
 export const getLastGeneratedSchedule = () => 
   api.get<{success: boolean; schedule: GeneratedSchedule}>('/generate/last/');
 
+// Listar horarios guardados en BD
+export const getSavedSchedules = () => 
+  api.get<{success: boolean; schedules: Array<{
+    id: number;
+    name: string;
+    dataset: string;
+    fitness_score: number;
+    conflict_count: number;
+    classes_assigned: number;
+    classes_total: number;
+    generation_time_ms: number;
+    created_at: string;
+    status: string;
+  }>}>('/generate/saved/');
+
+// Obtener horario específico por ID
+export const getSavedSchedule = (id: number) => 
+  api.get<{success: boolean; schedule: GeneratedSchedule}>(`/generate/saved/${id}/`);
+
 // Import XML
 export const importXML = (formData: FormData) => {
   return axios.post<{success: boolean; message: string; stats: ImportStats}>(`${API_BASE_URL}/import-xml/`, formData, {

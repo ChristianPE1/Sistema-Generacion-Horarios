@@ -5,7 +5,7 @@ import {
   generateScheduleFromDataset,
   type DatasetInfo
 } from '../services/api';
-import { Play, Database, Users, Building2, BookOpen, Loader2, AlertCircle } from 'lucide-react';
+import { Play, Database, Users, Building2, BookOpen, Loader2, AlertCircle, FileText } from 'lucide-react';
 
 function Schedules() {
   const navigate = useNavigate();
@@ -16,8 +16,7 @@ function Schedules() {
   
   const [formData, setFormData] = useState({
     dataset: '',
-    population_size: 50,
-    generations: 100
+    name: ''
   });
 
   useEffect(() => {
@@ -59,9 +58,9 @@ function Schedules() {
       
       const response = await generateScheduleFromDataset({
         dataset: formData.dataset,
-        name: `Horario - ${formData.dataset}`,
-        population_size: formData.population_size,
-        generations: formData.generations
+        name: formData.name || `Horario - ${formData.dataset}`,
+        population_size: 50,
+        generations: 100
       });
       
       if (response.data.success && response.data.schedule) {
@@ -96,7 +95,7 @@ function Schedules() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Generar Horario</h1>
         <p className="text-gray-600 mt-2">
-          Seleccione un dataset y configure los parámetros del algoritmo genético
+          Seleccione un dataset y asigne un nombre al horario
         </p>
       </div>
 
@@ -111,7 +110,7 @@ function Schedules() {
         {/* Dataset Selection */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Database className="h-5 w-5 text-indigo-600" />
+            <Database className="h-5 w-5 text-blue-600" />
             Dataset
           </h2>
           
@@ -121,7 +120,7 @@ function Schedules() {
                 key={dataset.name}
                 className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                   formData.dataset === dataset.name
-                    ? 'border-indigo-500 bg-indigo-50'
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -135,7 +134,7 @@ function Schedules() {
                 />
                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                   formData.dataset === dataset.name
-                    ? 'border-indigo-500 bg-indigo-500'
+                    ? 'border-blue-500 bg-blue-500'
                     : 'border-gray-300'
                 }`}>
                   {formData.dataset === dataset.name && (
@@ -170,58 +169,32 @@ function Schedules() {
           )}
         </div>
 
-        {/* AG Parameters */}
+        {/* Nombre del Horario */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Parámetros del Algoritmo
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-blue-600" />
+            Nombre del Horario
           </h2>
           
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tamaño de Población
-              </label>
-              <input
-                type="number"
-                min="10"
-                max="500"
-                value={formData.population_size}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  population_size: parseInt(e.target.value) || 50 
-                }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              <p className="text-xs text-gray-500 mt-1">Recomendado: 50-100</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Generaciones
-              </label>
-              <input
-                type="number"
-                min="10"
-                max="1000"
-                value={formData.generations}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  generations: parseInt(e.target.value) || 100 
-                }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              <p className="text-xs text-gray-500 mt-1">Recomendado: 100-500</p>
-            </div>
-          </div>
+          <input
+            type="text"
+            placeholder="Ej: Horario Semestre 2024-I"
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p className="text-xs text-gray-500 mt-2">
+            Opcional. Si no se especifica, se usará el nombre del dataset.
+          </p>
         </div>
 
         {/* Summary & Generate Button */}
         {selectedDataset && (
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
+          <div className="bg-blue-600 rounded-xl p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-lg">{selectedDataset.name}</h3>
-                <p className="text-indigo-100 text-sm mt-1">
+                <p className="text-blue-100 text-sm mt-1">
                   {selectedDataset.stats?.classes ?? selectedDataset.stats?.courses ?? 0} clases × {selectedDataset.stats?.rooms ?? 0} aulas × 5 días × 13 bloques
                 </p>
               </div>
@@ -231,7 +204,7 @@ function Schedules() {
                 className={`px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all ${
                   generating
                     ? 'bg-white/20 cursor-not-allowed'
-                    : 'bg-white text-indigo-600 hover:bg-indigo-50 shadow-lg'
+                    : 'bg-white text-blue-600 hover:bg-blue-50 shadow-lg'
                 }`}
               >
                 {generating ? (

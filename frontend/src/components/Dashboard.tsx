@@ -70,73 +70,81 @@ function Dashboard() {
         <div className="max-w-3xl w-full text-center">
           {/* Hero Section */}
           <div className="mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-2xl shadow-lg mb-6">
               <Calendar className="h-10 w-10 text-white" />
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
               Sistema de Generación de Horarios
             </h1>
             <p className="text-lg text-gray-600 max-w-xl mx-auto">
-              Genera horarios universitarios optimizados automáticamente usando algoritmos genéticos.
+              Genera horarios universitarios optimizados automáticamente usando algoritmos constructivos.
             </p>
           </div>
 
           {/* Main Actions */}
           <div className="grid sm:grid-cols-2 gap-4 mb-12 max-w-xl mx-auto">
-            <Link
-              to="/import"
-              className="group flex flex-col items-center p-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+            {/* Botón Importar - Deshabilitado en local */}
+            <div
+              className="group flex flex-col items-center p-6 bg-gray-200 rounded-2xl text-gray-400 cursor-not-allowed opacity-60"
+              title="Función no disponible en modo local"
             >
-              <Upload className="h-10 w-10 mb-3 group-hover:scale-110 transition-transform" />
+              <Upload className="h-10 w-10 mb-3" />
               <span className="text-lg font-semibold">Importar Datos XML</span>
-              <span className="text-sm text-indigo-100 mt-1">Comienza aquí</span>
-            </Link>
+              <span className="text-sm text-gray-400 mt-1">No disponible en local</span>
+            </div>
             
             <Link
               to="/schedules"
-              className="group flex flex-col items-center p-6 bg-white border-2 border-gray-200 rounded-2xl text-gray-700 hover:border-indigo-300 hover:shadow-lg transition-all hover:-translate-y-1"
+              className="group flex flex-col items-center p-6 bg-blue-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
             >
-              <Eye className="h-10 w-10 mb-3 text-indigo-600 group-hover:scale-110 transition-transform" />
-              <span className="text-lg font-semibold">Ver Mis Horarios</span>
-              <span className="text-sm text-gray-500 mt-1">Gestiona y visualiza</span>
+              <Eye className="h-10 w-10 mb-3 group-hover:scale-110 transition-transform" />
+              <span className="text-lg font-semibold">Generar Horario</span>
+              <span className="text-sm text-blue-100 mt-1">Comienza aquí</span>
             </Link>
           </div>
 
           {/* Info Section */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 text-left">
+          <div className="bg-blue-50 rounded-2xl p-6 sm:p-8 text-left">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
-                <FileText className="h-6 w-6 text-indigo-600" />
+                <FileText className="h-6 w-6 text-blue-600" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
                   Formato de archivo compatible
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Este sistema es compatible con archivos XML del formato <strong>ITC-2007 / UniTime Course Timetabling</strong>.
+                  Este sistema usa archivos XML con el formato personalizado v3.0 para definir aulas, instructores y clases.
                 </p>
-                <div className="bg-white rounded-xl p-4 border border-indigo-100">
+                <div className="bg-white rounded-xl p-4 border border-blue-100">
                   <p className="text-sm font-medium text-gray-700 mb-2">Estructura esperada del XML:</p>
                   <pre className="text-xs bg-gray-50 p-3 rounded-lg overflow-x-auto text-gray-600">
-{`<timetable version="2.4" nrDays="7" slotsPerDay="288">
+{`<timetable version="3.0" type="escuela">
   <rooms>
-    <room id="1" capacity="118" location="451,435"/>
+    <room id="A101" capacity="40" type="aula"/>
+    <room id="LAB1" capacity="25" type="laboratorio"/>
   </rooms>
+  <instructors>
+    <instructor id="1" name="Juan Pérez" status="TC"/>
+  </instructors>
   <classes>
-    <class id="1" offering="1" classLimit="105">
-      <time days="0100000" start="102" length="12"/>
-    </class>
+    <class id="1" name="Programación I" code="CS101" 
+           students="35" instructor="1" type="teoria" 
+           hours="2" year="1"/>
   </classes>
-  <students>...</students>
+  <config days="lunes,martes,miercoles,jueves,viernes" 
+          block_duration="50" break_duration="10"
+          start_time="07:00" end_time="20:00" 
+          max_consecutive="3"/>
 </timetable>`}
                   </pre>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-                    <CheckCircle2 className="h-4 w-4" /> Aulas con capacidad
+                    <CheckCircle2 className="h-4 w-4" /> Aulas con capacidad y tipo
                   </span>
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-                    <CheckCircle2 className="h-4 w-4" /> Clases con horarios
+                    <CheckCircle2 className="h-4 w-4" /> Clases con horas y año
                   </span>
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
                     <CheckCircle2 className="h-4 w-4" /> Instructores
@@ -162,19 +170,11 @@ function Dashboard() {
         <div className="flex flex-wrap gap-3">
           <Link
             to="/schedules"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
           >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Nuevo Horario</span>
             <span className="sm:hidden">Nuevo</span>
-          </Link>
-          <Link
-            to="/import"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-          >
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Importar XML</span>
-            <span className="sm:hidden">Importar</span>
           </Link>
         </div>
       </div>
@@ -219,7 +219,7 @@ function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Horarios Recientes</h2>
-            <Link to="/schedules" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+            <Link to="/schedules" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
               Ver todos <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -230,7 +230,7 @@ function Dashboard() {
                 <p className="text-gray-500">No hay horarios generados aún</p>
                 <Link 
                   to="/schedules" 
-                  className="inline-flex items-center gap-2 mt-4 text-indigo-600 hover:text-indigo-700 font-medium"
+                  className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-700 font-medium"
                 >
                   <Sparkles className="h-4 w-4" /> Generar primer horario
                 </Link>

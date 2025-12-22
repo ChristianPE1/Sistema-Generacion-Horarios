@@ -2068,5 +2068,5 @@
     <class id="42" name="Course_42" code="42" students="30" instructor="0" type="teoria" hours="3" year="0"/>
     <class id="43" name="Course_43" code="43" students="30" instructor="0" type="teoria" hours="3" year="0"/>
   </classes>
-  <config days="lunes,martes,miercoles,jueves,viernes" block_duration="50" break_duration="10" start_time="07:00" end_time="20:00" max_consecutive="3"/>
+  <config days="lunes,martes,miercoles,jueves,viernes,sabado" block_duration="50" break_duration="10" start_time="07:00" end_time="20:00" max_consecutive="3"/>
 </timetable>

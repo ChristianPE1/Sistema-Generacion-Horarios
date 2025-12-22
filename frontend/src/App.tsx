@@ -26,7 +26,7 @@ function Navbar() {
   ];
   
   return (
-    <header className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 shadow-lg sticky top-0 z-50">
+    <header className="bg-blue-700 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -36,7 +36,7 @@ function Navbar() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-white">Sistema de Horarios</h1>
-              <p className="text-xs text-indigo-200">Generación Automática</p>
+              <p className="text-xs text-blue-200">Generación Automática</p>
             </div>
           </Link>
 
@@ -51,7 +51,7 @@ function Navbar() {
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive(item.path) 
                       ? 'bg-white/20 text-white shadow-inner' 
-                      : 'text-indigo-100 hover:bg-white/10 hover:text-white'
+                      : 'text-blue-100 hover:bg-white/10 hover:text-white'
                     }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -73,7 +73,7 @@ function Navbar() {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-indigo-700/95 backdrop-blur-sm border-t border-white/10">
+        <div className="lg:hidden bg-blue-800 border-t border-white/10">
           <nav className="max-w-7xl mx-auto px-4 py-3 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -85,7 +85,7 @@ function Navbar() {
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
                     ${isActive(item.path) 
                       ? 'bg-white/20 text-white' 
-                      : 'text-indigo-100 hover:bg-white/10'
+                      : 'text-blue-100 hover:bg-white/10'
                     }`}
                 >
                   <Icon className="h-5 w-5" />
