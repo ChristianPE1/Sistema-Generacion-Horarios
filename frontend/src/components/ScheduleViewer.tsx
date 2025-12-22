@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { type GeneratedSchedule, getSavedSchedules, getSavedSchedule } from '../services/api';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { type GeneratedSchedule, getSavedSchedules, getSavedSchedule, getLastGeneratedSchedule } from '../services/api';
 import { Building2, User, Calendar, AlertCircle, ArrowLeft, ChevronLeft, ChevronRight, Download, RefreshCw } from 'lucide-react';
 //import * as XLSX from 'xlsx';
 import * as XLSX from 'xlsx-js-style';
@@ -34,6 +34,7 @@ interface SavedScheduleOption {
 
 function ScheduleViewer() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [schedule, setSchedule] = useState<GeneratedSchedule | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('room');
   const [selectedFilter, setSelectedFilter] = useState<string>('');
@@ -60,16 +61,45 @@ function ScheduleViewer() {
 
   useEffect(() => {
     loadSavedSchedules();
+    
+    // Verificar si hay un ID en la URL
+    const idParam = searchParams.get('id');
+    if (idParam) {
+      const id = parseInt(idParam);
+      if (!isNaN(id)) {
+        loadScheduleById(id);
+        return;
+      }
+    }
+    
+    // Si no hay ID, cargar el horario inicial
+    loadInitialSchedule();
+  }, [searchParams]);
+
+  const loadInitialSchedule = async () => {
+    // Primero intentar cargar desde localStorage
     const stored = localStorage.getItem('generatedSchedule');
     if (stored) {
       try {
         const parsed = JSON.parse(stored) as GeneratedSchedule;
         setSchedule(parsed);
+        return;
       } catch (e) {
         console.error('Error parsing schedule:', e);
       }
     }
-  }, []);
+    
+    // Si no hay en localStorage, intentar cargar el último generado
+    try {
+      const response = await getLastGeneratedSchedule();
+      if (response.data.success && response.data.schedule) {
+        setSchedule(response.data.schedule);
+        localStorage.setItem('generatedSchedule', JSON.stringify(response.data.schedule));
+      }
+    } catch (err) {
+      console.error('Error loading last schedule:', err);
+    }
+  };
 
   const loadSavedSchedules = async () => {
     try {

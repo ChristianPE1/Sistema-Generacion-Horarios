@@ -5,7 +5,7 @@ import {
   generateScheduleFromDataset,
   type DatasetInfo
 } from '../services/api';
-import { Play, Database, Users, Building2, BookOpen, Loader2, AlertCircle, FileText } from 'lucide-react';
+import { Play, Database, Users, Building2, BookOpen, Loader2, AlertCircle, FileText, Dna, Zap } from 'lucide-react';
 
 function Schedules() {
   const navigate = useNavigate();
@@ -16,7 +16,9 @@ function Schedules() {
   
   const [formData, setFormData] = useState({
     dataset: '',
-    name: ''
+    name: '',
+    population_size: 50,
+    generations: 100
   });
 
   useEffect(() => {
@@ -59,8 +61,8 @@ function Schedules() {
       const response = await generateScheduleFromDataset({
         dataset: formData.dataset,
         name: formData.name || `Horario - ${formData.dataset}`,
-        population_size: 50,
-        generations: 100
+        population_size: formData.population_size,
+        generations: formData.generations
       });
       
       if (response.data.success && response.data.schedule) {
@@ -186,6 +188,58 @@ function Schedules() {
           <p className="text-xs text-gray-500 mt-2">
             Opcional. Si no se especifica, se usará el nombre del dataset.
           </p>
+        </div>
+
+        {/* Parámetros del Algoritmo Genético */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Dna className="h-5 w-5 text-purple-600" />
+            Parámetros del Algoritmo Genético
+          </h2>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tamaño de Población
+              </label>
+              <input
+                type="number"
+                min="10"
+                max="200"
+                value={formData.population_size}
+                onChange={(e) => setFormData(prev => ({ ...prev, population_size: parseInt(e.target.value) || 50 }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Más población = más diversidad (10-200)
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Generaciones
+              </label>
+              <input
+                type="number"
+                min="10"
+                max="500"
+                value={formData.generations}
+                onChange={(e) => setFormData(prev => ({ ...prev, generations: parseInt(e.target.value) || 100 }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Más generaciones = mejor optimización (10-500)
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-purple-50 rounded-lg flex items-start gap-2">
+            <Zap className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-purple-700">
+              El algoritmo usa <strong>Greedy + Genético</strong>: primero genera una solución rápida con construcción greedy, 
+              luego la refina con evolución genética para optimizar la distribución de aulas.
+            </p>
+          </div>
         </div>
 
         {/* Summary & Generate Button */}

@@ -8,7 +8,7 @@ from .views import (
 from . import xml_parser
 from . import api
 from . import fast_api_views
-from . import generation_api
+from . import generation_api_v2 as generation_api
 
 router = DefaultRouter()
 router.register(r'rooms', RoomViewSet)

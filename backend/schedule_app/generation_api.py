@@ -1,5 +1,5 @@
 """
-API Views para generación de horarios con Algoritmo Constructivo/Genético.
+API Views para generación de horarios con Algoritmo Genético.
 
 Endpoints:
 - POST /api/generate/from-xml/ - Genera horario desde archivo XML
@@ -8,15 +8,254 @@ Endpoints:
 """
 import os
 import json
+import time
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.db import transaction
 
-from .schedule_builder import generate_from_xml, load_from_xml
+from .schedule_builder import load_from_xml
 from .xml_cleaner import clean_purdue_xml, json_to_xml
+from .schedule_generator import ScheduleGenerator
+from .models import Room, Instructor, Course, Class, TimeSlot, ClassInstructor, ClassRoom, Schedule, ScheduleAssignment
 
 # Directorio base del proyecto
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def get_dataset_path(name: str) -> str:
+    """Obtiene la ruta completa de un dataset."""
+    return os.path.join(BASE_DIR, name)
+
+
+def import_xml_to_db(xml_path: str, max_classes: int = None) -> dict:
+    """
+    Importa datos desde XML a la base de datos y retorna estadísticas.
+    Usa el formato purdue_clean.xml.
+    """
+    import xml.etree.ElementTree as ET
+    
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    
+    stats = {'rooms': 0, 'instructors': 0, 'courses': 0, 'classes': 0, 'time_slots': 0}
+    
+    with transaction.atomic():
+        # Limpiar datos existentes (orden correcto por dependencias FK)
+        ScheduleAssignment.objects.all().delete()
+        Schedule.objects.all().delete()
+        TimeSlot.objects.all().delete()
+        ClassRoom.objects.all().delete()
+        ClassInstructor.objects.all().delete()
+        Class.objects.all().delete()
+        Course.objects.all().delete()
+        Instructor.objects.all().delete()
+        Room.objects.all().delete()
+        
+        room_map = {}
+        instructor_map = {}
+        course_map = {}
+        
+        # 1. Importar Rooms
+        rooms_elem = root.find('rooms')
+        if rooms_elem is not None:
+            for room_elem in rooms_elem.findall('room'):
+                xml_id = int(room_elem.get('id'))
+                room = Room.objects.create(
+                    xml_id=xml_id,
+                    capacity=int(room_elem.get('capacity', 30)),
+                    location=room_elem.get('location', ''),
+                    is_constraint=room_elem.get('constraint', 'false').lower() == 'true'
+                )
+                room_map[xml_id] = room
+                stats['rooms'] += 1
+        
+        # 2. Importar Instructors
+        instructors_elem = root.find('instructors')
+        if instructors_elem is not None:
+            for instructor_elem in instructors_elem.findall('instructor'):
+                xml_id = int(instructor_elem.get('id'))
+                instructor = Instructor.objects.create(
+                    xml_id=xml_id,
+                    name=instructor_elem.get('name', f'Instructor {xml_id}')
+                )
+                instructor_map[xml_id] = instructor
+                stats['instructors'] += 1
+        
+        # 3. Importar Classes (formato purdue_clean)
+        classes_elem = root.find('classes')
+        if classes_elem is not None:
+            class_list = list(classes_elem.findall('class'))
+            if max_classes:
+                class_list = class_list[:max_classes]
+            
+            course_id_counter = 1
+            class_id_counter = 1  # Contador para IDs únicos de clases
+            
+            for class_elem in class_list:
+                class_name = class_elem.get('name', f'Course {class_id_counter}')
+                class_code = class_elem.get('code', str(class_id_counter))
+                students = int(class_elem.get('students', 30))
+                instructor_id = class_elem.get('instructor')
+                hours = int(class_elem.get('hours', 1))
+                
+                # Crear o obtener curso
+                if class_code not in course_map:
+                    course = Course.objects.create(
+                        xml_id=course_id_counter,
+                        name=class_name,
+                        code=class_code
+                    )
+                    course_map[class_code] = course
+                    stats['courses'] += 1
+                    course_id_counter += 1
+                else:
+                    course = course_map[class_code]
+                
+                # Crear clase con ID único generado
+                class_obj = Class.objects.create(
+                    xml_id=class_id_counter,
+                    offering=course,
+                    class_limit=students
+                )
+                class_id_counter += 1
+                stats['classes'] += 1
+                
+                # Asociar instructor
+                if instructor_id and instructor_id != '0':
+                    instructor = instructor_map.get(int(instructor_id))
+                    if instructor:
+                        ClassInstructor.objects.create(
+                            class_obj=class_obj,
+                            instructor=instructor
+                        )
+                
+                # Crear time slots por defecto
+                days_patterns = ['1000000', '0100000', '0010000', '0001000', '0000100']
+                start_times = list(range(84, 216, 12))
+                
+                for i, days in enumerate(days_patterns):
+                    start_time = start_times[i % len(start_times)]
+                    TimeSlot.objects.create(
+                        class_obj=class_obj,
+                        days=days,
+                        start_time=start_time,
+                        length=hours * 12,
+                        break_time=0,
+                        preference=0.0
+                    )
+                    stats['time_slots'] += 1
+    
+    return stats
+
+
+def generate_with_genetic_algorithm(
+    xml_path: str,
+    population_size: int = 50,
+    generations: int = 100,
+    max_classes: int = 200
+) -> dict:
+    """
+    Genera horario usando Algoritmo Genético real.
+    
+    1. Importa datos del XML a la BD
+    2. Ejecuta el algoritmo genético
+    3. Retorna resultados
+    """
+    start_time = time.time()
+    
+    # Importar datos a la BD (limitar clases para velocidad)
+    stats = import_xml_to_db(xml_path, max_classes=max_classes)
+    
+    # Crear generador con parámetros
+    generator = ScheduleGenerator(
+        population_size=population_size,
+        generations=generations,
+        mutation_rate=0.15
+    )
+    
+    # Cargar datos
+    generator.load_data()
+    
+    # Generar horario
+    schedule = generator.generate(schedule_name="Horario Genético")
+    
+    elapsed_ms = int((time.time() - start_time) * 1000)
+    
+    # Obtener asignaciones
+    from .models import ScheduleAssignment
+    assignments_db = ScheduleAssignment.objects.filter(schedule=schedule)
+    
+    # Formatear resultado en el formato que espera el frontend
+    assignments = []
+    for assignment in assignments_db:
+        # Convertir days pattern (1000000) a día de la semana
+        days_str = assignment.time_slot.days if assignment.time_slot else "0000000"
+        day_names = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+        day = 'Lunes'
+        for i, d in enumerate(days_str):
+            if d == '1':
+                day = day_names[i]
+                break
+        
+        # Convertir start_time a hora HH:MM
+        start_time = assignment.time_slot.start_time if assignment.time_slot else 0
+        start_hour = 7 + (start_time // 12)  # Cada 12 slots = 1 hora, empezando a las 7
+        start_min = (start_time % 12) * 5  # Cada slot = 5 minutos
+        end_slots = start_time + (assignment.time_slot.length if assignment.time_slot else 12)
+        end_hour = 7 + (end_slots // 12)
+        end_min = (end_slots % 12) * 5
+        
+        # Buscar instructor si existe
+        instructor_name = "Sin asignar"
+        instructor_id = "0"
+        class_instructors = ClassInstructor.objects.filter(class_obj=assignment.class_obj)
+        if class_instructors.exists():
+            instructor = class_instructors.first().instructor
+            instructor_name = instructor.name
+            instructor_id = str(instructor.xml_id)
+        
+        assignments.append({
+            'class_id': str(assignment.class_obj.xml_id),
+            'class_name': assignment.class_obj.offering.name if assignment.class_obj.offering else f"Clase {assignment.class_obj.xml_id}",
+            'class_type': 'teoria',
+            'year': 1,
+            'room': {
+                'id': str(assignment.room.xml_id) if assignment.room else "0",
+                'type': 'aula'
+            },
+            'instructor': {
+                'id': instructor_id,
+                'name': instructor_name
+            },
+            'schedule': [{
+                'day': day,
+                'block': start_time // 12 + 1,
+                'start': f"{start_hour:02d}:{start_min:02d}",
+                'end': f"{end_hour:02d}:{end_min:02d}"
+            }]
+        })
+    
+    # Calcular conflictos
+    conflict_count = schedule.conflict_count if hasattr(schedule, 'conflict_count') else 0
+    fitness_score = schedule.fitness_score if hasattr(schedule, 'fitness_score') else 0
+    
+    return {
+        'assignments': assignments,
+        'classes_assigned': len(assignments),
+        'classes_total': stats['classes'],
+        'conflict_count': conflict_count,
+        'fitness_score': fitness_score,
+        'generation_time_ms': elapsed_ms,
+        'generations_run': generations,
+        'algorithm': 'genetic',
+        'parameters': {
+            'population_size': population_size,
+            'generations': generations
+        },
+        'stats': stats,
+        'unassigned': []
+    }
 
 
 def get_dataset_path(name: str) -> str:
@@ -146,8 +385,8 @@ def generate_schedule(request):
             }, status=500)
     
     try:
-        # Generar horario
-        result = generate_from_xml(
+        # Generar horario usando Algoritmo Genético
+        result = generate_with_genetic_algorithm(
             xml_path,
             population_size=population_size,
             generations=generations

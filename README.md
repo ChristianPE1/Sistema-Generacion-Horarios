@@ -1,12 +1,6 @@
 # Sistema de Generación de Horarios Universitarios
 
-Sistema automatizado de gestión y generación de horarios académicos que utiliza **algoritmos genéticos** para optimizar la asignación de clases, aulas y horarios. Desarrollado con Django REST Framework y React + TypeScript.
-
-[![Estado](https://img.shields.io/badge/Estado-En%20Desarrollo-orange)](./PROJECT_STATUS.md)
-[![Versión](https://img.shields.io/badge/Versión-1.0.0-blue)](./IMPLEMENTATION_SUMMARY.md)
-[![Documentación](https://img.shields.io/badge/Docs-Completa-green)](./INDEX.md)
-
----
+Sistema automatizado para generar horarios académicos optimizados utilizando un **sistema híbrido: Algoritmo Greedy + Algoritmo Genético**.
 
 ## Integrantes del Equipo
 
@@ -15,505 +9,212 @@ Sistema automatizado de gestión y generación de horarios académicos que utili
 - **Joselyn Quispe**
 
 **Universidad Nacional de San Agustín de Arequipa**  
-Facultad de Ingeniería de Producción y Servicios  
-Escuela Profesional de Ciencia de la Computacion
+Escuela Profesional de Ciencia de la Computación
 
 ---
 
-## Índice
+## Descripción del Sistema
 
-- [Descripción General](#-descripción-general)
-- [Características](#-características)
-- [Arquitectura del Sistema](#️-arquitectura-del-sistema)
-- [Stack Tecnológico](#-stack-tecnológico)
-- [Dataset](#-dataset)
-- [Flujo de Datos](#-flujo-de-datos)
-- [Algoritmo Genético](#-algoritmo-genético)
-- [Resultados](#-resultados)
-- [Instalación](#-instalación)
-- [Ejecución](#️-ejecución)
-- [API Endpoints](#-api-endpoints)
-- [Documentación](#-documentación)
-
----
-
-## Descripción General
-
-Este sistema resuelve el **University Course Timetabling Problem (UCTP)**, un problema NP-completo que consiste en asignar clases a aulas y franjas horarias respetando múltiples restricciones. La solución implementada utiliza un algoritmo genético optimizado que reduce el tiempo de generación de horarios de **semanas a minutos**.
+Este sistema resuelve el problema de generación de horarios universitarios (University Course Timetabling Problem - UCTP), un problema NP-completo que consiste en asignar clases a aulas y franjas horarias respetando múltiples restricciones.
 
 ### Problema que Resuelve
 
-La generación manual de horarios académicos presenta desafíos significativos:
-- **Complejidad combinatoria**: Con 896 clases, 63 aulas y múltiples franjas horarias, existen más de 10^2700 combinaciones posibles
-- **Restricciones múltiples**: Debe respetar restricciones duras (capacidad de aulas, conflictos) y blandas (preferencias, optimización)
-- **Tiempo**: El proceso manual puede tomar 2-4 semanas de trabajo administrativo
-- **Errores**: Alta probabilidad de conflictos y solapamientos en asignaciones manuales
-
-### Solución Implementada
-
-El sistema automatiza completamente este proceso mediante:
-- **Algoritmo genético** adaptado al problema UCTP
-- **Validación automática** de restricciones duras y blandas
-- **Interfaz web moderna** para visualización y gestión
-- **Generación en minutos** con resultados optimizados
-
----
-
-## Características
-
-### Funcionalidades Principales
-
-- **Generación automática con algoritmo genético**
-  - Optimización mediante evolución de poblaciones
-  - Convergencia en menos de 1000 generaciones
-  - Fitness promedio de 450,000+ puntos
-
-- **Dashboard completo**
-  - Estadísticas del sistema en tiempo real
-  - Visualización de utilización de recursos
-  - Análisis de carga de trabajo
-
-- **Gestión CRUD completa**
-  - Aulas, instructores, cursos y clases
-  - Estudiantes y restricciones de grupo
-  - Importación desde XML (formato ITC-2007/UniTime)
-
-- **Visualización de horarios**
-  - Vista de calendario interactiva con FullCalendar.js
-  - Detección automática de conflictos
-  - Filtros por aula, instructor o curso
-
-- **Validación de restricciones**
-  - **Restricciones duras**: Capacidad, conflictos de aula
-  - **Restricciones blandas**: BTB, ventanas horarias
-  - Asignación post-generación de instructores
-
-- **API REST completa**
-  - Django REST Framework
-  - Endpoints documentados
-  - Soporte para operaciones batch
+- Asignación automática de clases a aulas disponibles
+- Distribución equitativa del uso de aulas (evitar aulas vacías y sobrecargadas)
+- Respeto de restricciones: capacidad, tipo de aula, límite de sesiones consecutivas
+- Optimización del horario mediante evolución genética
 
 ---
 
 ## Arquitectura del Sistema
 
-El sistema implementa una arquitectura cliente-servidor de 3 capas:
-
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                  CAPA DE PRESENTACIÓN                        │
-│         React + TypeScript + TailwindCSS                     │
-│  ┌──────────────┬──────────────┬──────────────────┐         │
-│  │  Dashboard   │  Gestión     │  Visualización   │         │
-│  │  Statistics  │  CRUD        │  Calendario      │         │
-│  └──────────────┴──────────────┴──────────────────┘         │
+│                     FRONTEND (React)                         │
+│              TypeScript + TailwindCSS + Vite                 │
+│  ┌────────────┬───────────────┬────────────────────┐        │
+│  │ Dashboard  │   Schedules   │  ScheduleViewer    │        │
+│  │ (inicio)   │  (generación) │  (visualización)   │        │
+│  └────────────┴───────────────┴────────────────────┘        │
 └──────────────────────────┬──────────────────────────────────┘
-                           │ HTTP/REST API (JSON)
+                           │ HTTP REST API (JSON)
 ┌──────────────────────────┴──────────────────────────────────┐
-│               CAPA DE LÓGICA DE NEGOCIO                      │
-│              Django REST Framework                           │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  API REST (api.py, views.py)                        │    │
-│  │  ┌─────────────┬──────────────┬──────────────────┐ │    │
-│  │  │ Algoritmo   │ Validación   │ Asignación de    │ │    │
-│  │  │ Genético    │ Restricciones│ Instructores     │ │    │
-│  │  └─────────────┴──────────────┴──────────────────┘ │    │
-│  └─────────────────────────────────────────────────────┘    │
+│                     BACKEND (Django)                         │
+│              Django REST Framework + Python                  │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │               generation_api_v2.py                    │   │
+│  │  ┌────────────────┐    ┌─────────────────────────┐   │   │
+│  │  │ schedule_builder│ →  │ Algoritmo Genético     │   │   │
+│  │  │   (GREEDY)     │    │ (Refinamiento)         │   │   │
+│  │  └────────────────┘    └─────────────────────────┘   │   │
+│  └──────────────────────────────────────────────────────┘   │
 └──────────────────────────┬──────────────────────────────────┘
-                           │ ORM Django
+                           │ Archivos JSON/XML
 ┌──────────────────────────┴──────────────────────────────────┐
-│                    CAPA DE DATOS                             │
-│     PostgreSQL 15 (Docker Container)                         │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  Clases, Aulas, Instructores, Horarios,             │    │
-│  │  Restricciones, Estudiantes                          │    │
-│  └─────────────────────────────────────────────────────┘    │
+│                       DATOS                                  │
+│   escuela.xml │ purdue_clean.xml │ schedules_history.json   │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### Componentes del Backend
+---
 
-- **`genetic_algorithm.py`**: Implementación del algoritmo genético
-  - Clase `Individual`: Representación de soluciones candidatas
-  - Clase `GeneticAlgorithm`: Motor de evolución
-  - Operadores: Selección, cruce, mutación, elitismo
+## Sistema Híbrido: Greedy + Algoritmo Genético
 
-- **`constraints.py`**: Sistema de validación
-  - `ConstraintValidator`: Evaluación de restricciones duras y blandas
-  - Detección de conflictos de aula e instructor
-  - Validación de capacidad y restricciones de grupo
+### Fase 1: Inicialización Greedy (`schedule_builder.py`)
 
-- **`instructor_assigner.py`**: Asignación post-generación
-  - Asignación óptima de instructores a clases generadas
-  - Minimización de conflictos horarios
+El algoritmo Greedy genera una **solución inicial válida** de forma rápida:
 
-- **`models.py`**: Modelos de datos (ORM Django)
-  - Room, Instructor, Course, Class, Student
-  - TimeSlot, Schedule, GroupConstraint
+1. Carga datos del XML (aulas, instructores, clases, configuración)
+2. Ordena clases por prioridad (tipo, año, duración)
+3. Asigna cada clase a la mejor aula disponible que cumpla restricciones
+4. Genera slots horarios respetando límites de sesiones consecutivas
 
-- **`api.py` / `views.py`**: Endpoints REST
-  - CRUD para todas las entidades
-  - Generación y análisis de horarios
+**Ventaja**: Produce una solución factible en milisegundos.
 
-### Componentes del Frontend
+### Fase 2: Refinamiento Genético (`generation_api_v2.py`)
 
-- **`Dashboard.tsx`**: Panel de control con estadísticas
-- **`ScheduleViewer.tsx`**: Visualización de calendario
-- **`TimetableView.tsx`**: Vista tabular de horarios
-- **Gestión CRUD**: Componentes para cada entidad
-- **`api.ts`**: Cliente HTTP con Axios
+El Algoritmo Genético **refina la solución greedy** para optimizar la distribución de aulas:
+
+1. **Población Inicial**: Crea variantes de la solución greedy mediante mutaciones
+2. **Evaluación (Fitness)**: Mide calidad basada en:
+   - Equilibrio de uso de aulas (objetivo principal)
+   - Penalización por conflictos de horario
+   - Bonus por distribución uniforme
+3. **Selección por Torneo**: Elige los mejores individuos para reproducción
+4. **Cruce**: Combina asignaciones de aulas de dos padres
+5. **Mutación**: Cambia aulas priorizando las subutilizadas
+6. **Elitismo**: Preserva los mejores individuos entre generaciones
+
+**Parámetros configurables**:
+- `population_size`: Tamaño de la población (default: 50)
+- `generations`: Número de generaciones (default: 100)
 
 ---
 
-## Dataset
-
-El sistema fue probado con el benchmark **LLR (Lower Austria University of Applied Sciences)** del ITC-2007:
-
-### Estadísticas del Dataset
-
-| Entidad | Cantidad | Descripción |
-|---------|----------|-------------|
-| **Clases** | 896 | Eventos a asignar |
-| **Instructores** | 455 | Profesores disponibles |
-| **Aulas** | 63 | Espacios físicos |
-| **Estudiantes** | 1,000+ | Inscripciones |
-| **Restricciones de grupo** | 210 | BTB, DIFF_TIME, SAME_TIME |
-| **Franjas horarias** | 45 | Por día (9:00-18:00) |
-
-### Formato de Datos
-
-El sistema soporta importación desde:
-- **XML (ITC-2007/UniTime)**: Formato estándar de benchmarks
-- **Entrada manual**: Interfaz web para carga de datos
-- **CSV**: Importación por lotes (experimental)
-
----
-
-## Flujo de Datos
-
-### 1. Importación de Datos
-
-```
-XML/CSV → Parser → Validación → Base de Datos
-```
-
-- El usuario carga un archivo XML con la estructura del dataset
-- `xml_parser.py` procesa y extrae entidades
-- Se validan restricciones y capacidades
-- Los datos se almacenan en SQLite/PostgreSQL
-
-### 2. Generación de Horarios
-
-```
-Solicitud → Algoritmo Genético → Validación → Asignación de Instructores → Resultado
-```
-
-**Detalle del proceso:**
-
-1. **Inicialización**
-   - Se crea una población de 200 soluciones aleatorias
-   - Cada individuo representa un horario completo
-   - Inicialización heurística considerando capacidad de aulas
-
-2. **Evolución**
-   ```
-   Para cada generación (hasta 1000):
-     1. Evaluación: Calcular fitness de cada individuo
-     2. Selección: Torneo de tamaño 5
-     3. Cruce: Punto único (80% de probabilidad)
-     4. Mutación: Cambio aleatorio (20% de probabilidad)
-     5. Elitismo: Conservar los 5 mejores
-     6. Reemplazo: Nueva generación
-   ```
-
-3. **Validación**
-   - Se evalúan restricciones duras y blandas
-   - Se detectan y reportan conflictos
-   - Se calcula el fitness final
-
-4. **Asignación de Instructores**
-   - Post-procesamiento para asignar profesores
-   - Minimización de conflictos horarios
-   - Respeto de disponibilidad
-
-5. **Almacenamiento**
-   - El mejor horario se guarda en la base de datos
-   - Se generan reportes de conflictos y estadísticas
-
-### 3. Visualización
-
-```
-Base de Datos → API REST → Frontend → Renderizado
-```
-
-- El usuario consulta horarios desde la interfaz
-- React consume endpoints REST
-- FullCalendar.js renderiza el calendario interactivo
-- Se muestran conflictos y estadísticas
-
----
-
-## Algoritmo Genético
-
-### Parámetros Recomendados
-
-```python
-POPULATION_SIZE = 100          # Individuos por generación
-GENERATIONS = 100             # Iteraciones máximas
-MUTATION_RATE = 0.20          # Probabilidad de mutación
-CROSSOVER_RATE = 0.80         # Probabilidad de cruce
-TOURNAMENT_SIZE = 5           # Tamaño del torneo de selección
-ELITISM = 5                   # Mejores individuos a conservar
-HARD_CONSTRAINT_WEIGHT = 100  # Penalización por restricción dura
-```
-
-### Representación (Genes)
-
-Cada individuo se representa como un diccionario:
-
-```python
-genes = {
-    class_id: (room_id, timeslot_id),
-    # Ejemplo:
-    1: (5, 23),   # Clase 1 → Aula 5, Slot 23
-    2: (3, 45),   # Clase 2 → Aula 3, Slot 45
-    ...
-}
-```
-
-### Función de Fitness
-
-```python
-BASE = min(300_000, max(50_000, num_classes × 500))
-
-fitness = BASE - (
-    room_conflicts × 100_000 +
-    capacity_violations × 100_000 +
-    instructor_conflicts × 100_000 +
-    btb_violations × 0.1
-)
-```
-
-## Resultados
-
-- **Fitness promedio**: 200,000 puntos
-- **Convergencia**: < 50 generaciones (regularmente)
-- **Tiempo de ejecución**: 5-10 minutos (dataset LLR)
-- **Conflictos**: < 20 en promedio
-
-
-### Capturas de Pantalla
-
-#### Generación de Horarios
-![Inicio de Generación](assets/generando-horario-0.png)
-*Vista inicial del proceso de generación de horarios en el frontend.*
-
-![Fitness Inicial Negativo](assets/generando-horario-1.png)
-*Fitness inicial negativo (-56,700,000) durante la evolución del algoritmo genético.*
-
-![Fitness Final](assets/generando-horario-2.png)
-*Resultado final con fitness de 200,000 puntos y 16 conflictos detectados.*
-
-#### Visualización y Exportación
-![Visualización en Frontend](assets/horario-generado.png)
-*Visualización del horario generado en la interfaz web del frontend.*
-
-![Exportación a Excel](assets/horario-exportado.png)
-*Vista de la exportación del horario a formato Excel con todas las aulas.*
-
----
-
-## Instalación
-
-### Requisitos Previos
-
-- Python 3.12+
-- Node.js 18+ y npm
-- Git
-- Docker y Docker Compose (para la base de datos PostgreSQL)
-
-### 1. Clonar el Repositorio
-
-```bash
-git clone https://github.com/ChristianPE1/Sistema-Generacion-Horarios.git
-cd Sistema-Generacion-Horarios
-```
-
-### 2. Configurar el Entorno (Automático)
-
-Recomendamos usar el script de configuración automática que maneja Docker, dependencias y migraciones:
-
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-### 3. Configurar Manualmente (Opcional)
-
-#### Base de Datos
-```bash
-# Iniciar PostgreSQL
-docker-compose up -d
-```
-
-#### Backend
-```bash
-cd backend
-
-# Crear entorno virtual
-python -m venv venv
-
-# Activar entorno virtual
-# En Linux/Mac:
-source venv/bin/activate
-# En Windows:
-venv\Scripts\activate
-
-# Instalar dependencias
-pip install -r requirements.txt
-
-# Ejecutar migraciones
-python manage.py migrate
-
-# (Opcional) Crear superusuario para admin
-python manage.py createsuperuser
-```
-
-#### Frontend
-
-```bash
-cd ../frontend
-
-# Instalar dependencias
-npm install
-```
-
----
-
-## Ejecución
-
-### Opción 1: Ejecución Manual
-
-#### Base de Datos
-Asegúrese de que el contenedor de Docker esté corriendo:
-```bash
-docker-compose up -d
-```
-
-#### Backend (Terminal 1)
-
-```bash
-cd backend
-source venv/bin/activate  # o venv\Scripts\activate en Windows
-python manage.py runserver
-```
-
-El servidor estará en: `http://localhost:8000`
-
-#### Frontend (Terminal 2)
-
-```bash
-cd frontend
-npm run dev
-```
-
-La interfaz estará en: `http://localhost:5173`
-
-### Opción 2: Script Automatizado (Linux)
-
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-Este script:
-- Verifica e inicia el contenedor de Docker (PostgreSQL)
-- Limpia bases de datos anteriores (opcional)
-- Ejecuta migraciones
-- Importa el dataset XML
-- Inicia backend y frontend automáticamente
-
-### Opción 3: Script Windows
-
-```powershell
-# PowerShell
-.\run_clean_windows.ps1
-
-# O CMD
-run_clean_windows.bat
-```
-
----
-
-## API Endpoints
-
-### Gestión de Entidades
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/rooms/` | Listar todas las aulas |
-| `POST` | `/api/rooms/` | Crear nueva aula |
-| `GET` | `/api/rooms/{id}/` | Obtener aula específica |
-| `PUT` | `/api/rooms/{id}/` | Actualizar aula |
-| `DELETE` | `/api/rooms/{id}/` | Eliminar aula |
-| `GET` | `/api/instructors/` | Listar instructores |
-| `POST` | `/api/instructors/` | Crear instructor |
-| `GET` | `/api/courses/` | Listar cursos |
-| `POST` | `/api/courses/` | Crear curso |
-| `GET` | `/api/classes/` | Listar clases |
-| `POST` | `/api/classes/` | Crear clase |
-| `GET` | `/api/students/` | Listar estudiantes |
-| `POST` | `/api/students/` | Crear estudiante |
+## Endpoints de la API
 
 ### Generación de Horarios
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `POST` | `/api/generate-schedule/` | Generar nuevo horario |
-| `GET` | `/api/schedules/` | Listar horarios generados |
-| `GET` | `/api/schedules/{id}/` | Obtener horario específico |
-| `GET` | `/api/schedules/{id}/calendar/` | Formato FullCalendar |
-| `DELETE` | `/api/schedules/{id}/` | Eliminar horario |
+| GET | `/api/generate/datasets/` | Lista datasets disponibles |
+| POST | `/api/generate/schedule/` | Genera horario con parámetros |
+| GET | `/api/generate/last/` | Obtiene último horario generado |
+| GET | `/api/generate/saved/` | Lista horarios guardados |
+| GET | `/api/generate/saved/<id>/` | Obtiene horario por ID |
 
-### Análisis
+### Ejemplo de Generación
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/dashboard-stats/` | Estadísticas del sistema |
-| `GET` | `/api/room-utilization/` | Utilización de aulas |
-| `GET` | `/api/instructor-workload/` | Carga de trabajo |
-| `GET` | `/api/conflicts/` | Detección de conflictos |
+```json
+POST /api/generate/schedule/
+{
+    "dataset": "escuela.xml",
+    "name": "Horario Semestre 2025-I",
+    "population_size": 50,
+    "generations": 100
+}
+```
 
-### Importación
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `POST` | `/api/import-xml/` | Importar dataset XML |
-
-**Ejemplo de uso:**
-
-```bash
-# Generar horario
-curl -X POST http://localhost:8000/api/generate-schedule/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "population_size": 200,
-    "generations": 1000,
-    "mutation_rate": 0.20
-  }'
-
-# Obtener estadísticas
-curl http://localhost:8000/api/dashboard-stats/
+**Respuesta**:
+```json
+{
+    "success": true,
+    "schedule": {
+        "id": 1,
+        "name": "Horario Semestre 2025-I",
+        "fitness_score": 1150.5,
+        "conflict_count": 0,
+        "classes_assigned": 89,
+        "generation_time_ms": 2500,
+        "algorithm": "greedy+genetic",
+        "assignments": [...]
+    }
+}
 ```
 
 ---
 
+## Instalación y Ejecución
 
-## Licencia
+### Requisitos
 
-Este proyecto fue desarrollado con fines académicos para el curso Interdisciplinar 3 de la Escuela Profesional de Ciencia de la Computacion, UNSA.
+- Python 3.10+
+- Node.js 18+
+- npm o yarn
+
+### Backend (Django)
+
+```bash
+# Crear entorno virtual
+cd backend
+python -m venv ../env
+..\env\Scripts\activate  # Windows
+source ../env/bin/activate  # Linux/Mac
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Ejecutar servidor
+python manage.py runserver 8000
+```
+
+### Frontend (React)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Acceder al Sistema
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000/api/
 
 ---
 
-**⭐ Si este proyecto te fue útil, considera darle una estrella en GitHub**
+## Estructura del Proyecto
 
+```
+Sistema-Generacion-Horarios/
+├── backend/
+│   └── schedule_app/
+│       ├── generation_api_v2.py   # API + Algoritmo Genético
+│       ├── schedule_builder.py    # Algoritmo Greedy
+│       ├── models.py              # Modelos Django
+│       └── urls.py                # Rutas API
+├── frontend/
+│   └── src/
+│       ├── components/
+│       │   ├── Dashboard.tsx      # Página inicio
+│       │   ├── Schedules.tsx      # Formulario generación
+│       │   └── ScheduleViewer.tsx # Visualización calendario
+│       └── services/
+│           └── api.ts             # Cliente HTTP
+├── escuela.xml                    # Dataset ejemplo (89 clases)
+├── purdue_clean.xml               # Dataset grande (1545 clases)
+└── schedules_history.json         # Historial de horarios
+```
+
+---
+
+## Datasets Incluidos
+
+| Dataset | Clases | Aulas | Instructores |
+|---------|--------|-------|--------------|
+| escuela.xml | 89 | 9 | 18 |
+| purdue_clean.xml | 1545 | 63 | 454 |
+
+---
+
+## Uso del Sistema
+
+1. **Acceder a http://localhost:3000**
+2. **Click en "Generar Horario"**
+3. **Seleccionar dataset** (escuela.xml o purdue_clean.xml)
+4. **Configurar parámetros** (población, generaciones)
+5. **Generar** - El sistema ejecuta Greedy + AG
+6. **Visualizar** en el calendario interactivo
+7. **Exportar a Excel** si es necesario
+
+---
