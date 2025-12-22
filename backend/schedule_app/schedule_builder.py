@@ -104,11 +104,13 @@ class ScheduleBuilder:
         # Estado de ocupación
         self.room_occupied: Dict[Tuple[str, str, int], str] = {}  # (room_id, day, block) -> class_id
         self.instructor_occupied: Dict[Tuple[str, str, int], str] = {}  # (inst_id, day, block) -> class_id
-        self.year_occupied: Dict[Tuple[int, str, int], List[str]] = {}  # (year, day, block) -> [class_ids]
         
         # Track de clases asignadas por código para verificar consecutivos
         # Formato: (code, day, block) -> class_type ('teoria', 'practica', 'laboratorio')
         self.code_slots: Dict[Tuple[str, str, int], str] = {}
+        
+        # Contador de uso de aulas para equilibrar
+        self.room_usage: Dict[str, int] = {r.id: 0 for r in rooms}
     
     def _count_consecutive_theory_practice(self, code: str, day: str, block: int) -> int:
         """
@@ -148,7 +150,11 @@ class ScheduleBuilder:
         return max(1, (class_info.hours * 60) // self.config.block_duration)
     
     def _get_valid_rooms(self, class_info: ClassInfo) -> List[Room]:
-        """Obtiene salas válidas para una clase."""
+        """
+        Obtiene salas válidas para una clase, ordenadas por:
+        1. Mínima diferencia entre capacidad y estudiantes (mejor ajuste)
+        2. Menor uso actual (equilibrar carga entre aulas)
+        """
         if class_info.class_type == 'laboratorio' and self.labs:
             rooms = [r for r in self.labs if r.capacity >= class_info.students]
             if not rooms:
@@ -159,10 +165,16 @@ class ScheduleBuilder:
         if not rooms:
             rooms = self.aulas[:] if self.aulas else self.rooms[:]
         
+        # Ordenar por: 1) Menor diferencia capacidad-estudiantes, 2) Menor uso
+        rooms = sorted(rooms, key=lambda r: (
+            r.capacity - class_info.students,  # Mejor ajuste primero
+            self.room_usage.get(r.id, 0)  # Menos usado primero
+        ))
+        
         return rooms
     
     def _is_slot_free(self, room: Room, day: str, block: int, 
-                      instructor_id: str, year: int, class_info: ClassInfo = None) -> bool:
+                      instructor_id: str, class_info: ClassInfo = None) -> bool:
         """Verifica si un slot está libre para asignar."""
         # Verificar sala
         if (room.id, day, block) in self.room_occupied:
@@ -171,13 +183,6 @@ class ScheduleBuilder:
         # Verificar instructor (si tiene uno asignado)
         if instructor_id != '0':
             if (instructor_id, day, block) in self.instructor_occupied:
-                return False
-        
-        # Solo verificar conflictos de año para clases con año > 0
-        # (Purdue no tiene años definidos, así que no aplica)
-        if year > 0:
-            year_key = (year, day, block)
-            if year_key in self.year_occupied and len(self.year_occupied[year_key]) >= 1:
                 return False
         
         # Verificar límite de consecutivos para teoría/práctica
@@ -190,7 +195,7 @@ class ScheduleBuilder:
         return True
     
     def _find_consecutive_slots(self, room: Room, day: str, start_block: int,
-                                count: int, instructor_id: str, year: int,
+                                count: int, instructor_id: str,
                                 class_info: ClassInfo = None) -> List[TimeSlot]:
         """Busca slots consecutivos libres."""
         if start_block + count > self.blocks_per_day:
@@ -199,7 +204,7 @@ class ScheduleBuilder:
         slots = []
         for i in range(count):
             block = start_block + i
-            if not self._is_slot_free(room, day, block, instructor_id, year, class_info):
+            if not self._is_slot_free(room, day, block, instructor_id, class_info):
                 return []
             slots.append(TimeSlot(day=day, block=block))
         
@@ -214,13 +219,11 @@ class ScheduleBuilder:
             if class_info.instructor_id != '0':
                 self.instructor_occupied[(class_info.instructor_id, slot.day, slot.block)] = class_info.id
             
-            year_key = (class_info.year, slot.day, slot.block)
-            if year_key not in self.year_occupied:
-                self.year_occupied[year_key] = []
-            self.year_occupied[year_key].append(class_info.id)
-            
             # Registrar slot por código para tracking de consecutivos
             self.code_slots[(class_info.code, slot.day, slot.block)] = class_info.class_type
+        
+        # Incrementar contador de uso del aula
+        self.room_usage[room.id] = self.room_usage.get(room.id, 0) + len(slots)
     
     def _try_assign_class(self, class_info: ClassInfo) -> Optional[Assignment]:
         """Intenta asignar una clase al mejor slot disponible."""
@@ -233,21 +236,18 @@ class ScheduleBuilder:
         if class_info.class_type == 'laboratorio':
             max_consec = 4
         
-        # Limitar salas a probar para datasets grandes
-        rooms_to_try = valid_rooms[:10] if len(valid_rooms) > 10 else valid_rooms
-        
         # ESTRATEGIA ÓPTIMA: Preferir 2 bloques consecutivos
         # Para teoría/práctica, intentamos encontrar slots de 2 bloques cuando sea posible
         optimal_block_size = 2  # Óptimo es 2 bloques seguidos
         
         # Intentar asignar todos los bloques en un solo día primero
         if blocks_needed <= max_consec:
-            for room in rooms_to_try:
+            for room in valid_rooms:
                 for day in self.config.days:
                     for start_block in range(self.blocks_per_day - blocks_needed + 1):
                         slots = self._find_consecutive_slots(
                             room, day, start_block, blocks_needed,
-                            class_info.instructor_id, class_info.year, class_info
+                            class_info.instructor_id, class_info
                         )
                         if slots:
                             assignment = Assignment(
@@ -260,7 +260,7 @@ class ScheduleBuilder:
         
         # Si necesita más bloques que el máximo consecutivo, distribuir en bloques óptimos de 2
         if blocks_needed > max_consec or (class_info.class_type != 'laboratorio' and blocks_needed > optimal_block_size):
-            for room in rooms_to_try:
+            for room in valid_rooms:
                 all_slots = []
                 remaining = blocks_needed
                 
@@ -278,7 +278,7 @@ class ScheduleBuilder:
                     for start_block in range(self.blocks_per_day - blocks_this_day + 1):
                         slots = self._find_consecutive_slots(
                             room, day, start_block, blocks_this_day,
-                            class_info.instructor_id, class_info.year, class_info
+                            class_info.instructor_id, class_info
                         )
                         if slots:
                             all_slots.extend(slots)

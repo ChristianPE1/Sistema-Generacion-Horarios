@@ -32,6 +32,8 @@ urlpatterns = [
     path('generate/upload/', generation_api.generate_from_upload, name='generate-from-upload'),
     path('generate/prepare/', generation_api.prepare_datasets, name='prepare-datasets'),
     path('generate/last/', generation_api.get_last_schedule, name='get-last-schedule'),
+    path('generate/saved/', generation_api.list_saved_schedules, name='list-saved-schedules'),
+    path('generate/saved/<int:schedule_id>/', generation_api.get_saved_schedule, name='get-saved-schedule'),
     
     # APIs legacy (mantener compatibilidad)
     path('schedules/generate-from-file/', fast_api_views.generate_from_file, name='generate-from-file'),

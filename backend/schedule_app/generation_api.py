@@ -156,10 +156,29 @@ def generate_schedule(request):
         result['name'] = name
         result['dataset'] = dataset
         
-        # Guardar resultado
+        # Guardar resultado en archivo JSON
         output_path = get_dataset_path('ultimo_horario.json')
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
+        
+        # Guardar en base de datos
+        try:
+            from .models import Schedule
+            schedule = Schedule.objects.create(
+                name=name,
+                dataset=dataset,
+                fitness_score=result.get('fitness_score', 0),
+                conflict_count=result.get('conflict_count', 0),
+                classes_assigned=result.get('classes_assigned', 0),
+                classes_total=result.get('classes_total', 0),
+                generation_time_ms=result.get('generation_time_ms', 0),
+                status='completed',
+                schedule_data=result
+            )
+            result['db_id'] = schedule.id
+        except Exception as db_err:
+            # Si falla el guardado en BD, continuar sin error
+            print(f"Error guardando en BD: {db_err}")
         
         return JsonResponse({
             'success': True,
@@ -343,3 +362,52 @@ def get_last_schedule(request):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def list_saved_schedules(request):
+    """Lista los horarios guardados en la base de datos."""
+    from .models import Schedule
+    
+    schedules = Schedule.objects.all().order_by('-created_at')[:20]
+    
+    data = []
+    for s in schedules:
+        data.append({
+            'id': s.id,
+            'name': s.name,
+            'dataset': s.dataset,
+            'fitness_score': s.fitness_score,
+            'conflict_count': s.conflict_count,
+            'classes_assigned': s.classes_assigned,
+            'classes_total': s.classes_total,
+            'generation_time_ms': s.generation_time_ms,
+            'created_at': s.created_at.isoformat() if s.created_at else None,
+            'status': s.status
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'schedules': data
+    })
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_saved_schedule(request, schedule_id):
+    """Obtiene un horario específico guardado en la BD."""
+    from .models import Schedule
+    
+    try:
+        schedule = Schedule.objects.get(id=schedule_id)
+        
+        return JsonResponse({
+            'success': True,
+            'schedule': schedule.schedule_data
+        })
+    except Schedule.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Horario no encontrado'
+        }, status=404)

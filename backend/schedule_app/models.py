@@ -167,12 +167,18 @@ class Schedule(models.Model):
 
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    dataset = models.CharField(max_length=200, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     fitness_score = models.FloatField(default=0.0)
     conflict_count = models.IntegerField(default=0)
+    classes_assigned = models.IntegerField(default=0)
+    classes_total = models.IntegerField(default=0)
+    generation_time_ms = models.IntegerField(default=0)
     is_active = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='completed')
+    # Campo JSON para almacenar asignaciones completas (cuando se genera desde XML)
+    schedule_data = models.JSONField(null=True, blank=True)
     
     class Meta:
         db_table = 'schedules'
