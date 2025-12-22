@@ -1,5 +1,2718 @@
 [
   {
+    "id": 3,
+    "name": "CompScience",
+    "dataset": "escuela.xml",
+    "created_at": "2025-12-22T10:51:12.864310",
+    "fitness_score": 1062.22,
+    "conflict_count": 0,
+    "classes_assigned": 89,
+    "classes_total": 89,
+    "algorithm": "greedy+genetic",
+    "generation_time_ms": 5739,
+    "generations_run": 52,
+    "population_size": 50,
+    "schedule_data": {
+      "assignments": [
+        {
+          "class_id": "43",
+          "class_name": "Programación Competitiva - Práctica",
+          "class_type": "practica",
+          "year": 3,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P004",
+            "name": "Juan Carlos"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "lunes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            },
+            {
+              "day": "martes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "martes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            },
+            {
+              "day": "jueves",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            }
+          ]
+        },
+        {
+          "class_id": "89",
+          "class_name": "Trabajo de Investigación - Práctica",
+          "class_type": "practica",
+          "year": 5,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P004",
+            "name": "Juan Carlos"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "lunes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            },
+            {
+              "day": "martes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "martes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            },
+            {
+              "day": "jueves",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "1",
+          "class_name": "Estructuras Discretas II - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "lunes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            },
+            {
+              "day": "martes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "martes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "6",
+          "class_name": "Cálculo en Una Variable - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P013",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "lunes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            },
+            {
+              "day": "martes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "martes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "11",
+          "class_name": "Lingüística, Comprensión y Redacción Académica - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P015",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "lunes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            },
+            {
+              "day": "martes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "martes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "5",
+          "class_name": "Programación I - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 1,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P008",
+            "name": "Eliana"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "lunes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            },
+            {
+              "day": "lunes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "lunes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "20",
+          "class_name": "Cálculo en Una Variable - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P013",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "lunes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            },
+            {
+              "day": "martes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "martes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "16",
+          "class_name": "Estructuras Discretas II - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 1,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "lunes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            },
+            {
+              "day": "lunes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "lunes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "19",
+          "class_name": "Ciencia de la Computación I - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 1,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P008",
+            "name": "Eliana"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "lunes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            },
+            {
+              "day": "lunes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "lunes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "86",
+          "class_name": "Tópicos en Ciberseguridad (E) - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 5,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "martes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            },
+            {
+              "day": "martes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "martes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "30",
+          "class_name": "Algoritmos y Estructuras de Datos - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 2,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "martes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            },
+            {
+              "day": "martes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "martes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "35",
+          "class_name": "Base de Datos I - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 2,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P007",
+            "name": "Edgard"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "martes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            },
+            {
+              "day": "martes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "martes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "84",
+          "class_name": "Robótica (E) - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 5,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P003",
+            "name": "Percy"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "59",
+          "class_name": "Interacción Humano Computador - Práctica",
+          "class_type": "practica",
+          "year": 4,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P012",
+            "name": "Ana Maria"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "lunes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            },
+            {
+              "day": "martes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "martes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "87",
+          "class_name": "Prácticas Pre Profesionales - Práctica",
+          "class_type": "practica",
+          "year": 5,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "lunes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            },
+            {
+              "day": "martes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "martes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "39",
+          "class_name": "Estadística y Probabilidades - Teoría",
+          "class_type": "teoria",
+          "year": 2,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "lunes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            },
+            {
+              "day": "lunes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            }
+          ]
+        },
+        {
+          "class_id": "88",
+          "class_name": "Trabajo de Investigación - Teoría",
+          "class_type": "teoria",
+          "year": 5,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P004",
+            "name": "Juan Carlos"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "lunes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            },
+            {
+              "day": "lunes",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "2",
+          "class_name": "Estructuras Discretas II - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            },
+            {
+              "day": "lunes",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "3",
+          "class_name": "Programación I - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P008",
+            "name": "Eliana"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "lunes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "4",
+          "class_name": "Programación I - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "301",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P008",
+            "name": "Eliana"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "martes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "7",
+          "class_name": "Cálculo en Una Variable - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P013",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "martes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "8",
+          "class_name": "Inglés II - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P017",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "martes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "9",
+          "class_name": "Inglés II - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P017",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "13",
+          "class_name": "Realidad Nacional - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P016",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "75",
+          "class_name": "Cloud Computing - Teoría",
+          "class_type": "teoria",
+          "year": 5,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P001",
+            "name": "Alvaro"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "martes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "76",
+          "class_name": "Cloud Computing - Práctica",
+          "class_type": "practica",
+          "year": 5,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P001",
+            "name": "Alvaro"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "77",
+          "class_name": "Cloud Computing - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 5,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P001",
+            "name": "Alvaro"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "14",
+          "class_name": "Estructuras Discretas II - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "15",
+          "class_name": "Estructuras Discretas II - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "17",
+          "class_name": "Ciencia de la Computación I - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P008",
+            "name": "Eliana"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "18",
+          "class_name": "Ciencia de la Computación I - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P008",
+            "name": "Eliana"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "21",
+          "class_name": "Cálculo en Una Variable - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P013",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "22",
+          "class_name": "Inglés Técnico Profesional II - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P017",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "23",
+          "class_name": "Inglés Técnico Profesional II - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P017",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "jueves",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "24",
+          "class_name": "Comunicación Integral - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P015",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            },
+            {
+              "day": "jueves",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            }
+          ]
+        },
+        {
+          "class_id": "25",
+          "class_name": "Comunicación Integral - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P015",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "27",
+          "class_name": "Realidad Nacional - Práctica",
+          "class_type": "practica",
+          "year": 1,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P016",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            },
+            {
+              "day": "jueves",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            }
+          ]
+        },
+        {
+          "class_id": "81",
+          "class_name": "Internet de las Cosas - Práctica",
+          "class_type": "practica",
+          "year": 5,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P003",
+            "name": "Percy"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "jueves",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "82",
+          "class_name": "Internet de las Cosas - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 5,
+          "room": {
+            "id": "L02",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P003",
+            "name": "Percy"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "85",
+          "class_name": "Tópicos en Ciberseguridad (E) - Teoría",
+          "class_type": "teoria",
+          "year": 5,
+          "room": {
+            "id": "301",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            },
+            {
+              "day": "jueves",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            }
+          ]
+        },
+        {
+          "class_id": "28",
+          "class_name": "Algoritmos y Estructuras de Datos - Teoría",
+          "class_type": "teoria",
+          "year": 2,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            },
+            {
+              "day": "jueves",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            }
+          ]
+        },
+        {
+          "class_id": "29",
+          "class_name": "Algoritmos y Estructuras de Datos - Práctica",
+          "class_type": "practica",
+          "year": 2,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            },
+            {
+              "day": "jueves",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            }
+          ]
+        },
+        {
+          "class_id": "31",
+          "class_name": "Teoría de la Computación - Teoría",
+          "class_type": "teoria",
+          "year": 2,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            },
+            {
+              "day": "jueves",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            }
+          ]
+        },
+        {
+          "class_id": "32",
+          "class_name": "Teoría de la Computación - Práctica",
+          "class_type": "practica",
+          "year": 2,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            },
+            {
+              "day": "jueves",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            }
+          ]
+        },
+        {
+          "class_id": "34",
+          "class_name": "Base de Datos I - Teoría",
+          "class_type": "teoria",
+          "year": 2,
+          "room": {
+            "id": "301",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P007",
+            "name": "Edgard"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            },
+            {
+              "day": "jueves",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "36",
+          "class_name": "Álgebra Lineal Numérica - Teoría",
+          "class_type": "teoria",
+          "year": 2,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            },
+            {
+              "day": "jueves",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "37",
+          "class_name": "Álgebra Lineal Numérica - Práctica",
+          "class_type": "practica",
+          "year": 2,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "viernes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "40",
+          "class_name": "Estadística y Probabilidades - Práctica",
+          "class_type": "practica",
+          "year": 2,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "viernes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "42",
+          "class_name": "Ecología y Conservación Ambiental - Práctica",
+          "class_type": "practica",
+          "year": 2,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P015",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "viernes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "83",
+          "class_name": "Robótica (E) - Teoría",
+          "class_type": "teoria",
+          "year": 5,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P003",
+            "name": "Percy"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "viernes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "33",
+          "class_name": "Teoría de la Computación - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 2,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P006",
+            "name": "Wilber"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "38",
+          "class_name": "Álgebra Lineal Numérica - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 2,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "miercoles",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "79",
+          "class_name": "Trabajo Interdisciplinar III - Práctica",
+          "class_type": "practica",
+          "year": 5,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P002",
+            "name": "Yessenia"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "viernes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "44",
+          "class_name": "Ingeniería de Software II - Teoría",
+          "class_type": "teoria",
+          "year": 3,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P007",
+            "name": "Edgard"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "viernes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "45",
+          "class_name": "Ingeniería de Software II - Práctica",
+          "class_type": "practica",
+          "year": 3,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P007",
+            "name": "Edgard"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "viernes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "47",
+          "class_name": "Estructuras de Datos Avanzados - Teoría",
+          "class_type": "teoria",
+          "year": 3,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "viernes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "48",
+          "class_name": "Estructuras de Datos Avanzados - Práctica",
+          "class_type": "practica",
+          "year": 3,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "viernes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "50",
+          "class_name": "Sistemas Operativos - Teoría",
+          "class_type": "teoria",
+          "year": 3,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P011",
+            "name": "Yuber"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "viernes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "51",
+          "class_name": "Sistemas Operativos - Práctica",
+          "class_type": "practica",
+          "year": 3,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P011",
+            "name": "Yuber"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "viernes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "53",
+          "class_name": "Trabajo Interdisciplinar II - Teoría",
+          "class_type": "teoria",
+          "year": 3,
+          "room": {
+            "id": "301",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P009",
+            "name": "Edward"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "viernes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "54",
+          "class_name": "Trabajo Interdisciplinar II - Práctica",
+          "class_type": "practica",
+          "year": 3,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P009",
+            "name": "Edward"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "lunes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "55",
+          "class_name": "Matemática Aplicada a la Computación - Teoría",
+          "class_type": "teoria",
+          "year": 3,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "lunes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "56",
+          "class_name": "Matemática Aplicada a la Computación - Práctica",
+          "class_type": "practica",
+          "year": 3,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "lunes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "46",
+          "class_name": "Ingeniería de Software II - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 3,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P007",
+            "name": "Edgard"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "jueves",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "49",
+          "class_name": "Estructuras de Datos Avanzados - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 3,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "jueves",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "52",
+          "class_name": "Sistemas Operativos - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 3,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P011",
+            "name": "Yuber"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "jueves",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "57",
+          "class_name": "Matemática Aplicada a la Computación - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 3,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "jueves",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "60",
+          "class_name": "Proyecto de Final de Carrera I - Teoría",
+          "class_type": "teoria",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P002",
+            "name": "Yessenia"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "lunes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "61",
+          "class_name": "Proyecto de Final de Carrera I - Práctica",
+          "class_type": "practica",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P002",
+            "name": "Yessenia"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "lunes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "62",
+          "class_name": "Computación Paralela y Distribuida - Teoría",
+          "class_type": "teoria",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P001",
+            "name": "Alvaro"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "lunes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "63",
+          "class_name": "Computación Paralela y Distribuida - Práctica",
+          "class_type": "practica",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P001",
+            "name": "Alvaro"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "martes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "66",
+          "class_name": "Seguridad en Computación - Práctica",
+          "class_type": "practica",
+          "year": 4,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "martes",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "68",
+          "class_name": "Formación de Empresas de Base Tecnológica I - Teoría",
+          "class_type": "teoria",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P018",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 2,
+              "start": "09:00",
+              "end": "09:50"
+            },
+            {
+              "day": "martes",
+              "block": 3,
+              "start": "10:00",
+              "end": "10:50"
+            }
+          ]
+        },
+        {
+          "class_id": "69",
+          "class_name": "Formación de Empresas de Base Tecnológica I - Práctica",
+          "class_type": "practica",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P018",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 4,
+              "start": "11:00",
+              "end": "11:50"
+            },
+            {
+              "day": "martes",
+              "block": 5,
+              "start": "12:00",
+              "end": "12:50"
+            }
+          ]
+        },
+        {
+          "class_id": "71",
+          "class_name": "Relaciones Humanas - Práctica",
+          "class_type": "practica",
+          "year": 4,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P015",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            },
+            {
+              "day": "martes",
+              "block": 7,
+              "start": "14:00",
+              "end": "14:50"
+            }
+          ]
+        },
+        {
+          "class_id": "64",
+          "class_name": "Computación Paralela y Distribuida - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 4,
+          "room": {
+            "id": "L01",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P001",
+            "name": "Alvaro"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 8,
+              "start": "15:00",
+              "end": "15:50"
+            },
+            {
+              "day": "jueves",
+              "block": 9,
+              "start": "16:00",
+              "end": "16:50"
+            }
+          ]
+        },
+        {
+          "class_id": "67",
+          "class_name": "Seguridad en Computación - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 4,
+          "room": {
+            "id": "L03",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            },
+            {
+              "day": "jueves",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "73",
+          "class_name": "Física Computacional (E) - Práctica",
+          "class_type": "practica",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 10,
+              "start": "17:00",
+              "end": "17:50"
+            },
+            {
+              "day": "martes",
+              "block": 11,
+              "start": "18:00",
+              "end": "18:50"
+            }
+          ]
+        },
+        {
+          "class_id": "74",
+          "class_name": "Física Computacional (E) - Laboratorio",
+          "class_type": "laboratorio",
+          "year": 4,
+          "room": {
+            "id": "L02",
+            "type": "laboratorio"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            },
+            {
+              "day": "lunes",
+              "block": 1,
+              "start": "08:00",
+              "end": "08:50"
+            }
+          ]
+        },
+        {
+          "class_id": "10",
+          "class_name": "Lingüística, Comprensión y Redacción Académica - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P015",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "12",
+          "class_name": "Realidad Nacional - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P016",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "26",
+          "class_name": "Realidad Nacional - Teoría",
+          "class_type": "teoria",
+          "year": 1,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P016",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "80",
+          "class_name": "Internet de las Cosas - Teoría",
+          "class_type": "teoria",
+          "year": 5,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P003",
+            "name": "Percy"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 0,
+              "start": "07:00",
+              "end": "07:50"
+            }
+          ]
+        },
+        {
+          "class_id": "41",
+          "class_name": "Ecología y Conservación Ambiental - Teoría",
+          "class_type": "teoria",
+          "year": 2,
+          "room": {
+            "id": "101",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P015",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "miercoles",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "78",
+          "class_name": "Trabajo Interdisciplinar III - Teoría",
+          "class_type": "teoria",
+          "year": 5,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P002",
+            "name": "Yessenia"
+          },
+          "schedule": [
+            {
+              "day": "jueves",
+              "block": 6,
+              "start": "13:00",
+              "end": "13:50"
+            }
+          ]
+        },
+        {
+          "class_id": "58",
+          "class_name": "Interacción Humano Computador - Teoría",
+          "class_type": "teoria",
+          "year": 4,
+          "room": {
+            "id": "202",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P012",
+            "name": "Ana Maria"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "65",
+          "class_name": "Seguridad en Computación - Teoría",
+          "class_type": "teoria",
+          "year": 4,
+          "room": {
+            "id": "203",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P005",
+            "name": "Rolando"
+          },
+          "schedule": [
+            {
+              "day": "viernes",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "70",
+          "class_name": "Relaciones Humanas - Teoría",
+          "class_type": "teoria",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P015",
+            "name": "Contrato1"
+          },
+          "schedule": [
+            {
+              "day": "lunes",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        },
+        {
+          "class_id": "72",
+          "class_name": "Física Computacional (E) - Teoría",
+          "class_type": "teoria",
+          "year": 4,
+          "room": {
+            "id": "201",
+            "type": "aula"
+          },
+          "instructor": {
+            "id": "P014",
+            "name": "Contrato2"
+          },
+          "schedule": [
+            {
+              "day": "martes",
+              "block": 12,
+              "start": "19:00",
+              "end": "19:50"
+            }
+          ]
+        }
+      ],
+      "fitness_score": 1062.22,
+      "conflict_count": 0,
+      "generation_time_ms": 5739,
+      "generations_run": 52,
+      "classes_assigned": 89,
+      "classes_total": 89,
+      "unassigned": [],
+      "algorithm": "greedy+genetic",
+      "stats": {
+        "greedy_fitness": 961.39,
+        "greedy_time_ms": 3,
+        "ga_time_ms": 5736,
+        "final_fitness": 1062.22,
+        "improvement_percent": 10.49,
+        "room_usage": {
+          "total_rooms_used": 8,
+          "avg_usage": 25.75,
+          "std_dev": 18.42,
+          "min_usage": 2,
+          "max_usage": 53,
+          "distribution": {
+            "101": 32,
+            "203": 53,
+            "202": 41,
+            "L01": 44,
+            "301": 8,
+            "L02": 4,
+            "201": 22,
+            "L03": 2
+          }
+        }
+      },
+      "name": "CompScience",
+      "dataset": "escuela.xml",
+      "population_size": 50
+    }
+  },
+  {
     "id": 2,
     "name": "CS test",
     "dataset": "escuela.xml",
