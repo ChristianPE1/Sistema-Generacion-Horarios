@@ -19,7 +19,6 @@ from .serializers import (
     StudentClassSerializer, ScheduleSerializer, ScheduleListSerializer,
     TimeSlotSerializer, ClassInstructorSerializer, ClassRoomSerializer
 )
-from .schedule_generator import ScheduleGenerator
 import threading
 
 

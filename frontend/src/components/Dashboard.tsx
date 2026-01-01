@@ -1,30 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getSavedSchedules } from '../services/api';
-import { 
-  Calendar, 
-  Eye, 
-  Clock,
-  Plus,
-  ArrowRight,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
-  Dna
-} from 'lucide-react';
-
-interface SavedSchedule {
-  id: number;
-  name: string;
-  dataset: string;
-  created_at: string;
-  fitness_score: number;
-  conflict_count: number;
-  classes_assigned: number;
-  classes_total: number;
-  generation_time_ms: number;
-  status: string;
-}
+import { Calendar, Eye, Clock, Plus, ArrowRight, Sparkles, CheckCircle2, AlertCircle, Dna } from 'lucide-react';
+import type { SavedSchedule } from '../types';
 
 function Dashboard() {
   const [recentSchedules, setRecentSchedules] = useState<SavedSchedule[]>([]);
@@ -75,7 +53,7 @@ function Dashboard() {
       </div>
 
       {/* Main Actions */}
-      <div className="grid sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+      <main className="grid sm:grid-cols-2 gap-4 max-w-xl mx-auto">
         <Link
           to="/schedules"
           className="group flex flex-col items-center p-6 bg-blue-600 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
@@ -93,10 +71,10 @@ function Dashboard() {
           <span className="text-lg font-semibold">Ver Horarios</span>
           <span className="text-sm text-purple-100 mt-1">Visualizar calendario</span>
         </Link>
-      </div>
+      </main>
 
       {/* Recent Schedules */}
-      <div className="max-w-4xl mx-auto">
+      <section className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -166,10 +144,10 @@ function Dashboard() {
             )}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Algorithm Info */}
-      <div className="max-w-4xl mx-auto">
+      <footer className="max-w-4xl mx-auto">
         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <Dna className="h-5 w-5 text-indigo-600" />
@@ -186,7 +164,7 @@ function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

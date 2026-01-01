@@ -64,7 +64,7 @@
       "class_type": "practica",
       "year": 5,
       "room": {
-        "id": "101",
+        "id": "203",
         "type": "aula"
       },
       "instructor": {
@@ -122,7 +122,7 @@
       "class_type": "teoria",
       "year": 1,
       "room": {
-        "id": "301",
+        "id": "202",
         "type": "aula"
       },
       "instructor": {
@@ -162,7 +162,7 @@
       "class_type": "teoria",
       "year": 1,
       "room": {
-        "id": "301",
+        "id": "203",
         "type": "aula"
       },
       "instructor": {
@@ -242,7 +242,7 @@
       "class_type": "laboratorio",
       "year": 1,
       "room": {
-        "id": "L04",
+        "id": "L01",
         "type": "laboratorio"
       },
       "instructor": {
@@ -282,7 +282,7 @@
       "class_type": "teoria",
       "year": 1,
       "room": {
-        "id": "203",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -402,8 +402,8 @@
       "class_type": "laboratorio",
       "year": 5,
       "room": {
-        "id": "203",
-        "type": "aula"
+        "id": "L02",
+        "type": "laboratorio"
       },
       "instructor": {
         "id": "P005",
@@ -522,7 +522,7 @@
       "class_type": "laboratorio",
       "year": 5,
       "room": {
-        "id": "L04",
+        "id": "L01",
         "type": "laboratorio"
       },
       "instructor": {
@@ -822,7 +822,7 @@
       "class_type": "teoria",
       "year": 1,
       "room": {
-        "id": "202",
+        "id": "301",
         "type": "aula"
       },
       "instructor": {
@@ -906,7 +906,7 @@
       "class_type": "teoria",
       "year": 5,
       "room": {
-        "id": "301",
+        "id": "203",
         "type": "aula"
       },
       "instructor": {
@@ -934,7 +934,7 @@
       "class_type": "practica",
       "year": 5,
       "room": {
-        "id": "202",
+        "id": "301",
         "type": "aula"
       },
       "instructor": {
@@ -990,7 +990,7 @@
       "class_type": "teoria",
       "year": 1,
       "room": {
-        "id": "203",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -1018,7 +1018,7 @@
       "class_type": "practica",
       "year": 1,
       "room": {
-        "id": "301",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -1130,7 +1130,7 @@
       "class_type": "teoria",
       "year": 1,
       "room": {
-        "id": "202",
+        "id": "301",
         "type": "aula"
       },
       "instructor": {
@@ -1270,7 +1270,7 @@
       "class_type": "practica",
       "year": 5,
       "room": {
-        "id": "203",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -1382,7 +1382,7 @@
       "class_type": "practica",
       "year": 2,
       "room": {
-        "id": "202",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -1410,7 +1410,7 @@
       "class_type": "teoria",
       "year": 2,
       "room": {
-        "id": "201",
+        "id": "203",
         "type": "aula"
       },
       "instructor": {
@@ -1466,7 +1466,7 @@
       "class_type": "teoria",
       "year": 2,
       "room": {
-        "id": "202",
+        "id": "301",
         "type": "aula"
       },
       "instructor": {
@@ -1494,7 +1494,7 @@
       "class_type": "teoria",
       "year": 2,
       "room": {
-        "id": "301",
+        "id": "202",
         "type": "aula"
       },
       "instructor": {
@@ -1550,7 +1550,7 @@
       "class_type": "practica",
       "year": 2,
       "room": {
-        "id": "301",
+        "id": "202",
         "type": "aula"
       },
       "instructor": {
@@ -1718,7 +1718,7 @@
       "class_type": "teoria",
       "year": 3,
       "room": {
-        "id": "301",
+        "id": "202",
         "type": "aula"
       },
       "instructor": {
@@ -1746,7 +1746,7 @@
       "class_type": "practica",
       "year": 3,
       "room": {
-        "id": "101",
+        "id": "301",
         "type": "aula"
       },
       "instructor": {
@@ -1774,7 +1774,7 @@
       "class_type": "teoria",
       "year": 3,
       "room": {
-        "id": "202",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -1802,7 +1802,7 @@
       "class_type": "practica",
       "year": 3,
       "room": {
-        "id": "203",
+        "id": "301",
         "type": "aula"
       },
       "instructor": {
@@ -1830,7 +1830,7 @@
       "class_type": "teoria",
       "year": 3,
       "room": {
-        "id": "101",
+        "id": "202",
         "type": "aula"
       },
       "instructor": {
@@ -1886,7 +1886,7 @@
       "class_type": "teoria",
       "year": 3,
       "room": {
-        "id": "101",
+        "id": "202",
         "type": "aula"
       },
       "instructor": {
@@ -1942,7 +1942,7 @@
       "class_type": "teoria",
       "year": 3,
       "room": {
-        "id": "202",
+        "id": "201",
         "type": "aula"
       },
       "instructor": {
@@ -2026,8 +2026,8 @@
       "class_type": "laboratorio",
       "year": 3,
       "room": {
-        "id": "301",
-        "type": "aula"
+        "id": "L01",
+        "type": "laboratorio"
       },
       "instructor": {
         "id": "P005",
@@ -2166,7 +2166,7 @@
       "class_type": "teoria",
       "year": 4,
       "room": {
-        "id": "301",
+        "id": "201",
         "type": "aula"
       },
       "instructor": {
@@ -2250,7 +2250,7 @@
       "class_type": "teoria",
       "year": 4,
       "room": {
-        "id": "201",
+        "id": "301",
         "type": "aula"
       },
       "instructor": {
@@ -2278,7 +2278,7 @@
       "class_type": "practica",
       "year": 4,
       "room": {
-        "id": "202",
+        "id": "201",
         "type": "aula"
       },
       "instructor": {
@@ -2418,7 +2418,7 @@
       "class_type": "laboratorio",
       "year": 4,
       "room": {
-        "id": "L02",
+        "id": "L04",
         "type": "laboratorio"
       },
       "instructor": {
@@ -2446,7 +2446,7 @@
       "class_type": "teoria",
       "year": 1,
       "room": {
-        "id": "203",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -2490,7 +2490,7 @@
       "class_type": "teoria",
       "year": 1,
       "room": {
-        "id": "202",
+        "id": "301",
         "type": "aula"
       },
       "instructor": {
@@ -2512,7 +2512,7 @@
       "class_type": "teoria",
       "year": 5,
       "room": {
-        "id": "301",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -2534,7 +2534,7 @@
       "class_type": "teoria",
       "year": 2,
       "room": {
-        "id": "201",
+        "id": "202",
         "type": "aula"
       },
       "instructor": {
@@ -2578,7 +2578,7 @@
       "class_type": "teoria",
       "year": 4,
       "room": {
-        "id": "301",
+        "id": "202",
         "type": "aula"
       },
       "instructor": {
@@ -2622,7 +2622,7 @@
       "class_type": "teoria",
       "year": 4,
       "room": {
-        "id": "201",
+        "id": "101",
         "type": "aula"
       },
       "instructor": {
@@ -2661,9 +2661,9 @@
       ]
     }
   ],
-  "fitness_score": 972.48,
+  "fitness_score": 1066.7,
   "conflict_count": 0,
-  "generation_time_ms": 14469,
+  "generation_time_ms": 17532,
   "generations_run": 52,
   "classes_assigned": 89,
   "classes_total": 89,
@@ -2671,30 +2671,30 @@
   "algorithm": "greedy+genetic",
   "stats": {
     "greedy_fitness": 961.39,
-    "greedy_time_ms": 10,
-    "ga_time_ms": 14458,
-    "final_fitness": 972.48,
-    "improvement_percent": 1.15,
+    "greedy_time_ms": 8,
+    "ga_time_ms": 17524,
+    "final_fitness": 1066.7,
+    "improvement_percent": 10.95,
     "room_usage": {
       "total_rooms_used": 8,
       "avg_usage": 25.75,
-      "std_dev": 15.98,
+      "std_dev": 17.36,
       "min_usage": 2,
       "max_usage": 49,
       "distribution": {
-        "202": 47,
-        "101": 17,
-        "301": 28,
-        "L04": 8,
+        "202": 46,
         "203": 49,
-        "L01": 34,
+        "301": 19,
+        "L01": 44,
+        "101": 21,
+        "L02": 4,
         "201": 21,
-        "L02": 2
+        "L04": 2
       }
     }
   },
-  "name": "CS test",
+  "name": "TTTT",
   "dataset": "escuela.xml",
   "population_size": 50,
-  "id": 2
+  "id": 5
 }

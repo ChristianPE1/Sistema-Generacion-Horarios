@@ -1,11 +1,5 @@
-                                                                import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Menu,
-  X,
-  CalendarDays
-} from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Calendar, Menu, X, CalendarDays } from 'lucide-react';
 import { useState } from 'react';
 import Dashboard from './components/Dashboard';
 import Schedules from './components/Schedules';

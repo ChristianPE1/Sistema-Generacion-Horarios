@@ -6,8 +6,6 @@ from .views import (
     TimeSlotViewSet, ClassInstructorViewSet, ClassRoomViewSet
 )
 from . import xml_parser
-from . import api
-from . import fast_api_views
 from . import generation_api_v2 as generation_api
 
 router = DefaultRouter()
@@ -34,22 +32,4 @@ urlpatterns = [
     path('generate/last/', generation_api.get_last_schedule, name='get-last-schedule'),
     path('generate/saved/', generation_api.list_saved_schedules, name='list-saved-schedules'),
     path('generate/saved/<int:schedule_id>/', generation_api.get_saved_schedule, name='get-saved-schedule'),
-    
-    # APIs legacy (mantener compatibilidad)
-    path('schedules/generate-from-file/', fast_api_views.generate_from_file, name='generate-from-file'),
-    path('schedules/generate-from-data/', fast_api_views.generate_from_json_data, name='generate-from-data'),
-    path('schedules/convert-json-to-xml/', fast_api_views.convert_json_to_xml_endpoint, name='convert-json-to-xml'),
-    path('schedules/generation-status/<str:task_id>/', fast_api_views.check_generation_status, name='generation-status'),
-    
-    # Nuevas APIs para frontend
-    path('schedules-list/', api.get_schedules_list, name='schedules-list'),
-    path('schedules/<int:schedule_id>/calendar/', api.get_schedule_calendar, name='schedule-calendar'),
-    path('schedules/<int:schedule_id>/timetable/', api.get_schedule_timetable, name='schedule-timetable'),
-    path('schedules/<int:schedule_id>/conflicts/', api.get_conflict_analysis, name='schedule-conflicts'),
-    path('schedules/<int:schedule_id>/rooms/', api.get_room_utilization, name='schedule-rooms'),
-    path('analysis/workload/', api.get_workload_analysis, name='workload-analysis'),
-    path('instructors-list/', api.get_instructors_list, name='instructors-list'),
-    path('instructors/<int:instructor_id>/schedule/', api.get_instructor_schedule, name='instructor-schedule'),
-    path('rooms-list/', api.get_rooms_list, name='rooms-list'),
-    path('dashboard/stats/', api.get_dashboard_stats, name='dashboard-stats-api'),
-]
+    ]

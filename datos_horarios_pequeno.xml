@@ -1,0 +1,311 @@
+<?xml version="1.0" ?>
+<timetable version="2.4" initiative="UNSA-CS" term="2025" year="2025" created="Thu Jan 01 12:11:53 2026" nrDays="7" slotsPerDay="288">
+  <rooms>
+    <room id="1" constraint="true" capacity="50" location="100,110"/>
+    <room id="2" constraint="true" capacity="35" location="100,120"/>
+    <room id="3" constraint="true" capacity="30" location="100,130"/>
+  </rooms>
+  <classes>
+    <class id="1" offering="1" config="1" committed="false" subpart="1" classLimit="30" department="1" scheduler="1" dates="000000000000000000000000000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000">
+      <course name="Estructuras Discretas II" code="2501207"/>
+      <instructor id="P001" name=""/>
+      <time days="1010100" start="0" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="0" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="24" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="24" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="48" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="48" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="72" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="72" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="96" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="96" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="120" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="120" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="144" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="144" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="0" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="0" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="24" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="24" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="48" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="48" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="72" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="72" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="96" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="96" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="120" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="120" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="144" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="144" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="0" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="0" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="24" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="24" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="48" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="48" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="72" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="72" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="96" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="96" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="120" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="120" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="144" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="144" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="0" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="0" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="24" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="24" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="48" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="48" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="72" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="72" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="96" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="96" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="120" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="120" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="144" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="144" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="0" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="0" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="24" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="24" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="48" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="48" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="72" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="72" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="96" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="96" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="120" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="120" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="144" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="144" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+    </class>
+    <class id="2" offering="2" config="2" committed="false" subpart="2" classLimit="30" department="1" scheduler="1" dates="000000000000000000000000000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000">
+      <course name="Programación I" code="2501208"/>
+      <instructor id="P002" name=""/>
+      <time days="1010100" start="0" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="0" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="0" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="24" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="24" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="24" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="48" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="48" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="48" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="72" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="72" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="72" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="96" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="96" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="96" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="120" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="120" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="120" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="144" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="144" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="144" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="0" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="0" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="0" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="24" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="24" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="24" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="48" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="48" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="48" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="72" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="72" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="72" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="96" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="96" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="96" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="120" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="120" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="120" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="144" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="144" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="144" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="0" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="0" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="0" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="24" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="24" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="24" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="48" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="48" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="48" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="72" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="72" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="72" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="96" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="96" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="96" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="120" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="120" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="120" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="144" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="144" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="144" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="0" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="0" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="0" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="24" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="24" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="24" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="48" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="48" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="48" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="72" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="72" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="72" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="96" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="96" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="96" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="120" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="120" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="120" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="144" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="144" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="144" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="0" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="0" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="0" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="24" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="24" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="24" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="48" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="48" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="48" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="72" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="72" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="72" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="96" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="96" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="96" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="120" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="120" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="120" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="144" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="144" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="144" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <room requirement="lab"/>
+    </class>
+    <class id="3" offering="3" config="3" committed="false" subpart="3" classLimit="26" department="1" scheduler="1" dates="000000000000000000000000000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000">
+      <course name="Algoritmos y Estructuras de Datos" code="1702224"/>
+      <instructor id="P003" name=""/>
+      <time days="1010100" start="0" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="0" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="0" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="24" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="24" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="24" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="48" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="48" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="48" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="72" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="72" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="72" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="96" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="96" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="96" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="120" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="120" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="120" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1010100" start="144" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="144" length="34" breakTime="0" pattern="1010100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1010100" start="144" length="22" breakTime="0" pattern="1010100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="0" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="0" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="0" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="24" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="24" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="24" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="48" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="48" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="48" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="72" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="72" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="72" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="96" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="96" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="96" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="120" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="120" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="120" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0101010" start="144" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="144" length="34" breakTime="0" pattern="0101010" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0101010" start="144" length="22" breakTime="0" pattern="0101010" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="0" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="0" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="0" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="24" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="24" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="24" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="48" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="48" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="48" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="72" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="72" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="72" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="96" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="96" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="96" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="120" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="120" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="120" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1111100" start="144" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="144" length="34" breakTime="0" pattern="1111100" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1111100" start="144" length="22" breakTime="0" pattern="1111100" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="0" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="0" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="0" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="24" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="24" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="24" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="48" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="48" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="48" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="72" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="72" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="72" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="96" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="96" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="96" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="120" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="120" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="120" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="1100000" start="144" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="144" length="34" breakTime="0" pattern="1100000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="1100000" start="144" length="22" breakTime="0" pattern="1100000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="0" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="0" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="0" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="24" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="24" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="24" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="48" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="48" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="48" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="72" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="72" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="72" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="96" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="96" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="96" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="120" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="120" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="120" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <time days="0011000" start="144" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="144" length="34" breakTime="0" pattern="0011000" preference="0" num_bloques="3" duracion_bloque_min="50"/>
+      <time days="0011000" start="144" length="22" breakTime="0" pattern="0011000" preference="0" num_bloques="2" duracion_bloque_min="50"/>
+      <room requirement="lab"/>
+    </class>
+  </classes>
+  <instructors>
+    <instructor id="P001" name="Alvaro" department="Sistemas"/>
+    <instructor id="P002" name="Yessenia" department="Sistemas"/>
+    <instructor id="P003" name="Percy" department="Sistemas"/>
+  </instructors>
+  <groupConstraints/>
+  <students/>
+</timetable>

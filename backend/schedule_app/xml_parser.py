@@ -13,9 +13,8 @@ from .models import (
 @csrf_exempt
 @transaction.atomic
 def import_xml_view(request):
-    """
-    Vista para importar datos desde archivo XML
-    """
+    # Vista para importar datos desde archivo XML
+    
     if request.method != 'POST':
         return JsonResponse({'error': 'Solo se permiten peticiones POST'}, status=405)
     

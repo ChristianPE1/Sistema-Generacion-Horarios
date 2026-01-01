@@ -2,35 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { type GeneratedSchedule, getSavedSchedules, getSavedSchedule, getLastGeneratedSchedule } from '../services/api';
 import { Building2, User, Calendar, AlertCircle, ArrowLeft, ChevronLeft, ChevronRight, Download, RefreshCw } from 'lucide-react';
-//import * as XLSX from 'xlsx';
 import * as XLSX from 'xlsx-js-style';
-
-
-type ViewMode = 'room' | 'instructor' | 'year';
-
-interface ScheduleBlock {
-  day: string;
-  block: number;
-  start: string;
-  end: string;
-}
-
-interface Assignment {
-  class_id: string;
-  class_name: string;
-  class_type: string;
-  year: number;
-  room: { id: string; type: string };
-  instructor: { id: string; name: string };
-  schedule: ScheduleBlock[];
-}
-
-interface SavedScheduleOption {
-  id: number;
-  name: string;
-  dataset: string;
-  created_at: string;
-}
+import type { ViewMode, Assignment, ScheduleBlock, SavedScheduleOption } from '../types';
 
 function ScheduleViewer() {
   const navigate = useNavigate();

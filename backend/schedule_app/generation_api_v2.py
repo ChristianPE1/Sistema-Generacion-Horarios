@@ -439,7 +439,7 @@ def list_datasets(request):
     """Lista los datasets disponibles para generación."""
     datasets = []
     
-    for filename in ['escuela.xml', 'purdue_clean.xml']:
+    for filename in ['escuela.xml', 'purdue_clean.xml','datos_horarios_pequeno.xml']:
         filepath = get_dataset_path(filename)
         if os.path.exists(filepath):
             try:

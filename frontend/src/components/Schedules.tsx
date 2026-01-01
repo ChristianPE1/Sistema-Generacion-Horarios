@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  getDatasets,
-  generateScheduleFromDataset,
-  type DatasetInfo
-} from '../services/api';
+import { getDatasets, generateScheduleFromDataset, type DatasetInfo } from '../services/api';
 import { Play, Database, Users, Building2, BookOpen, Loader2, AlertCircle, FileText, Dna, Zap } from 'lucide-react';
 
 function Schedules() {

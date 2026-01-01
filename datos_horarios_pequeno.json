@@ -1,0 +1,90 @@
+{
+  "cursos": [
+    {
+      "codigo": "2501207",
+      "nombre": "Estructuras Discretas II",
+      "anio": 1,
+      "horas_teoria": 4,
+      "horas_practica": 2,
+      "horas_lab": 0,
+      "profesor_id": "P001",
+      "num_estudiantes": 30,
+      "requiere_lab": 0
+    },
+    {
+      "codigo": "2501208",
+      "nombre": "Programación I",
+      "anio": 1,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 4,
+      "profesor_id": "P002",
+      "num_estudiantes": 30,
+      "requiere_lab": 1
+    },
+    {
+      "codigo": "1702224",
+      "nombre": "Algoritmos y Estructuras de Datos",
+      "anio": 2,
+      "horas_teoria": 2,
+      "horas_practica": 2,
+      "horas_lab": 4,
+      "profesor_id": "P003",
+      "num_estudiantes": 26,
+      "requiere_lab": 1
+    }
+  ],
+  "profesores": [
+    {
+      "id": "P001",
+      "nombre": "Alvaro",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P002",
+      "nombre": "Yessenia",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    },
+    {
+      "id": "P003",
+      "nombre": "Percy",
+      "departamento": "Sistemas",
+      "max_horas_diarias": 8,
+      "disponibilidad": {}
+    }
+  ],
+  "salas": [
+    {
+      "id": "101",
+      "tipo": 1,
+      "capacidad": 50,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "201",
+      "tipo": 1,
+      "capacidad": 35,
+      "ocupaciones_previas": {}
+    },
+    {
+      "id": "L01",
+      "tipo": 2,
+      "subtipo": 1,
+      "capacidad": 30,
+      "ocupaciones_previas": {}
+    }
+  ],
+  "configuracion_general": {
+    "dias": ["lunes", "martes", "miercoles", "jueves", "viernes"],
+    "duracion_bloque_min": 50,
+    "descanso_entre_bloques_min": 10,
+    "inicio_jornada": "07:00",
+    "fin_jornada": "20:10",
+    "max_bloques_consecutivos_por_sesion": 3,
+    "min_buffer_entre_sesiones_min": 10
+  }
+}
