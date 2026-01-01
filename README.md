@@ -218,3 +218,21 @@ Sistema-Generacion-Horarios/
 7. **Exportar a Excel** si es necesario
 
 ---
+
+### Capturas de Pantalla
+
+- **Vista principal**  
+    ![Main View](assets/mainView.png)
+
+- **Generación de horario**  
+    ![Generación](assets/genSchedule.png)
+
+- **Vista de horario**  
+    ![Schedule View](assets/scheduleView.png)
+
+- **Exportación a Excel**  
+    ![Export View](assets/exportView.png)
+
+---
+
+````
