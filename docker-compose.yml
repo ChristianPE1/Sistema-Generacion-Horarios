@@ -1,8 +1,10 @@
 version: '3.8'
 
 services:
+  # Base de datos PostgreSQL
   db:
     image: postgres:15
+    container_name: timetable-db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -11,6 +13,61 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5432:5432"
+    networks:
+      - timetable-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Django
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: timetable-backend
+    volumes:
+      - ./backend:/app
+      - backend_data:/app/data
+    environment:
+      - USE_POSTGRESQL=true
+      - POSTGRES_DB=timetable_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - DJANGO_SETTINGS_MODULE=timetable_system.settings
+      - DEBUG=true
+    ports:
+      - "8000:8000"
+    networks:
+      - timetable-network
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python manage.py runserver 0.0.0.0:8000
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: timetable-frontend
+    ports:
+      - "80:80"
+    networks:
+      - timetable-network
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+
+networks:
+  timetable-network:
+    driver: bridge
 
 volumes:
   postgres_data:
+  backend_data:
+
