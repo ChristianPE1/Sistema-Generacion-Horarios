@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Room, Instructor, Course, Class, ClassInstructor,
-    ClassRoom, TimeSlot, Student, StudentClass,
-    Schedule, ScheduleAssignment
+    ClassRoom, TimeSlot, Student, StudentClass
 )
 
 
@@ -85,7 +84,6 @@ class ClassSerializer(serializers.ModelSerializer):
 
 
 class ClassListSerializer(serializers.ModelSerializer):
-    """Serializer simplificado para listados"""
     offering_name = serializers.CharField(source='offering.name', read_only=True)
     instructor_names = serializers.SerializerMethodField()
     
@@ -115,38 +113,3 @@ class StudentClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentClass
         fields = '__all__'
-
-
-class ScheduleAssignmentSerializer(serializers.ModelSerializer):
-    class_info = ClassListSerializer(source='class_obj', read_only=True)
-    room_info = RoomSerializer(source='room', read_only=True)
-    time_slot_info = TimeSlotSerializer(source='time_slot', read_only=True)
-    
-    class Meta:
-        model = ScheduleAssignment
-        fields = '__all__'
-
-
-class ScheduleSerializer(serializers.ModelSerializer):
-    assignments = ScheduleAssignmentSerializer(many=True, read_only=True)
-    assignment_count = serializers.SerializerMethodField()
-    
-    def get_assignment_count(self, obj):
-        return obj.assignments.count()
-    
-    class Meta:
-        model = Schedule
-        fields = '__all__'
-
-
-class ScheduleListSerializer(serializers.ModelSerializer):
-    """Serializer simplificado para listados de horarios"""
-    assignment_count = serializers.SerializerMethodField()
-    
-    def get_assignment_count(self, obj):
-        return obj.assignments.count()
-    
-    class Meta:
-        model = Schedule
-        fields = ['id', 'name', 'description', 'fitness_score', 'is_active', 
-                  'created_at', 'updated_at', 'assignment_count', 'status', 'conflict_count']

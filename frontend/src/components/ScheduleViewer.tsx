@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { type GeneratedSchedule, getSavedSchedules, getSavedSchedule, getLastGeneratedSchedule } from '../services/api';
+import { getSavedSchedules, getSavedSchedule, getLastGeneratedSchedule } from '../services/api';
+import type { GeneratedSchedule } from '../types';
 import { Building2, User, Calendar, AlertCircle, ArrowLeft, ChevronLeft, ChevronRight, Download, RefreshCw } from 'lucide-react';
 import * as XLSX from 'xlsx-js-style';
 import type { ViewMode, Assignment, ScheduleBlock, SavedScheduleOption } from '../types';
@@ -171,13 +172,33 @@ function ScheduleViewer() {
   };
 
   const getBlockTime = (block: number) => {
-    const startMinutes = 7 * 60 + block * 60;
+    // Obtener la hora de inicio desde las constraints_applied del schedule
+    // Si no existe, usar 07:00 por defecto
+    let startTimeStr = '07:00';
+    
+    if (schedule?.constraints_applied) {
+      const constraints = schedule.constraints_applied;
+      // Obtener el inicio más temprano entre aulas y laboratorios
+      const aulaStart = constraints.aulas?.start_time || '07:00';
+      const labStart = constraints.laboratorios?.start_time || '07:00';
+      
+      // Comparar y usar el más temprano
+      const [aulaH, aulaM] = aulaStart.split(':').map(Number);
+      const [labH, labM] = labStart.split(':').map(Number);
+      const aulaMinutes = aulaH * 60 + aulaM;
+      const labMinutes = labH * 60 + labM;
+      
+      startTimeStr = aulaMinutes <= labMinutes ? aulaStart : labStart;
+    }
+    
+    const [startH, startM] = startTimeStr.split(':').map(Number);
+    const startMinutes = startH * 60 + startM + block * 60;
     const h = Math.floor(startMinutes / 60);
     const m = startMinutes % 60;
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
 
-  // Exportar TODAS las aulas a Excel (cada aula = 1 hoja)
+  // Exportar todas las aulas a Excel (cada aula = 1 hoja)
   const exportToExcel = () => {
     if (!schedule) return;
 
@@ -445,7 +466,7 @@ function ScheduleViewer() {
             {filteredAssignments.length} clases en esta vista
           </div>
 
-          {/* Botón exportar Excel - TODAS las aulas */}
+          {/* Botón exportar Excel*/}
           <button
             onClick={exportToExcel}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"

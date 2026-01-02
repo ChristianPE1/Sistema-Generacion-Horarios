@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDatasets, generateScheduleFromDataset, type DatasetInfo } from '../services/api';
-import { Play, Database, Users, Building2, BookOpen, Loader2, AlertCircle, FileText, Dna, Zap } from 'lucide-react';
+import { getDatasets, generateScheduleFromDataset} from '../services/api';
+import type { DatasetInfo, ScheduleConstraints } from '../types';
+import { Play, Database, Users, Building2, BookOpen, Loader2, AlertCircle, FileText, Dna, Zap, Clock, Settings } from 'lucide-react';
 
 function Schedules() {
   const navigate = useNavigate();
@@ -15,6 +16,27 @@ function Schedules() {
     name: '',
     population_size: 50,
     generations: 100
+  });
+
+  const [constraints, setConstraints] = useState<ScheduleConstraints>({
+    aulas: {
+      max_classes_per_day: null,
+      max_classes_per_week: null,
+      start_time: '08:00',
+      end_time: '18:00'
+    },
+    laboratorios: {
+      max_classes_per_day: null,
+      max_classes_per_week: null,
+      start_time: '08:00',
+      end_time: '18:00'
+    },
+    general: {
+      max_consecutive_blocks: 3,
+      max_consecutive_lab_blocks: 4,
+      break_duration_minutes: 10,
+      block_duration_minutes: 50
+    }
   });
 
   useEffect(() => {
@@ -58,7 +80,8 @@ function Schedules() {
         dataset: formData.dataset,
         name: formData.name || `Horario - ${formData.dataset}`,
         population_size: formData.population_size,
-        generations: formData.generations
+        generations: formData.generations,
+        constraints: constraints
       });
       
       if (response.data.success && response.data.schedule) {
@@ -234,6 +257,185 @@ function Schedules() {
             <p className="text-sm text-purple-700">
               El algoritmo usa <strong>Greedy + Genético</strong>: primero genera una solución rápida con construcción greedy, 
               luego la refina con evolución genética para optimizar la distribución de aulas.
+            </p>
+          </div>
+        </div>
+
+        {/* Restricciones de Horario */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Settings className="h-5 w-5 text-green-600" />
+            Restricciones de Horario
+          </h2>
+
+          {/* Aulas (Clases Teóricas) */}
+          <div className="mb-6">
+            <h3 className="text-md font-medium text-gray-700 mb-3 flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-blue-600" />
+              Aulas (Clases Teóricas)
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Máx. clases por día
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  placeholder="Sin límite"
+                  value={constraints.aulas.max_classes_per_day || ''}
+                  onChange={(e) => setConstraints(prev => ({
+                    ...prev,
+                    aulas: {
+                      ...prev.aulas,
+                      max_classes_per_day: e.target.value ? parseInt(e.target.value) : null
+                    }
+                  }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hora inicio jornada
+                </label>
+                <input
+                  type="time"
+                  value={constraints.aulas.start_time}
+                  onChange={(e) => setConstraints(prev => ({
+                    ...prev,
+                    aulas: {
+                      ...prev.aulas,
+                      start_time: e.target.value
+                    }
+                  }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hora fin jornada
+                </label>
+                <input
+                  type="time"
+                  value={constraints.aulas.end_time}
+                  onChange={(e) => setConstraints(prev => ({
+                    ...prev,
+                    aulas: {
+                      ...prev.aulas,
+                      end_time: e.target.value
+                    }
+                  }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Laboratorios */}
+          <div className="mb-6">
+            <h3 className="text-md font-medium text-gray-700 mb-3 flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-orange-600" />
+              Laboratorios
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Máx. clases por día
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  placeholder="Sin límite"
+                  value={constraints.laboratorios.max_classes_per_day || ''}
+                  onChange={(e) => setConstraints(prev => ({
+                    ...prev,
+                    laboratorios: {
+                      ...prev.laboratorios,
+                      max_classes_per_day: e.target.value ? parseInt(e.target.value) : null
+                    }
+                  }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hora inicio jornada
+                </label>
+                <input
+                  type="time"
+                  value={constraints.laboratorios.start_time}
+                  onChange={(e) => setConstraints(prev => ({
+                    ...prev,
+                    laboratorios: {
+                      ...prev.laboratorios,
+                      start_time: e.target.value
+                    }
+                  }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hora fin jornada
+                </label>
+                <input
+                  type="time"
+                  value={constraints.laboratorios.end_time}
+                  onChange={(e) => setConstraints(prev => ({
+                    ...prev,
+                    laboratorios: {
+                      ...prev.laboratorios,
+                      end_time: e.target.value
+                    }
+                  }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Configuración General */}
+          <div>
+            <h3 className="text-md font-medium text-gray-700 mb-3 flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-600" />
+              Configuración General (Sistema)
+            </h3>
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-gray-600">Duración de bloque:</span>
+                  <span className="ml-2 font-semibold text-gray-900">50 minutos</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Duración de descanso:</span>
+                  <span className="ml-2 font-semibold text-gray-900">10 minutos</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Máx. bloques consecutivos (teoría):</span>
+                  <span className="ml-2 font-semibold text-gray-900">3 bloques</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Máx. bloques consecutivos (lab):</span>
+                  <span className="ml-2 font-semibold text-gray-900">4 bloques</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                Estos valores son fijos del sistema y no se pueden modificar.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 p-3 bg-green-50 rounded-lg flex items-start gap-2">
+            <Settings className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-green-700">
+              Las restricciones permiten controlar límites de horario por tipo de aula. 
+              Déjelos vacíos para usar configuración por defecto (sin límites).
             </p>
           </div>
         </div>

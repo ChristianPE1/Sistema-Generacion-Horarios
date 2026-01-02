@@ -1,21 +1,3 @@
-"""
-Generador de Horarios Constructivo con Optimización.
-
-Este algoritmo usa un enfoque greedy/constructivo que es más eficiente
-para problemas de timetabling con muchas restricciones.
-
-Proceso:
-1. Ordenar clases por restricciones (más difíciles primero)
-2. Asignar cada clase al mejor slot disponible
-3. Optimizar con búsqueda local
-
-Reglas:
-- Bloques de 50 minutos
-- Máximo 3 bloques consecutivos de teoría/práctica del mismo código
-- Óptimo: 2 bloques consecutivos
-- Laboratorio NO cuenta para el límite de consecutivos
-- Sin conflictos de sala, profesor o año de estudiantes
-"""
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import List, Dict, Set, Tuple, Optional
@@ -80,26 +62,55 @@ class Assignment:
 
 
 class ScheduleBuilder:
-    """Generador de horarios usando enfoque constructivo."""
+    # Generador de horarios usando enfoque constructivo.
     
-    def __init__(self, rooms: List[Room], instructors: List[Instructor],
-                 classes: List[ClassInfo], config: Config):
+    def __init__(self, rooms: List[Room], instructors: List[Instructor], classes: List[ClassInfo], config: Config, constraints: dict = None):
         self.rooms = rooms
         self.instructors = instructors
         self.classes = classes
         self.config = config
+        self.constraints = constraints or {}
         
         self.instructor_map = {i.id: i for i in instructors}
         
-        # Calcular bloques por día
-        start_h, start_m = map(int, config.start_time.split(':'))
-        end_h, end_m = map(int, config.end_time.split(':'))
-        total_minutes = (end_h * 60 + end_m) - (start_h * 60 + start_m)
+        # Aplicar restricciones específicas si existen
+        aula_constraints = self.constraints.get('aulas', {})
+        lab_constraints = self.constraints.get('laboratorios', {})
+        
+        # Calcular bloques por día basado en el rango más amplio posible
+        # Esto asegura que tengamos suficientes bloques para el tipo de aula que más necesita
+        aula_start = aula_constraints.get('start_time', self.config.start_time)
+        aula_end = aula_constraints.get('end_time', self.config.end_time)
+        lab_start = lab_constraints.get('start_time', self.config.start_time)  
+        lab_end = lab_constraints.get('end_time', self.config.end_time)
+        
+        # Calcular rangos para determinar el máximo
+        aula_start_h, aula_start_m = map(int, aula_start.split(':'))
+        aula_end_h, aula_end_m = map(int, aula_end.split(':'))
+        lab_start_h, lab_start_m = map(int, lab_start.split(':'))
+        lab_end_h, lab_end_m = map(int, lab_end.split(':'))
+        
+        # Usar el rango más temprano de inicio y más tarde de fin
+        global_start_h = min(aula_start_h, lab_start_h)
+        global_start_m = min(aula_start_m, lab_start_m) if aula_start_h == lab_start_h else (aula_start_m if aula_start_h < lab_start_h else lab_start_m)
+        global_end_h = max(aula_end_h, lab_end_h)
+        global_end_m = max(aula_end_m, lab_end_m) if aula_end_h == lab_end_h else (aula_end_m if aula_end_h > lab_end_h else lab_end_m)
+        
+        # Actualizar config para usar el rango global
+        self.config.start_time = f"{global_start_h:02d}:{global_start_m:02d}"
+        self.config.end_time = f"{global_end_h:02d}:{global_end_m:02d}"
+        
+        # Calcular bloques totales
+        total_minutes = (global_end_h * 60 + global_end_m) - (global_start_h * 60 + global_start_m)
         self.blocks_per_day = total_minutes // (config.block_duration + config.break_duration)
         
-        # Separar salas por tipo
-        self.aulas = [r for r in rooms if r.room_type != 'laboratorio']
-        self.labs = [r for r in rooms if r.room_type == 'laboratorio']
+        # Calcular offsets para cada tipo de aula (bloques desde el inicio global)
+        block_duration_total = config.block_duration + config.break_duration
+        self.aula_start_offset = ((aula_start_h * 60 + aula_start_m) - (global_start_h * 60 + global_start_m)) // block_duration_total
+        self.aula_end_offset = self.aula_start_offset + (((aula_end_h * 60 + aula_end_m) - (aula_start_h * 60 + aula_start_m)) // block_duration_total)
+        
+        self.lab_start_offset = ((lab_start_h * 60 + lab_start_m) - (global_start_h * 60 + global_start_m)) // block_duration_total
+        self.lab_end_offset = self.lab_start_offset + (((lab_end_h * 60 + lab_end_m) - (lab_start_h * 60 + lab_start_m)) // block_duration_total)
         
         # Estado de ocupación
         self.room_occupied: Dict[Tuple[str, str, int], str] = {}  # (room_id, day, block) -> class_id
@@ -113,10 +124,7 @@ class ScheduleBuilder:
         self.room_usage: Dict[str, int] = {r.id: 0 for r in rooms}
     
     def _count_consecutive_theory_practice(self, code: str, day: str, block: int) -> int:
-        """
-        Cuenta cuántos bloques consecutivos de teoría/práctica del mismo código
-        hay alrededor de un bloque dado. Laboratorio NO cuenta.
-        """
+        # Cuenta cuántos bloques consecutivos de teoría/práctica del mismo código hay alrededor de un bloque dado. Laboratorio NO cuenta.
         count = 0
         
         # Contar hacia atrás
@@ -146,24 +154,23 @@ class ScheduleBuilder:
         return count
     
     def _get_blocks_needed(self, class_info: ClassInfo) -> int:
-        """Calcula bloques de 50 min necesarios para las horas."""
+        # Calcula bloques de 50 min necesarios para las horas.
         return max(1, (class_info.hours * 60) // self.config.block_duration)
     
     def _get_valid_rooms(self, class_info: ClassInfo) -> List[Room]:
-        """
-        Obtiene salas válidas para una clase, ordenadas por:
-        1. Mínima diferencia entre capacidad y estudiantes (mejor ajuste)
-        2. Menor uso actual (equilibrar carga entre aulas)
-        """
-        if class_info.class_type == 'laboratorio' and self.labs:
-            rooms = [r for r in self.labs if r.capacity >= class_info.students]
+        # Obtiene salas válidas para una clase, ordenadas por:
+        # 1. Mínima diferencia entre capacidad y estudiantes (mejor ajuste)
+        # 2. Menor uso actual (equilibrar carga entre aulas)
+        
+        if class_info.class_type == 'laboratorio' and any(r.room_type == 'laboratorio' for r in self.rooms):
+            rooms = [r for r in self.rooms if r.room_type == 'laboratorio' and r.capacity >= class_info.students]
             if not rooms:
-                rooms = [r for r in self.aulas if r.capacity >= class_info.students]
+                rooms = [r for r in self.rooms if r.room_type == 'aula' and r.capacity >= class_info.students]
         else:
-            rooms = [r for r in self.aulas if r.capacity >= class_info.students]
+            rooms = [r for r in self.rooms if r.room_type == 'aula' and r.capacity >= class_info.students]
         
         if not rooms:
-            rooms = self.aulas[:] if self.aulas else self.rooms[:]
+            rooms = self.rooms[:]
         
         # Ordenar por: 1) Menor diferencia capacidad-estudiantes, 2) Menor uso
         rooms = sorted(rooms, key=lambda r: (
@@ -173,9 +180,17 @@ class ScheduleBuilder:
         
         return rooms
     
-    def _is_slot_free(self, room: Room, day: str, block: int, 
-                      instructor_id: str, class_info: ClassInfo = None) -> bool:
-        """Verifica si un slot está libre para asignar."""
+    def _is_slot_free(self, room: Room, day: str, block: int, instructor_id: str, class_info: ClassInfo = None) -> bool:
+        # Verifica si un slot está libre para asignar.
+        
+        # Verificar que el bloque esté dentro del rango válido para el tipo de aula
+        if room.room_type == 'laboratorio':
+            if block < self.lab_start_offset or block >= self.lab_end_offset:
+                return False
+        else:  # aulas
+            if block < self.aula_start_offset or block >= self.aula_end_offset:
+                return False
+        
         # Verificar sala
         if (room.id, day, block) in self.room_occupied:
             return False
@@ -194,10 +209,8 @@ class ScheduleBuilder:
         
         return True
     
-    def _find_consecutive_slots(self, room: Room, day: str, start_block: int,
-                                count: int, instructor_id: str,
-                                class_info: ClassInfo = None) -> List[TimeSlot]:
-        """Busca slots consecutivos libres."""
+    def _find_consecutive_slots(self, room: Room, day: str, start_block: int, count: int, instructor_id: str, class_info: ClassInfo = None) -> List[TimeSlot]:
+        # Busca slots consecutivos libres.
         if start_block + count > self.blocks_per_day:
             return []
         
@@ -210,9 +223,8 @@ class ScheduleBuilder:
         
         return slots
     
-    def _assign_slots(self, class_info: ClassInfo, room: Room, 
-                      slots: List[TimeSlot]) -> None:
-        """Marca slots como ocupados."""
+    def _assign_slots(self, class_info: ClassInfo, room: Room, slots: List[TimeSlot]) -> None:
+        # Marca slots como ocupados.
         for slot in slots:
             self.room_occupied[(room.id, slot.day, slot.block)] = class_info.id
             
@@ -226,25 +238,30 @@ class ScheduleBuilder:
         self.room_usage[room.id] = self.room_usage.get(room.id, 0) + len(slots)
     
     def _try_assign_class(self, class_info: ClassInfo) -> Optional[Assignment]:
-        """Intenta asignar una clase al mejor slot disponible."""
+        # Intenta asignar una clase al mejor slot disponible.
         blocks_needed = self._get_blocks_needed(class_info)
         valid_rooms = self._get_valid_rooms(class_info)
         max_consec = self.config.max_consecutive
         
-        # Para laboratorios, permitir hasta 4 bloques consecutivos
-        # y no tienen restricción de consecutivos por código
+        # Determinar rangos válidos según tipo de aula
         if class_info.class_type == 'laboratorio':
             max_consec = 4
+            start_offset = self.lab_start_offset
+            end_offset = self.lab_end_offset
+        else:
+            max_consec = self.config.max_consecutive
+            start_offset = self.aula_start_offset
+            end_offset = self.aula_end_offset
         
         # ESTRATEGIA ÓPTIMA: Preferir 2 bloques consecutivos
-        # Para teoría/práctica, intentamos encontrar slots de 2 bloques cuando sea posible
         optimal_block_size = 2  # Óptimo es 2 bloques seguidos
         
         # Intentar asignar todos los bloques en un solo día primero
         if blocks_needed <= max_consec:
             for room in valid_rooms:
                 for day in self.config.days:
-                    for start_block in range(self.blocks_per_day - blocks_needed + 1):
+                    # Usar rango específico para el tipo de aula
+                    for start_block in range(start_offset, end_offset - blocks_needed + 1):
                         slots = self._find_consecutive_slots(
                             room, day, start_block, blocks_needed,
                             class_info.instructor_id, class_info
@@ -258,7 +275,7 @@ class ScheduleBuilder:
                             self._assign_slots(class_info, room, slots)
                             return assignment
         
-        # Si necesita más bloques que el máximo consecutivo, distribuir en bloques óptimos de 2
+        # Si se necesita más bloques que el máximo consecutivo, distribuir en bloques óptimos de 2
         if blocks_needed > max_consec or (class_info.class_type != 'laboratorio' and blocks_needed > optimal_block_size):
             for room in valid_rooms:
                 all_slots = []
@@ -275,7 +292,8 @@ class ScheduleBuilder:
                         # Óptimo: 2 bloques, máximo: max_consecutive
                         blocks_this_day = min(remaining, optimal_block_size)
                     
-                    for start_block in range(self.blocks_per_day - blocks_this_day + 1):
+                    # Usar rango específico para el tipo de aula
+                    for start_block in range(start_offset, end_offset - blocks_this_day + 1):
                         slots = self._find_consecutive_slots(
                             room, day, start_block, blocks_this_day,
                             class_info.instructor_id, class_info
@@ -297,7 +315,7 @@ class ScheduleBuilder:
         return None
     
     def generate(self) -> Dict:
-        """Genera el horario completo."""
+        # Genera el horario completo.
         start_time = time.time()
         
         # Ordenar clases por dificultad (más restricciones primero)
@@ -320,8 +338,7 @@ class ScheduleBuilder:
                 unassigned.append(class_info)
                 conflicts += 1
         
-        # Intentar asignar las clases que no se pudieron asignar inicialmente
-        # con un enfoque más flexible
+        # Intentar asignar las clases que no se pudieron asignar inicialmente con un enfoque más flexible
         for class_info in unassigned[:]:
             # Relajar restricción de año para clases no asignadas
             assignment = self._try_assign_flexible(class_info)
@@ -347,7 +364,7 @@ class ScheduleBuilder:
         }
     
     def _try_assign_flexible(self, class_info: ClassInfo) -> Optional[Assignment]:
-        """Asignación más flexible para clases difíciles."""
+        # Asignación más flexible para clases difíciles.
         blocks_needed = self._get_blocks_needed(class_info)
         
         # Usar TODAS las salas que caben
@@ -383,7 +400,7 @@ class ScheduleBuilder:
         return None
     
     def _get_time_str(self, block: int) -> Tuple[str, str]:
-        """Convierte bloque a hora inicio/fin."""
+        # Convierte bloque a hora inicio/fin.
         start_h, start_m = map(int, self.config.start_time.split(':'))
         block_total = self.config.block_duration + self.config.break_duration
         
@@ -396,7 +413,7 @@ class ScheduleBuilder:
         return start_str, end_str
     
     def _to_dict(self, assignment: Assignment) -> Dict:
-        """Convierte asignación a diccionario."""
+        # Convierte asignación a diccionario.
         instructor = self.instructor_map.get(assignment.class_info.instructor_id)
         
         schedule_list = []
@@ -427,7 +444,7 @@ class ScheduleBuilder:
 
 
 def load_from_xml(xml_path: str) -> Tuple[List[Room], List[Instructor], List[ClassInfo], Config]:
-    """Carga datos desde XML limpio."""
+    # Carga datos desde XML
     tree = ET.parse(xml_path)
     root = tree.getroot()
     
@@ -484,7 +501,7 @@ def load_from_xml(xml_path: str) -> Tuple[List[Room], List[Instructor], List[Cla
 
 
 def generate_from_xml(xml_path: str, **kwargs) -> Dict:
-    """Genera horario desde archivo XML."""
+    # Genera horario desde archivo XML.
     rooms, instructors, classes, config = load_from_xml(xml_path)
     builder = ScheduleBuilder(rooms, instructors, classes, config)
     return builder.generate()

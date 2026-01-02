@@ -2,14 +2,14 @@
 <timetable version="3.0" type="escuela" source="datos_horarios.json">
   <rooms>
     <room id="101" capacity="50" type="aula"/>
-    <room id="201" capacity="35" type="aula"/>
-    <room id="202" capacity="30" type="aula"/>
-    <room id="203" capacity="30" type="aula"/>
+    <room id="201" capacity="40" type="aula"/>
+    <room id="202" capacity="40" type="aula"/>
+    <room id="203" capacity="40" type="aula"/>
     <room id="301" capacity="40" type="aula"/>
-    <room id="L01" capacity="30" type="laboratorio"/>
-    <room id="L02" capacity="20" type="laboratorio"/>
-    <room id="L03" capacity="20" type="laboratorio"/>
-    <room id="L04" capacity="20" type="laboratorio"/>
+    <room id="L01" capacity="40" type="laboratorio"/>
+    <room id="L02" capacity="40" type="laboratorio"/>
+    <room id="L03" capacity="40" type="laboratorio"/>
+    <room id="L04" capacity="40" type="laboratorio"/>
   </rooms>
   <instructors>
     <instructor id="P001" name="Alvaro" status="assigned"/>

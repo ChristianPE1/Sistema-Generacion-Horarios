@@ -1,8 +1,3 @@
-"""
-Convertidor de datos JSON (datos_horarios.json) a formato XML compatible con el sistema
-Genera archivos XML en el formato esperado por el parser xml_parser.py
-"""
-
 import json
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -11,13 +6,8 @@ from typing import Dict, List
 
 
 class JSONToXMLConverter:
-    """Convierte el formato JSON de la carrera al formato XML de Purdue"""
     
     def __init__(self, json_path: str):
-        """
-        Args:
-            json_path: Ruta al archivo datos_horarios.json
-        """
         self.json_path = json_path
         self.data = None
         self.config = None
@@ -34,23 +24,12 @@ class JSONToXMLConverter:
         }
         
     def load_json(self):
-        """Carga el archivo JSON"""
         with open(self.json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             self.data = data
             self.config = data.get('configuracion_general', {})
             
     def time_to_slot(self, time_str: str) -> int:
-        """
-        Convierte tiempo HH:MM a slot número (slots de 5 minutos)
-        Por ejemplo: 07:00 = slot 0, 07:05 = slot 1, etc.
-        
-        Args:
-            time_str: Tiempo en formato "HH:MM"
-            
-        Returns:
-            Número de slot (cada slot = 5 minutos desde inicio jornada)
-        """
         inicio = datetime.strptime(self.config.get('inicio_jornada', '07:00'), '%H:%M')
         tiempo = datetime.strptime(time_str, '%H:%M')
         
@@ -58,28 +37,9 @@ class JSONToXMLConverter:
         return diff_minutes // 5  # Slots de 5 minutos
     
     def minutes_to_slots(self, minutes: int) -> int:
-        """
-        Convierte minutos a número de slots (cada slot = 5 minutos)
-        
-        Args:
-            minutes: Número de minutos
-            
-        Returns:
-            Número de slots
-        """
         return minutes // 5
     
     def generate_time_slots_for_course(self, course: Dict, class_id: int) -> List[Dict]:
-        """
-        Genera slots de tiempo para un curso respetando bloques de 50 min
-        
-        Args:
-            course: Diccionario con datos del curso
-            class_id: ID único de la clase
-            
-        Returns:
-            Lista de diccionarios con información de slots de tiempo
-        """
         slots = []
         
         # Configuración de bloques
@@ -156,15 +116,6 @@ class JSONToXMLConverter:
         return slots
     
     def convert_to_xml(self, output_path: str = None) -> str:
-        """
-        Convierte el JSON a XML en formato Purdue compatible
-        
-        Args:
-            output_path: Ruta donde guardar el XML (opcional)
-            
-        Returns:
-            String con el XML generado
-        """
         if not self.data:
             self.load_json()
         
@@ -272,16 +223,6 @@ class JSONToXMLConverter:
 
 
 def convert_json_to_xml(json_path: str, output_path: str = None):
-    """
-    Función helper para convertir JSON a XML
-    
-    Args:
-        json_path: Ruta al archivo JSON
-        output_path: Ruta donde guardar el XML (opcional)
-        
-    Returns:
-        String con el XML generado
-    """
     converter = JSONToXMLConverter(json_path)
     return converter.convert_to_xml(output_path)
 

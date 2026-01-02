@@ -1,5 +1,5 @@
-import axios from 'axios';
-import type { ImportStats } from '../types';
+import axios, { type AxiosResponse } from 'axios';
+import type { ImportStats, ScheduleConstraints, DatasetInfo, GeneratedSchedule } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
@@ -10,85 +10,35 @@ const api = axios.create({
   },
 });
 
-// Interfaz para respuestas paginadas
-export interface PaginatedResponse<T> {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
-}
+export const getConstraints = (): Promise<AxiosResponse<{success: boolean; constraints: ScheduleConstraints}>> => 
+  api.get('/generate/constraints/');
 
+export const deleteSchedule = (id: number): Promise<AxiosResponse<{success: boolean; message: string}>> => 
+  api.delete(`/generate/saved/${id}/delete/`);
 
-// =====================================================
-// NUEVO: Generación con Algoritmo Genético Optimizado
-// =====================================================
-
-// Interfaz para datasets disponibles
-export interface DatasetInfo {
-  name: string;
-  path: string;
-  type: 'xml' | 'json';
-  stats?: {
-    rooms: number;
-    instructors: number;
-    classes?: number;
-    courses?: number;
-  };
-  error?: string;
-}
-
-// Interfaz para horario generado
-export interface GeneratedSchedule {
-  name?: string;
-  dataset?: string;
-  assignments: Array<{
-    class_id: string;
-    class_name: string;
-    class_type: string;
-    year: number;
-    room: {
-      id: string;
-      type: string;
-    };
-    instructor: {
-      id: string;
-      name: string;
-    };
-    schedule: Array<{
-      day: string;
-      block: number;
-      start: string;
-      end: string;
-    }>;
-  }>;
-  fitness_score: number;
-  conflict_count: number;
-  generation_time_ms: number;
-  generations_run: number;
-  classes_assigned: number;
-  classes_total: number;
-  unassigned: string[];
-}
 
 // Lista datasets disponibles (escuela.xml, purdue_clean.xml)
-export const getDatasets = () => 
-  api.get<{success: boolean; datasets: DatasetInfo[]}>('/generate/datasets/');
+export const getDatasets = (): Promise<AxiosResponse<{success: boolean; datasets: DatasetInfo[]}>> => 
+  api.get('/generate/datasets/');
 
 // Preparar datasets
-export const prepareDatasets = () => 
-  api.post<{success: boolean; results: any}>('/generate/prepare/');
+export const prepareDatasets = (): Promise<AxiosResponse<{success: boolean; results: any}>> => 
+  api.post('/generate/prepare/');
 
-// Generar horario desde dataset
+
+// Generar horario desde dataset (con constraints opcionales)
 export const generateScheduleFromDataset = (data: {
   dataset: string;
   name: string;
   population_size?: number;
   generations?: number;
-}) => api.post<{success: boolean; schedule: GeneratedSchedule}>('/generate/schedule/', data);
+  constraints?: Partial<ScheduleConstraints>;
+}): Promise<AxiosResponse<{success: boolean; schedule: GeneratedSchedule}>> => 
+  api.post('/generate/schedule/', data);
 
 // Generar horario desde archivo subido
-export const generateScheduleFromUpload = (formData: FormData) => {
-  return axios.post<{success: boolean; schedule: GeneratedSchedule}>(`${API_BASE_URL}/generate/upload/`, formData, {
+export const generateScheduleFromUpload = (formData: FormData): Promise<AxiosResponse<{success: boolean; schedule: GeneratedSchedule}>> => {
+  return axios.post(`${API_BASE_URL}/generate/upload/`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -96,31 +46,30 @@ export const generateScheduleFromUpload = (formData: FormData) => {
 };
 
 // Obtener último horario generado
-export const getLastGeneratedSchedule = () => 
-  api.get<{success: boolean; schedule: GeneratedSchedule}>('/generate/last/');
+export const getLastGeneratedSchedule = (): Promise<AxiosResponse<{success: boolean; schedule: GeneratedSchedule}>> => 
+  api.get('/generate/last/');
 
 // Listar horarios guardados en BD
-export const getSavedSchedules = () => 
-  api.get<{success: boolean; schedules: Array<{
-    id: number;
-    name: string;
-    dataset: string;
-    fitness_score: number;
-    conflict_count: number;
-    classes_assigned: number;
-    classes_total: number;
-    generation_time_ms: number;
-    created_at: string;
-    status: string;
-  }>}>('/generate/saved/');
+export const getSavedSchedules = (): Promise<AxiosResponse<{success: boolean; schedules: Array<{
+  id: number;
+  name: string;
+  dataset: string;
+  fitness_score: number;
+  conflict_count: number;
+  classes_assigned: number;
+  classes_total: number;
+  generation_time_ms: number;
+  created_at: string;
+  status: string;
+}>}>> => api.get('/generate/saved/');
 
 // Obtener horario específico por ID
-export const getSavedSchedule = (id: number) => 
-  api.get<{success: boolean; schedule: GeneratedSchedule}>(`/generate/saved/${id}/`);
+export const getSavedSchedule = (id: number): Promise<AxiosResponse<{success: boolean; schedule: GeneratedSchedule}>> => 
+  api.get(`/generate/saved/${id}/`);
 
 // Import XML
-export const importXML = (formData: FormData) => {
-  return axios.post<{success: boolean; message: string; stats: ImportStats}>(`${API_BASE_URL}/import-xml/`, formData, {
+export const importXML = (formData: FormData): Promise<AxiosResponse<{success: boolean; message: string; stats: ImportStats}>> => {
+  return axios.post(`${API_BASE_URL}/import-xml/`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

@@ -29,8 +29,8 @@ function Navbar() {
               <Calendar className="h-6 w-6 text-white" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-white">Sistema de Horarios</h1>
-              <p className="text-xs text-blue-200">Generación Automática</p>
+              <h1 className="text-lg font-bold text-white leading-tight">Sistema de Horarios</h1>
+              <p className="text-xs text-blue-200 leading-tight">Generación Automática</p>
             </div>
           </Link>
 
@@ -42,9 +42,9 @@ function Navbar() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150
                     ${isActive(item.path) 
-                      ? 'bg-white/20 text-white shadow-inner' 
+                      ? 'bg-white/20 text-white' 
                       : 'text-blue-100 hover:bg-white/10 hover:text-white'
                     }`}
                 >
@@ -76,7 +76,7 @@ function Navbar() {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
                     ${isActive(item.path) 
                       ? 'bg-white/20 text-white' 
                       : 'text-blue-100 hover:bg-white/10'

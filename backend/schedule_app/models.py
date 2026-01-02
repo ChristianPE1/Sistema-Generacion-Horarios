@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Room(models.Model):
-    """Modelo para las aulas/salones"""
+    # Modelo para las aulas/salones
     xml_id = models.IntegerField(unique=True)
     capacity = models.IntegerField()
     location = models.CharField(max_length=100, blank=True)
@@ -18,7 +18,7 @@ class Room(models.Model):
 
 
 class Instructor(models.Model):
-    """Modelo para los profesores/instructores"""
+    # Modelo para los profesores/instructores
     xml_id = models.IntegerField(unique=True)
     name = models.CharField(max_length=200, blank=True)
     email = models.EmailField(blank=True, null=True)
@@ -33,7 +33,7 @@ class Instructor(models.Model):
 
 
 class Course(models.Model):
-    """Modelo para los cursos/ofertas"""
+    # Modelo para los cursos/ofertas
     xml_id = models.IntegerField(unique=True)
     name = models.CharField(max_length=200, blank=True)
     code = models.CharField(max_length=50, blank=True)
@@ -48,7 +48,7 @@ class Course(models.Model):
 
 
 class Class(models.Model):
-    """Modelo para las clases/secciones"""
+    # Modelo para las clases/secciones
     xml_id = models.IntegerField(unique=True)
     offering = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='classes', null=True)
     config = models.IntegerField(null=True)
@@ -70,7 +70,7 @@ class Class(models.Model):
 
 
 class ClassInstructor(models.Model):
-    """Relación entre clases e instructores"""
+    # Relación entre clases e instructores
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='instructors')
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='classes')
     
@@ -82,7 +82,7 @@ class ClassInstructor(models.Model):
 
 
 class ClassRoom(models.Model):
-    """Relación entre clases y aulas con preferencias"""
+    # Relación entre clases y aulas con preferencias
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='room_prefs')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='class_prefs')
     preference = models.FloatField(default=0.0)
@@ -95,7 +95,7 @@ class ClassRoom(models.Model):
 
 
 class TimeSlot(models.Model):
-    """Modelo para los slots de tiempo"""
+    # Modelo para los slots de tiempo
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='time_slots')
     days = models.CharField(max_length=7)  # Formato: "1010000" (L,M,W,J,V,S,D)
     start_time = models.IntegerField()  # Minutos desde medianoche / 5
@@ -109,19 +109,19 @@ class TimeSlot(models.Model):
         verbose_name_plural = 'Slots de Tiempo'
     
     def get_day_names(self):
-        """Retorna los días de la semana"""
+        # Retorna los días de la semana
         day_names = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom']
         return [day_names[i] for i, d in enumerate(self.days) if d == '1']
     
     def get_start_time_formatted(self):
-        """Retorna la hora de inicio formateada"""
+        # Retorna la hora de inicio formateada
         minutes = self.start_time * 5
         hours = minutes // 60
         mins = minutes % 60
         return f"{hours:02d}:{mins:02d}"
     
     def get_end_time_formatted(self):
-        """Retorna la hora de fin formateada"""
+        # Retorna la hora de fin formateada
         total_minutes = (self.start_time + self.length) * 5
         hours = total_minutes // 60
         mins = total_minutes % 60
@@ -129,7 +129,7 @@ class TimeSlot(models.Model):
 
 
 class Student(models.Model):
-    """Modelo para los estudiantes"""
+    # Modelo para los estudiantes
     xml_id = models.IntegerField(unique=True)
     name = models.CharField(max_length=200, blank=True)
     email = models.EmailField(blank=True, null=True)
@@ -144,7 +144,7 @@ class Student(models.Model):
 
 
 class StudentClass(models.Model):
-    """Relación entre estudiantes y clases"""
+    # Relación entre estudiantes y clases
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrolled_classes')
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='enrolled_students')
     offering = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True, related_name='student_demands')
@@ -158,7 +158,7 @@ class StudentClass(models.Model):
 
 
 class Schedule(models.Model):
-    """Modelo para horarios generados"""
+    # Modelo para horarios generados
     STATUS_CHOICES = [
         ('generating', 'Generando'),
         ('completed', 'Completado'),
@@ -177,7 +177,7 @@ class Schedule(models.Model):
     generation_time_ms = models.IntegerField(default=0)
     is_active = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='completed')
-    # Campo JSON para almacenar asignaciones completas (cuando se genera desde XML)
+    # cuando se genera desde XML
     schedule_data = models.JSONField(null=True, blank=True)
     
     class Meta:
@@ -191,7 +191,7 @@ class Schedule(models.Model):
 
 
 class ScheduleAssignment(models.Model):
-    """Asignaciones específicas en un horario"""
+    # Asignaciones específicas en un horario
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='assignments')
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
@@ -205,7 +205,7 @@ class ScheduleAssignment(models.Model):
 
 
 class GroupConstraint(models.Model):
-    """Restricciones de grupo (BTB, DIFF_TIME, etc.)"""
+    # Restricciones de grupo (BTB, DIFF_TIME, etc.)
     xml_id = models.IntegerField(unique=True)
     constraint_type = models.CharField(max_length=50)
     preference = models.CharField(max_length=10)
@@ -222,7 +222,7 @@ class GroupConstraint(models.Model):
 
 
 class GroupConstraintClass(models.Model):
-    """Relación entre restricciones de grupo y clases"""
+    # Relación entre restricciones de grupo y clases
     constraint = models.ForeignKey(GroupConstraint, on_delete=models.CASCADE, related_name='classes')
     class_obj = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='group_constraints')
     
