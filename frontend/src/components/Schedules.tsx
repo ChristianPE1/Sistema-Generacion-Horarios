@@ -277,26 +277,6 @@ function Schedules() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Máx. clases por día
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  placeholder="Sin límite"
-                  value={constraints.aulas.max_classes_per_day || ''}
-                  onChange={(e) => setConstraints(prev => ({
-                    ...prev,
-                    aulas: {
-                      ...prev.aulas,
-                      max_classes_per_day: e.target.value ? parseInt(e.target.value) : null
-                    }
-                  }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Hora inicio jornada
                 </label>
                 <input
@@ -312,8 +292,6 @@ function Schedules() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Hora fin jornada
@@ -343,26 +321,6 @@ function Schedules() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Máx. clases por día
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  placeholder="Sin límite"
-                  value={constraints.laboratorios.max_classes_per_day || ''}
-                  onChange={(e) => setConstraints(prev => ({
-                    ...prev,
-                    laboratorios: {
-                      ...prev.laboratorios,
-                      max_classes_per_day: e.target.value ? parseInt(e.target.value) : null
-                    }
-                  }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Hora inicio jornada
                 </label>
                 <input
@@ -378,8 +336,6 @@ function Schedules() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Hora fin jornada
